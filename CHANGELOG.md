@@ -1,3 +1,14 @@
+## [1.38.5](https://github.com/pcace/RoadbookNavi/compare/v1.38.4...v1.38.5) (2026-09-29)
+
+### Bug fixes
+
+- **macos:** request location permission ([#7](https://github.com/pcace/RoadbookNavi/issues/7)) ([ff23ede](https://github.com/pcace/RoadbookNavi/commit/ff23ede3af872278fbc007d73f8e90296fd3d73f))
+
+### Build and dependencies
+
+- close pull requests with malformed titles ([#4](https://github.com/pcace/RoadbookNavi/issues/4)) ([e4d6540](https://github.com/pcace/RoadbookNavi/commit/e4d65409952bbd156acd97cc6944e971680f9cff))
+- format generated changelog ([ed24eeb](https://github.com/pcace/RoadbookNavi/commit/ed24eeb7d777564d7ed26707c0f5985dd90df18b))
+
 ## [1.38.4](https://github.com/pcace/RoadbookNavi/compare/v1.38.3...v1.38.4) (2026-09-29)
 
 ### Bug fixes

@@ -2951,7 +2951,7 @@ dependencies = [
 
 [[package]]
 name = "roadbooknavi"
-version = "1.38.4"
+version = "1.38.5"
 dependencies = [
  "libc",
  "objc2",
