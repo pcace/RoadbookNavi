@@ -1,0 +1,113 @@
+{
+    "route": {
+        "version": 4,
+        "name": "Test Route",
+        "description": "5 turns, created by user@example.com",
+        "current_style": "cross_country",
+        "startlocation": "Munich, Germany",
+        "endlocation": "Innsbruck, Austria",
+        "waypoints": [
+            {
+                "waypointid": 0,
+                "showCoordinates": false,
+                "showHeading": false,
+                "showStickMarkOnTulip": false,
+                "lat": 48.1351,
+                "lon": 11.582,
+                "ele": 510,
+                "show": true,
+                "tulip": {
+                    "elements": [
+                        {
+                            "type": "Line",
+                            "eId": "a1b2c3d4",
+                            "path": [
+                                [
+                                    "M",
+                                    0,
+                                    0
+                                ],
+                                [
+                                    "L",
+                                    200,
+                                    130
+                                ]
+                            ],
+                            "fill": "transparent",
+                            "stroke": "#636363ff",
+                            "strokeWidth": 2,
+                            "z": 3,
+                            "pathOffset": {
+                                "x": -20,
+                                "y": 0
+                            },
+                            "rerender": false
+                        },
+                        {
+                            "type": "Track",
+                            "roadIn": {
+                                "end": {
+                                    "x": -20,
+                                    "y": 20
+                                },
+                                "handles": [
+                                    {
+                                        "x": -10,
+                                        "y": 10
+                                    }
+                                ],
+                                "typeId": 17,
+                                "z": 10
+                            },
+                            "roadOut": {
+                                "end": {
+                                    "x": 20,
+                                    "y": -20
+                                },
+                                "handles": [
+                                    {
+                                        "x": 10,
+                                        "y": -5
+                                    }
+                                ],
+                                "typeId": 17,
+                                "z": 10,
+                                "start": {
+                                    "x": 100,
+                                    "y": 90
+                                }
+                            },
+                            "eId": "e5f6g7h8",
+                            "rerender": false,
+                            "selected": true,
+                            "selection": "track-out"
+                        }
+                    ]
+                },
+                "notes": {
+                    "elements": []
+                },
+                "overridenSmartTags": {
+                    "dataType": "Map",
+                    "value": []
+                },
+                "t_uuid": "wpt_uuid_edd76fed-9972-4a94-aa38-a58e2984fb1c"
+            }
+        ],
+        "settings": {
+            "units": "metric",
+            "showHighlight": true,
+            "showDistanceTickMark": true,
+            "showCoordinates": true,
+            "coordFormat": 1,
+            "showHeadings": true,
+            "showAlternateDistance": true,
+            "showControlPointDetails": true,
+            "hundredthsStyle": "on",
+            "showControlPointOrdinals": true,
+            "trackColor": 0,
+            "defaultTrackType": 4,
+            "customHeaderImage": "data:image/png;base64,iVBORw0KGgo..."
+        }
+    }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Roadbook",
+  "entries": {
+    "distance": "Entfernung",
+    "turn": "Abbiegung",
+    "waypoint": "Wegpunkt"
+  },
+  "navigation": {
+    "nextTurn": "Nächste Abbiegung",
+    "currentPosition": "Aktuelle Position",
+    "totalDistance": "Gesamtentfernung"
+  },
+  "states": {
+    "clickToCreate": "Neues Roadbook erstellen",
+    "clickToCreateSubtext": "Hier klicken um mit der Roadbook Planung zu beginnen",
+    "calculating": "Roadbook wird berechnet...",
+    "processed": "Tulips bearbeitet"
+  },
+  "actions": {
+    "createRoadbook": "Roadbook erstellen"
+  },
+  "pdf": {
+    "distance": "STRECKE",
+    "waypoints": "WEGPUNKTE",
+    "profile": "PROFIL",
+    "start": "START",
+    "finish": "ZIEL",
+    "surface": "OBERFLÄCHE",
+    "noSurfaceData": "Keine Oberflächendaten"
+  }
+}

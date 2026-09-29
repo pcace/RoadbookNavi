@@ -1,0 +1,18 @@
+RoadbookNavi
+============
+
+Copyright (C) RoadbookNavi contributors
+
+Original project and canonical source repository:
+https://github.com/pcace/RoadbookNavi
+
+RoadbookNavi's original application code is licensed under the GNU General
+Public License, version 3 only. The complete license text is in LICENSE.
+
+Under section 7(b) of the GNU General Public License version 3, redistributions
+and modified versions must preserve this reasonable legal notice and attribution
+to the original project. Modified versions must not imply endorsement by the
+RoadbookNavi project or its contributors.
+
+Third-party components and assets retain their own licenses and notices. See
+THIRD_PARTY_NOTICES.md and the notices stored next to those components.

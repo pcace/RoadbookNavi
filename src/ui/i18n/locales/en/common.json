@@ -1,0 +1,71 @@
+{
+  "buttons": {
+    "settings": "Settings",
+    "routePlanning": "Route Planning",
+    "showOdometer": "Show Odometer",
+    "hideOdometer": "Hide Odometer",
+    "autoFollowActive": "Auto-Follow active",
+    "autoFollowInactive": "Auto-Follow disabled",
+    "debugModeActive": "Debug mode active",
+    "debugModeInactive": "Debug mode disabled",
+    "collapseHeader": "Collapse Header",
+    "expandHeader": "Expand Header",
+    "close": "Close",
+    "save": "Save",
+    "use": "Use",
+    "clear": "Clear",
+    "addCurrentPosition": "Add Current Position",
+    "help": "Help"
+  },
+  "navigation": {
+    "roadbook": "Roadbook",
+    "routePlanning": "Route Planning",
+    "routesList": "Routes List",
+    "settings": "Settings"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "ok": "OK",
+    "name": "Name",
+    "profile": "Profile",
+    "distance": "Distance",
+    "points": "Points",
+    "delete": "Delete"
+  },
+  "errors": {
+    "locationError": "Error getting current position",
+    "routeLoadError": "Error loading route",
+    "invalidRouteData": "Invalid route data format",
+    "noCachedRouteData": "This route has no cached data. Modify it to regenerate."
+  },
+  "confirmations": {
+    "deleteRoute": "Do you really want to delete the route \"{{name}}\"?\\n\\nAll cached data for this route will also be deleted.",
+    "routeName": "Routename:"
+  },
+  "help": {
+    "title": "Help & Documentation",
+    "errorLoading": "Error loading help content. Please try again.",
+    "sections": {
+      "createRoadbook": {
+        "title": "Create Roadbook",
+        "description": "Create a new roadbook by planning your route. Use the Route Planning mode to add waypoints, customize your path, and generate a detailed roadbook for your journey."
+      },
+      "changeLanguage": {
+        "title": "Change Language",
+        "description": "Switch between available languages in the Settings menu. The app supports multiple languages to help you navigate comfortably."
+      },
+      "exportRoadbook": {
+        "title": "Export Roadbook",
+        "description": "Export your roadbook in various formats. You can download and print your roadbook or share it with fellow travelers."
+      },
+      "deleteRoadbook": {
+        "title": "Delete Roadbook",
+        "description": "Remove a roadbook you no longer need. Navigate to your Routes List, select the route you want to delete, and confirm the deletion."
+      }
+    }
+  }
+}

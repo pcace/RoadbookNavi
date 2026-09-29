@@ -1,0 +1,224 @@
+# Enduro profile with pseudo-tag considerations
+# Based on enduro.brf, extended to strongly prefer quiet, nature-friendly routing
+# and to bypass towns using BRouter pseudo-tags.
+
+---context:global   # following code refers to global config
+
+# Global riding and instruction parameters
+# Kinematic model parameters (travel time computation)
+assign totalMass  = 210     # %totalMass% | Mass (in kg) of the bike + biker, for travel time computation | number
+assign maxSpeed   = 60      # %maxSpeed% | Absolute maximum speed (in km/h), for travel time computation | number
+assign S_C_x      = 0.225   # %S_C_x% | Drag coefficient times the reference area (in m^2), for travel time computation | number
+assign C_r        = 0.01    # %C_r% | Rolling resistance coefficient (dimensionless), for travel time computation | number
+assign bikerPower = 30000   # %bikerPower% | Average power (in W) provided by the biker, for travel time computation | number
+
+
+# Turn instructions settings
+assign turnInstructionMode          = 2     # %turnInstructionMode% | Mode for the generated turn instructions | [0=none, 1=auto-choose, 2=locus-style, 3=osmand-style, 4=comment-style, 5=gpsies-style, 6=orux-style]
+assign turnInstructionCatchingRange = 40    # %turnInstructionCatchingRange% | Within this distance (in m) several turning instructions are combined into one and the turning angles are better approximated to the general direction | number
+assign turnInstructionRoundabouts  = false  # %turnInstructionRoundabouts% | Set to "false" to avoid generating special turning instructions for roundabouts | boolean
+
+
+# ================= Profile options ==================
+# User options for access rules and remote routes
+assign enforce_legality  0   # 0 ignores access penalties for remote off-road routing
+assign prefer_remoteness 1   # 1 prefers less developed areas
+# ==================================================
+
+# Algorithm parameters controlling speed and accuracy
+# Algorithm parameters (fast first pass)
+assign pass1coefficient 4
+assign pass2coefficient -1
+
+# Elevation model and slope costs
+# Elevation parameters
+assign consider_elevation = true # %consider_elevation% | Set to false to ignore elevation in routing | boolean
+assign downhillcost       = 0     # do not penalize descents
+assign downhillcutoff     = 1.5   # %downhillcutoff% | Gradients below this value in percents are not counted. | number
+assign uphillcost         = 0     # do not penalize climbs
+assign uphillcutoff       = 1.5   # %uphillcutoff% | Gradients below this value in percents are not counted.  | number
+assign downhillcost       = if consider_elevation then downhillcost else 0
+assign uphillcost         = if consider_elevation then uphillcost else 0
+assign elevationmaxbuffer 10
+
+# Environmental preferences from BRouter pseudo-tags
+# Pseudo-tag considerations (enabled by default, strong preference)
+assign consider_noise   = true   # prefer low-noise areas
+assign consider_river   = true   # prefer rivers and lakes
+assign consider_forest  = true   # prefer forests and green areas
+assign consider_town    = true   # avoid towns
+
+---context:way   # following code refers to way-tags
+
+# Way context, turn costs, and access handling
+assign turncost 0
+
+# Access rules are ignored in base scoring; handled separately via enforce_legality/illegal
+assign defaultaccess 0
+
+# Pseudo-tag penalties by class (1..6)
+# Pseudo-tag penalties (placed in way-context, like the working hiking-mountain profile)
+assign noise_penalty
+     switch consider_noise
+         switch estimated_noise_class=  0
+         switch estimated_noise_class=1  0.6
+         switch estimated_noise_class=2  1.0
+         switch estimated_noise_class=3  1.4
+         switch estimated_noise_class=4  2.0
+         switch estimated_noise_class=5  2.4
+         switch estimated_noise_class=6  3.0 0 0
+
+assign no_river_penalty
+     switch consider_river
+         switch estimated_river_class=  0
+         switch estimated_river_class=1  3.0
+         switch estimated_river_class=2  2.2
+         switch estimated_river_class=3  1.5
+         switch estimated_river_class=4  0.8
+         switch estimated_river_class=5  0.3
+         switch estimated_river_class=6  0 99 0
+
+assign no_forest_penalty
+     switch consider_forest
+         switch estimated_forest_class=  0
+         switch estimated_forest_class=1  1.0
+         switch estimated_forest_class=2  0.8
+         switch estimated_forest_class=3  0.5
+         switch estimated_forest_class=4  0.3
+         switch estimated_forest_class=5  0.2
+         switch estimated_forest_class=6  0 99 0
+
+assign town_penalty
+     switch consider_town
+         switch estimated_town_class=  0
+         switch estimated_town_class=1  2.0
+         switch estimated_town_class=2  3.5
+         switch estimated_town_class=3  5.0
+         switch estimated_town_class=4  6.5
+         switch estimated_town_class=5  8.0
+         switch estimated_town_class=6  10.0 99 0
+assign trafficpenalty = 0
+
+# Base way costs for terrain, surface, and highway type
+assign base_way_cost
+    # Tracks are the core of this profile. MTB difficulty controls their cost.
+    # Lower values make technical trails cheaper per meter.
+    # SAC hiking grades add a smaller preference for suitable mountain paths.
+
+    switch highway=track
+        # MTB difficulty has a moderate effect on cost.
+        # Scale 0 stays cheapest; higher grades receive a limited penalty.
+        switch mtb:scale=0 1.2
+        switch mtb:scale=1 1.4
+        switch mtb:scale=2 1.8
+        switch mtb:scale=3 2.5
+        switch or mtb:scale=4 or mtb:scale=5 mtb:scale=6 3.5
+        # Give suitable SAC mountain paths a small preference.
+        switch sac_scale=hiking 4.0
+        switch sac_scale=mountain_hiking 4.0
+        switch sac_scale=demanding_mountain_hiking 2.0
+        switch sac_scale=alpine_hiking 1.0
+        # Prefer natural surfaces and penalize asphalt and concrete.
+        switch or surface=paved or surface=cobblestone or surface=concrete surface=asphalt 6.5
+        switch surface=gravel 3.5
+        switch or surface=pebblestone surface=fine_gravel 3.0
+        switch or surface=ground or surface=dirt surface=earth or surface=grass 0.2
+        switch surface=sand 0.1
+        # Prefer rough grade 4 and grade 5 tracks.
+        switch tracktype=grade1  6.0
+        switch tracktype=grade2  5.0
+        switch tracktype=grade3  2.0
+        switch tracktype=grade4  0.8
+        switch tracktype=grade5  0.6
+        2.5
+    # Avoid designated footways and cycleways.
+    switch highway=footway                       30
+    switch and highway=path foot=designated      50
+    switch highway=cycleway                      15
+    switch and highway=path bicycle=designated   25
+
+    # Paths: penalize bicycle restrictions and marked walking routes.
+    # Prefer soft and natural surfaces.
+    switch highway=path
+        switch bicycle=no 30
+        switch or route_foot_nwn=yes or route_foot_lwn=yes route_foot_rwn=yes 30
+        # Penalize hard path surfaces more strongly.
+        # Asphalt is expensive while natural surfaces stay cheap.
+        switch or surface=paved or surface=cobblestone or surface=concrete surface=asphalt 12
+        switch or surface=gravel or surface=pebblestone surface=fine_gravel 6.5
+        switch or surface=sand or surface=ground or surface=dirt or surface=earth surface=grass 1.2
+        0
+    # Penalize larger roads from motorways through tertiary roads.
+    # Keep unclassified, proposed, and abandoned roads moderately expensive.
+    switch or highway=motorway highway=motorway_link    20
+    switch or highway=trunk highway=trunk_link          14
+    switch or highway=primary highway=primary_link      10
+    switch or highway=secondary highway=secondary_link   8
+    switch or highway=tertiary highway=tertiary_link     6
+    switch highway=unclassified                           5
+
+    # Other road classes
+    switch or highway=proposed highway=abandoned         3
+
+    # Residential and service roads remain allowed but moderately expensive.
+    switch highway=residential                           6
+    switch highway=service                               8
+
+    # Avoid railway corridors and reject malformed railway/waterway ways.
+
+    switch railway=abandoned         30
+    switch  or not railway= not waterway=            100000
+
+    4
+
+# Additional costs controlled by prefer_remoteness
+# Profile-specific extra costs
+assign remote_extra_cost switch prefer_remoteness
+    switch highway=track
+        switch tracktype=grade3  0.5
+        switch tracktype=grade4  2.0
+        switch tracktype=grade5  3.0
+        0
+        switch highway=path      3.0
+    0
+    switch highway=path          6.0
+    0
+
+# Access penalties are active only when enforce_legality is 1.
+# Legal penalties if enforce_legality==1
+assign illegal switch enforce_legality
+    switch  or access=no or access=private or access=agricultural
+                or vehicle=no or vehicle=private or vehicle=agricultural or vehicle=destination
+                or motorcar=no or motorcar=private or motorcar=agricultural
+                or motorcycle=no or motorcycle=private or motorcycle=agricultural
+                or motor_vehicle=no or motor_vehicle=private or motor_vehicle=agricultural or motor_vehicle=destination
+                or horse=designated or bicycle=designated foot=designated
+              100
+    switch highway=footway                        10000
+    switch highway=bridleway                      10000
+    switch highway=cycleway                       10000
+    switch and highway=path
+        or motorcar=yes or motor_vehicle=yes motorcycle=yes 0
+    switch highway=path                           10000
+    0
+0
+
+# Combine base way, environmental, and optional access costs.
+# Combine all costs: base way scoring, environment preferences, and legal constraints
+assign costfactor
+    add town_penalty
+    add no_forest_penalty
+    add no_river_penalty
+    add noise_penalty
+    add base_way_cost
+    add remote_extra_cost
+    # enforce_legality=0 keeps access penalties at zero.
+0
+
+---context:node  # following code refers to node tags
+
+# One-time costs for barriers and other node obstacles
+assign initialcost
+switch enforce_legality
+    switch or barrier=gate or barrier=bollard or barrier=lift_gate barrier=cycle_barrier 10000 2000
+    0

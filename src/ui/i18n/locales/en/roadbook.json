@@ -1,0 +1,31 @@
+{
+  "title": "Roadbook",
+  "entries": {
+    "distance": "Distance",
+    "turn": "Turn",
+    "waypoint": "Waypoint"
+  },
+  "navigation": {
+    "nextTurn": "Next Turn",
+    "currentPosition": "Current Position",
+    "totalDistance": "Total Distance"
+  },
+  "states": {
+    "clickToCreate": "Create a new roadbook",
+    "clickToCreateSubtext": "Click here to start roadbook planning",
+    "calculating": "Calculating roadbook...",
+    "processed": "tulips processed"
+  },
+  "actions": {
+    "createRoadbook": "Create roadbook"
+  },
+  "pdf": {
+    "distance": "DISTANCE",
+    "waypoints": "WAYPOINTS",
+    "profile": "PROFILE",
+    "start": "START",
+    "finish": "FINISH",
+    "surface": "SURFACE",
+    "noSurfaceData": "No surface data"
+  }
+}

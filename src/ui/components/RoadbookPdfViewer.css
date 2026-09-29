@@ -1,0 +1,31 @@
+.roadbookPdfViewer {
+  background: var(--chakra-colors-white);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.roadbookPdfViewer::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.roadbookPdfViewer .react-pdf__Document {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  background: var(--chakra-colors-white);
+}
+
+.roadbookPdfViewer .react-pdf__Page {
+  background: var(--chakra-colors-white);
+  margin-bottom: 0 !important;
+  width: 100% !important;
+}
+
+.roadbookPdfViewer .react-pdf__Page__canvas {
+  display: block;
+  width: 100% !important;
+  height: auto !important;
+}

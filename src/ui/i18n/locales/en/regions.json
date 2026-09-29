@@ -1,0 +1,30 @@
+{
+  "phases": {
+    "download": "Downloading OSM (1/3)",
+    "prepare": "Processing OSM data (2/3)",
+    "routing": "Downloading routing data (3/3)",
+    "indexing": "Building indexes",
+    "compacting": "Compacting database",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "objectsProcessed": "{{count}} objects processed",
+  "objects": "{{count}} objects",
+  "addArea": "Add area",
+  "loadingCatalogue": "Loading areas …",
+  "searchPlaceholder": "Search area",
+  "freeStorage": "Free storage: {{free}}",
+  "appData": "App data: {{total}}",
+  "loadedSize": "loaded: {{size}}",
+  "downloadSize": "{{size}} download",
+  "tooBig": "does not fit",
+  "sizing": "Determining size …",
+  "update": "Update",
+  "load": "Load",
+  "remove": "Remove",
+  "removeConfirm": "Remove “{{name}}”?",
+  "pause": "Pause",
+  "resume": "Resume",
+  "cancel": "Cancel",
+  "importProfile": "Import routing profile"
+}

@@ -1,0 +1,30 @@
+{
+  "phases": {
+    "download": "OSM herunterladen (1/3)",
+    "prepare": "OSM-Daten aufbereiten (2/3)",
+    "routing": "Routingdaten (3/3)",
+    "indexing": "Indizes erstellen",
+    "compacting": "Datenbank verdichten",
+    "done": "Fertig",
+    "cancelled": "Abgebrochen"
+  },
+  "objectsProcessed": "{{count}} Objekte verarbeitet",
+  "objects": "{{count}} Objekte",
+  "addArea": "Gebiet hinzufügen",
+  "loadingCatalogue": "Gebiete werden geladen …",
+  "searchPlaceholder": "Gebiet suchen",
+  "freeStorage": "Freier Speicher: {{free}}",
+  "appData": "App-Daten: {{total}}",
+  "loadedSize": "geladen: {{size}}",
+  "downloadSize": "{{size}} Download",
+  "tooBig": "passt nicht",
+  "sizing": "Größe wird ermittelt …",
+  "update": "Aktualisieren",
+  "load": "Laden",
+  "remove": "Entfernen",
+  "removeConfirm": "„{{name}}“ entfernen?",
+  "pause": "Pausieren",
+  "resume": "Fortsetzen",
+  "cancel": "Abbrechen",
+  "importProfile": "Routingprofil importieren"
+}

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="46.302082mm"
+   height="46.302734mm"
+   viewBox="0 0 46.302082 46.302734"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <mask
+       maskUnits="userSpaceOnUse"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       id="mask4710">
+      <g
+         id="g4720">
+        <g
+           clip-path="url(#clipPath4708)"
+           id="g4718">
+          <g
+             id="g4716">
+            <g
+               transform="matrix(1,0,0,-1,0,623.622)"
+               id="g4714">
+              <path
+                 d="m 145.525,514.129 h 14.173 v 14.17407 h -14.173 z"
+                 style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                 id="path4712" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </mask>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4708">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4706" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4728">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4726" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-15.103827,-22.093088)">
+    <ellipse
+       style="fill:#ffcc00;fill-opacity:1;stroke:#000000;stroke-width:3.26728;stroke-dasharray:none"
+       id="path17628"
+       cx="38.254871"
+       cy="45.244129"
+       rx="21.517403"
+       ry="21.517401" />
+    <path
+       d="m 59.049044,40.184158 q 0,3.582902 -1.636422,6.425108 -1.636421,2.82498 -4.134117,4.340823 -1.877578,1.136882 -4.116892,1.584745 -2.239313,0.447863 -5.30545,0.447863 H 34.812781 V 27.333943 h 9.301764 q 3.135039,0 5.408804,0.533991 2.273764,0.516764 3.824058,1.481392 2.652725,1.619196 4.168568,4.375274 1.533069,2.738853 1.533069,6.459558 z m -6.838519,-0.05168 q 0,-2.532147 -0.930177,-4.323598 -0.912951,-1.808676 -2.911107,-2.82498 -1.016304,-0.499539 -2.084284,-0.671794 -1.050755,-0.189481 -3.186716,-0.189481 h -1.670872 v 16.054156 h 1.670872 q 2.359892,0 3.462323,-0.206706 1.102432,-0.223931 2.153187,-0.792372 1.808676,-1.03353 2.652725,-2.756079 0.844049,-1.739774 0.844049,-4.289146 z"
+       id="text18410"
+       style="font-weight:bold;font-size:35.2778px;font-family:Aerial;-inkscape-font-specification:'Aerial, Bold';font-variant-ligatures:no-common-ligatures;font-variant-position:super;font-variant-caps:small-caps;stroke-width:16.8489"
+       transform="scale(0.9028143,1.1076475)"
+       aria-label="D" />
+  </g>
+</svg>

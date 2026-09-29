@@ -1,0 +1,38 @@
+[package]
+name = "roadbooknavi"
+version = "1.38.3"
+edition = "2021"
+license = "GPL-3.0-only"
+repository = "https://github.com/pcace/RoadbookNavi"
+homepage = "https://github.com/pcace/RoadbookNavi"
+publish = false
+
+[lib]
+name = "roadbooknavi"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-geolocation = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.37", features = ["bundled", "hooks"] }
+libc = "0.2"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+osmpbfreader = "0.19"
+sha2 = "0.10"
+uuid = { version = "1", features = ["v4"] }
+tauri-plugin-brouter = { path = "../native/tauri-plugin-brouter" }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-core-location = { version = "0.3", features = ["CLLocationManager", "CLLocation"] }
+objc2-foundation = { version = "0.3", features = ["NSDate"] }
+
+[dev-dependencies]
+tempfile = "3"

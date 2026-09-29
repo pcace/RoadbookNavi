@@ -1,0 +1,340 @@
+name: Release Please (Dev)
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to rebuild after a failed native release job
+        required: false
+        type: string
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+      release_requested: ${{ steps.release.outputs.releases_created == 'true' || inputs.release_tag != '' }}
+      tag_name: ${{ steps.release.outputs.tag_name || inputs.release_tag }}
+    steps:
+      - name: Run Release Please
+        id: release
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          target-branch: dev
+
+  build-native-apps:
+    needs: release-please
+    runs-on: macos-14
+    if: needs.release-please.outputs.release_requested == 'true'
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    env:
+      BROUTER_SOURCE: ${{ github.workspace }}/../brouter
+      APPLE_SIGNING_IDENTITY: '-'
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      TAURI_ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      TAURI_ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      TAURI_ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          test -n "$RELEASE_TAG"
+          gh release view "$RELEASE_TAG" >/dev/null
+          echo "version=${RELEASE_TAG##*-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate Android signing secrets
+        run: |
+          missing=0
+          [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "Missing GitHub secret: ANDROID_KEYSTORE_BASE64"; missing=1; }
+          [ -n "$TAURI_ANDROID_KEYSTORE_PASSWORD" ] || { echo "Missing GitHub secret: ANDROID_KEYSTORE_PASSWORD"; missing=1; }
+          [ -n "$TAURI_ANDROID_KEY_ALIAS" ] || { echo "Missing GitHub secret: ANDROID_KEY_ALIAS"; missing=1; }
+          [ -n "$TAURI_ANDROID_KEY_PASSWORD" ] || { echo "Missing GitHub secret: ANDROID_KEY_PASSWORD"; missing=1; }
+          test "$missing" -eq 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+          log-accepted-android-sdk-licenses: false
+
+      - name: Install native toolchains
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;28.2.13676358"
+          rustup target add aarch64-apple-darwin aarch64-linux-android
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+
+      - name: Fetch BRouter sources
+        run: |
+          git clone --filter=blob:none https://github.com/abrensch/brouter.git "$BROUTER_SOURCE"
+          git -C "$BROUTER_SOURCE" checkout 77e363db6f4d0fff81374cbf63338b4583f97b43
+
+      - name: Install app dependencies
+        run: |
+          pnpm install --frozen-lockfile
+
+      - name: Import Android release key
+        run: |
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | openssl base64 -d -A -out "$RUNNER_TEMP/roadbooknavi-release.jks"
+          echo "TAURI_ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/roadbooknavi-release.jks" >> "$GITHUB_ENV"
+
+      - name: Build ad-hoc signed macOS app
+        run: pnpm desktop:build --bundles dmg --target aarch64-apple-darwin
+
+      - name: Build signed Android APK
+        run: pnpm android:build --apk --target aarch64
+
+      - name: Validate and stage downloads
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p release-downloads release-assets
+          DMG=$(find src-tauri/target -type f -name '*.dmg' -print -quit)
+          APK=$(find src-tauri/gen/android/app/build/outputs/apk -type f -name '*release*.apk' -print -quit)
+          test -n "$DMG" && test -n "$APK"
+          hdiutil verify "$DMG"
+          MOUNT_POINT=$(mktemp -d)
+          trap 'hdiutil detach "$MOUNT_POINT" >/dev/null 2>&1 || true; rmdir "$MOUNT_POINT" >/dev/null 2>&1 || true' EXIT
+          hdiutil attach "$DMG" -nobrowse -readonly -mountpoint "$MOUNT_POINT"
+          MAC_APP=$(find "$MOUNT_POINT" -maxdepth 1 -type d -name '*.app' -print -quit)
+          test -n "$MAC_APP"
+          codesign --verify --deep --strict --verbose=2 "$MAC_APP"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$MAC_APP/Contents/Info.plist")" = "de.roadbooknavi.client"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleName' "$MAC_APP/Contents/Info.plist")" = "RoadbookNavi"
+          hdiutil detach "$MOUNT_POINT"
+          rmdir "$MOUNT_POINT"
+          trap - EXIT
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "package: name='de.roadbooknavi.client'"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -F "application-label:'RoadbookNavi'"
+          cp "$DMG" release-downloads/RoadbookNavi-macOS.dmg
+          cp "$APK" release-downloads/RoadbookNavi-Android.apk
+          cp "$DMG" "release-assets/RoadbookNavi-macOS-${VERSION}-arm64.dmg"
+          cp "$APK" "release-assets/RoadbookNavi-Android-${VERSION}-arm64.apk"
+
+      - name: Upload macOS and Android workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-downloads-macos-android
+          path: release-downloads/
+          compression-level: 0
+          retention-days: 7
+
+      - name: Upload macOS and Android release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: gh release upload "$RELEASE_TAG" release-assets/* --clobber
+
+  build-windows-app:
+    needs: release-please
+    runs-on: windows-latest
+    if: needs.release-please.outputs.release_requested == 'true'
+    permissions:
+      contents: write
+    env:
+      BROUTER_SOURCE: ${{ runner.temp }}/brouter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        id: version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          if (-not $env:RELEASE_TAG) { throw 'Release tag is missing' }
+          gh release view $env:RELEASE_TAG | Out-Null
+          "version=$($env:RELEASE_TAG -replace '^.*-v', '')" >> $env:GITHUB_OUTPUT
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch BRouter sources
+        shell: pwsh
+        run: |
+          git clone --filter=blob:none https://github.com/abrensch/brouter.git $env:BROUTER_SOURCE
+          git -C $env:BROUTER_SOURCE checkout 77e363db6f4d0fff81374cbf63338b4583f97b43
+
+      - name: Install app dependencies
+        run: |
+          pnpm install --frozen-lockfile
+
+      - name: Build Windows installer
+        run: pnpm desktop:build --bundles nsis
+
+      - name: Validate and stage Windows download
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $installer = Get-ChildItem src-tauri/target/release/bundle/nsis -Filter '*.exe' | Select-Object -First 1
+          if (-not $installer) { throw 'No Windows installer was generated' }
+          New-Item -ItemType Directory -Force release-downloads, release-assets | Out-Null
+          Copy-Item $installer.FullName release-downloads/RoadbookNavi-Windows.exe
+          Copy-Item $installer.FullName "release-assets/RoadbookNavi-Windows-$env:VERSION-x64.exe"
+          if ((Get-Item release-downloads/RoadbookNavi-Windows.exe).Length -le 0) { throw 'Windows installer is empty' }
+
+      - name: Upload Windows workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-downloads-windows
+          path: release-downloads/
+          compression-level: 0
+          retention-days: 7
+
+      - name: Upload Windows release asset
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: gh release upload $env:RELEASE_TAG "release-assets/RoadbookNavi-Windows-$env:VERSION-x64.exe" --clobber
+
+  build-linux-app:
+    needs: release-please
+    runs-on: ubuntu-24.04
+    if: needs.release-please.outputs.release_requested == 'true'
+    permissions:
+      contents: write
+    env:
+      BROUTER_SOURCE: ${{ runner.temp }}/brouter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Resolve release version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          test -n "$RELEASE_TAG"
+          gh release view "$RELEASE_TAG" >/dev/null
+          echo "version=${RELEASE_TAG##*-v}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential curl wget file libxdo-dev libssl-dev \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev \
+            librsvg2-dev patchelf
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch BRouter sources
+        run: |
+          git clone --filter=blob:none https://github.com/abrensch/brouter.git "$BROUTER_SOURCE"
+          git -C "$BROUTER_SOURCE" checkout 77e363db6f4d0fff81374cbf63338b4583f97b43
+
+      - name: Install app dependencies
+        run: |
+          pnpm install --frozen-lockfile
+
+      - name: Build Linux packages
+        env:
+          APPIMAGE_EXTRACT_AND_RUN: '1'
+          LD_LIBRARY_PATH: ${{ github.workspace }}/native/brouter/resources/runtime/lib/server:${{ github.workspace }}/native/brouter/resources/runtime/lib
+        run: pnpm desktop:build --bundles appimage,deb
+
+      - name: Linux-Validate and stage downloads
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          APPIMAGE=$(find src-tauri/target/release/bundle/appimage -type f -name '*.AppImage' -print -quit)
+          DEB=$(find src-tauri/target/release/bundle/deb -type f -name '*.deb' -print -quit)
+          test -n "$APPIMAGE" && test -n "$DEB"
+          test -s "$APPIMAGE" && test -s "$DEB"
+          dpkg-deb --info "$DEB" >/dev/null
+          mkdir -p release-downloads release-assets
+          cp "$APPIMAGE" release-downloads/RoadbookNavi-Linux.AppImage
+          chmod +x release-downloads/RoadbookNavi-Linux.AppImage
+          cp "$DEB" release-downloads/RoadbookNavi-Linux.deb
+          cp "$APPIMAGE" "release-assets/RoadbookNavi-Linux-${VERSION}-x86_64.AppImage"
+          cp "$DEB" "release-assets/RoadbookNavi-Linux-${VERSION}-amd64.deb"
+
+      - name: Upload Linux workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-downloads-linux
+          path: release-downloads/
+          compression-level: 0
+          retention-days: 7
+
+      - name: Upload Linux release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: gh release upload "$RELEASE_TAG" release-assets/* --clobber

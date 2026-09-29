@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="46.302082mm"
+   height="46.302734mm"
+   viewBox="0 0 46.302082 46.302734"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <mask
+       maskUnits="userSpaceOnUse"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       id="mask4710">
+      <g
+         id="g4720">
+        <g
+           clip-path="url(#clipPath4708)"
+           id="g4718">
+          <g
+             id="g4716">
+            <g
+               transform="matrix(1,0,0,-1,0,623.622)"
+               id="g4714">
+              <path
+                 d="m 145.525,514.129 h 14.173 v 14.17407 h -14.173 z"
+                 style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                 id="path4712" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </mask>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4708">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4706" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4728">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4726" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-15.103827,-22.093088)">
+    <ellipse
+       style="fill:#f89520;fill-opacity:1;stroke:#000000;stroke-width:3.26728;stroke-dasharray:none"
+       id="path17628"
+       cx="38.254871"
+       cy="45.244129"
+       rx="21.517403"
+       ry="21.517401" />
+    <path
+       d="m 24.191962,36.718258 h 6.057351 q 2.048974,0 3.123846,0.313504 1.444359,0.42547 2.474445,1.511538 1.030085,1.086069 1.567521,2.664787 0.537436,1.567521 0.537436,3.874017 0,2.026581 -0.503846,3.493334 -0.615812,1.791453 -1.757863,2.899914 -0.862137,0.839744 -2.328889,1.31 -1.097265,0.347094 -2.933505,0.347094 h -6.236496 z m 3.314188,2.776752 v 10.871881 h 2.474445 q 1.388376,0 2.004188,-0.156753 0.806154,-0.201538 1.332393,-0.682991 0.537436,-0.481453 0.873334,-1.578718 0.335897,-1.108462 0.335897,-3.01188 0,-1.903419 -0.335897,-2.922308 Q 33.854612,40.995352 33.249997,40.424326 32.645381,39.8533 31.716065,39.651762 31.021877,39.49501 28.995296,39.49501 Z M 39.340937,53.132446 V 50.142959 L 47.962305,39.49501 H 40.31504 v -2.776752 h 12.013932 v 2.575213 l -8.990855,11.07342 h 9.337949 v 2.765555 z"
+       id="text18410"
+       style="font-weight:bold;font-size:22.9306px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Bold';font-variant-ligatures:no-common-ligatures;font-variant-position:super;font-variant-caps:small-caps;stroke-width:10.6486"
+       aria-label="DZ" />
+  </g>
+</svg>

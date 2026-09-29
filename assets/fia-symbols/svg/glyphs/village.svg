@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="46.302082mm"
+   height="46.302734mm"
+   viewBox="0 0 46.302082 46.302734"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <mask
+       maskUnits="userSpaceOnUse"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       id="mask4710">
+      <g
+         id="g4720">
+        <g
+           clip-path="url(#clipPath4708)"
+           id="g4718">
+          <g
+             id="g4716">
+            <g
+               transform="matrix(1,0,0,-1,0,623.622)"
+               id="g4714">
+              <path
+                 d="m 145.525,514.129 h 14.173 v 14.17407 h -14.173 z"
+                 style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                 id="path4712" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </mask>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4708">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4706" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4728">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4726" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-15.103827,-22.093088)">
+    <ellipse
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:3.26728;stroke-dasharray:none"
+       id="path17628"
+       cx="38.254871"
+       cy="45.244129"
+       rx="21.517403"
+       ry="21.517401" />
+    <path
+       d="M 35.774399,56.166267 27.650864,33.438972 h 4.97644 l 5.751587,16.820679 5.565552,-16.820679 h 4.86792 l -8.139038,22.727295 z"
+       id="text18410"
+       style="font-weight:bold;font-size:31.75px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Bold';font-variant-ligatures:no-common-ligatures;font-variant-position:super;font-variant-caps:small-caps;stroke-width:10.6486"
+       aria-label="V" />
+  </g>
+</svg>

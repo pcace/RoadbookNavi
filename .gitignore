@@ -1,0 +1,74 @@
+# Dependencies and build output
+node_modules/
+/dist/
+/dev-dist/
+/.vite/
+/src-tauri/target/
+/native/brouter/build/
+/native/tauri-plugin-brouter/android/build/
+/native/tauri-plugin-brouter/android/.tauri/
+
+# Generated Android project files
+/src-tauri/gen/android/.gradle/
+/src-tauri/gen/android/.kotlin/
+/src-tauri/gen/android/**/build/
+/src-tauri/gen/android/app/src/main/assets/
+/src-tauri/gen/android/app/src/main/jniLibs/
+/src-tauri/gen/android/.tauri/
+/src-tauri/gen/android/local.properties
+/src-tauri/gen/android/keystore.properties
+/src-tauri/gen/android/tauri.properties
+/src-tauri/gen/android/tauri.settings.gradle
+/src-tauri/gen/android/app/tauri.build.gradle.kts
+/src-tauri/gen/android/app/tauri.properties
+/src-tauri/gen/schemas/
+
+# Prepared routing engine files
+/native/brouter/resources/runtime/
+/native/brouter/resources/brouter.jar
+/native/brouter/vendor/
+/native/brouter/resources/profiles2/enduro*.brf
+/native/brouter/resources/profiles2/README.md
+
+# Local downloads, caches, and geographic data
+/.data/
+/dist-apk/
+/native/test-data/
+*.osm.pbf
+*.rd5
+*.df5
+*.mbtiles
+*.pmtiles
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.part
+coverage/
+.tmp/
+.pnpm-store/
+temp/
+tmp/
+output/
+
+# Signing material and local configuration
+.env
+.env.local
+.env.*.local
+.env.dev
+.env.staging
+.env.production
+*.jks
+*.keystore
+/keystore.properties
+/.release-secrets/
+/src/local-rn2-icons/
+
+# Editor, operating system, and logs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*-debug.log*
+pnpm-debug.log*

@@ -1,0 +1,71 @@
+{
+  "buttons": {
+    "settings": "Einstellungen",
+    "routePlanning": "Route planen",
+    "showOdometer": "Odometer anzeigen",
+    "hideOdometer": "Odometer verstecken",
+    "autoFollowActive": "Auto-Follow aktiv",
+    "autoFollowInactive": "Auto-Follow deaktiviert",
+    "debugModeActive": "Debug-Modus aktiv",
+    "debugModeInactive": "Debug-Modus deaktiviert",
+    "collapseHeader": "Header einklappen",
+    "expandHeader": "Header ausklappen",
+    "close": "Schließen",
+    "save": "Speichern",
+    "use": "Verwenden",
+    "clear": "Löschen",
+    "addCurrentPosition": "Aktuelle Position hinzufügen",
+    "help": "Hilfe"
+  },
+  "navigation": {
+    "roadbook": "Roadbook",
+    "routePlanning": "Routenplanung",
+    "routesList": "Routenliste",
+    "settings": "Einstellungen"
+  },
+  "common": {
+    "loading": "Lädt...",
+    "error": "Fehler",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "close": "Schließen",
+    "ok": "OK",
+    "name": "Name",
+    "profile": "Profil",
+    "distance": "Entfernung",
+    "points": "Punkte",
+    "delete": "Löschen"
+  },
+  "errors": {
+    "locationError": "Fehler beim Abrufen der aktuellen Position",
+    "routeLoadError": "Fehler beim Laden der Route",
+    "invalidRouteData": "Ungültiges Routendatenformat",
+    "noCachedRouteData": "Diese Route hat keine gecachten Daten. Bearbeiten Sie die Route, um sie neu zu generieren."
+  },
+  "confirmations": {
+    "deleteRoute": "Möchten Sie die Route \"{{name}}\" wirklich löschen?\\n\\nAlle gecachten Daten dieser Route werden ebenfalls gelöscht.",
+    "routeName": "Routenname:"
+  },
+  "help": {
+    "title": "Hilfe & Dokumentation",
+    "errorLoading": "Fehler beim Laden der Hilfeinhalte. Bitte versuchen Sie es erneut.",
+    "sections": {
+      "createRoadbook": {
+        "title": "Roadbook erstellen",
+        "description": "Erstellen Sie ein neues Roadbook, indem Sie Ihre Route planen. Verwenden Sie den Routenplanungsmodus, um Wegpunkte hinzuzufügen, Ihren Weg anzupassen und ein detailliertes Roadbook für Ihre Reise zu erstellen."
+      },
+      "changeLanguage": {
+        "title": "Sprache ändern",
+        "description": "Wechseln Sie zwischen den verfügbaren Sprachen im Einstellungsmenü. Die App unterstützt mehrere Sprachen, damit Sie bequem navigieren können."
+      },
+      "exportRoadbook": {
+        "title": "Roadbook exportieren",
+        "description": "Exportieren Sie Ihr Roadbook in verschiedenen Formaten. Sie können Ihr Roadbook herunterladen und ausdrucken oder mit anderen Reisenden teilen."
+      },
+      "deleteRoadbook": {
+        "title": "Roadbook löschen",
+        "description": "Entfernen Sie ein Roadbook, das Sie nicht mehr benötigen. Navigieren Sie zu Ihrer Routenliste, wählen Sie die Route aus, die Sie löschen möchten, und bestätigen Sie die Löschung."
+      }
+    }
+  }
+}

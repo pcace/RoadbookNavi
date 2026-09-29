@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="46.302082mm"
+   height="46.302734mm"
+   viewBox="0 0 46.302082 46.302734"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs2">
+    <mask
+       maskUnits="userSpaceOnUse"
+       x="0"
+       y="0"
+       width="1"
+       height="1"
+       id="mask4710">
+      <g
+         id="g4720">
+        <g
+           clip-path="url(#clipPath4708)"
+           id="g4718">
+          <g
+             id="g4716">
+            <g
+               transform="matrix(1,0,0,-1,0,623.622)"
+               id="g4714">
+              <path
+                 d="m 145.525,514.129 h 14.173 v 14.17407 h -14.173 z"
+                 style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none"
+                 id="path4712" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </mask>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4708">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4706" />
+    </clipPath>
+    <clipPath
+       clipPathUnits="userSpaceOnUse"
+       id="clipPath4728">
+      <path
+         d="M 6.441045,-1657.6683 H 455.41452 V 13308.114 H 6.441045 Z"
+         id="path4726" />
+    </clipPath>
+  </defs>
+  <g
+     id="layer1"
+     transform="translate(-15.103827,-22.093088)">
+    <ellipse
+       style="fill-opacity:1;stroke:#000000;stroke-width:3.26728;stroke-dasharray:none;fill:#fcee23"
+       id="path17628"
+       cx="38.254871"
+       cy="45.244129"
+       rx="21.517403"
+       ry="21.517401" />
+    <path
+       d="m 41.988927,47.103089 3.213419,1.018889 q -0.738974,2.687179 -2.463248,3.997179 -1.713077,1.298804 -4.35547,1.298804 -3.269402,0 -5.374359,-2.22812 -2.104958,-2.239316 -2.104958,-6.113334 0,-4.097948 2.116154,-6.359658 2.116154,-2.272906 5.564701,-2.272906 3.011881,0 4.892907,1.780257 1.119658,1.052478 1.679487,3.023077 l -3.280599,0.78376 q -0.291111,-1.27641 -1.220427,-2.015384 -0.91812,-0.738975 -2.239316,-0.738975 -1.825043,0 -2.967094,1.31 -1.130855,1.31 -1.130855,4.243505 0,3.112649 1.119658,4.433846 1.119658,1.321197 2.911111,1.321197 1.321197,0 2.272906,-0.839744 0.95171,-0.839744 1.365983,-2.642393 z"
+       id="text18410"
+       style="font-weight:bold;font-size:22.9306px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Bold';font-variant-ligatures:no-common-ligatures;font-variant-position:super;font-variant-caps:small-caps;stroke-width:10.6486"
+       aria-label="C" />
+  </g>
+</svg>
