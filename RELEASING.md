@@ -38,8 +38,9 @@ the resulting commit message. Keep it short, specific, and useful to app users.
 - `feat!:` or a `BREAKING CHANGE:` footer creates a major version.
 - `test:` and `chore:` remain out of the user-facing notes.
 
-The PR-title workflow rejects titles that do not follow this structure. Review
-the title before merging because it becomes the changelog and GitHub release
+The PR-title workflow comments on and closes pull requests that do not follow
+this structure. They can be reopened after the title is corrected. Review the
+title before merging because it becomes the changelog and GitHub release
 description.
 
 ## Promoting a beta
