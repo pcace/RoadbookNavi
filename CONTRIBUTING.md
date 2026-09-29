@@ -29,7 +29,9 @@ default. Set `BROUTER_SOURCE` when it lives elsewhere.
    English. User-visible text belongs in both locale files.
 4. Use a Conventional Commit title for the pull request. `feat:` adds a feature,
    `fix:` fixes user-visible behavior, and `perf:` improves performance. Write the
-   rest of the title so it can appear unchanged in the release notes.
+   rest of the title so it can appear unchanged in the release notes. Pull
+   requests with an invalid title are closed automatically and can be reopened
+   after the title is corrected.
 5. Do not commit OSM extracts, RD5 segments, build output, signing material,
    generated runtimes, or local configuration.
 6. Run the relevant focused tests while working, then run the full checks below.

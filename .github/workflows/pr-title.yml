@@ -1,7 +1,7 @@
 name: Pull request title
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
       - main
       - dev
@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   conventional-title:
@@ -21,15 +22,25 @@ jobs:
     steps:
       - name: Validate title
         env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           pattern='^(feat|fix|perf|refactor|docs|build|ci|test|chore|revert)(\([a-z0-9][a-z0-9._/-]*\))?(!)?: .+$'
 
           if [[ ! "$PR_TITLE" =~ $pattern ]]; then
-            echo "Pull request title must use Conventional Commit syntax."
-            echo "Examples:"
-            echo "  feat: add route elevation preview"
-            echo "  fix(map): retain the selected map style"
-            echo "  perf!: replace the roadbook renderer"
+            message=$(cat <<'EOF'
+          This pull request was closed because its title does not use Conventional Commit syntax.
+
+          Please update the title and reopen the pull request. Examples:
+
+          - `feat: add route elevation preview`
+          - `fix(map): retain the selected map style`
+          - `perf!: replace the roadbook renderer`
+          EOF
+            )
+
+            gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --body "$message"
+            gh pr close "$PR_NUMBER" --repo "$GITHUB_REPOSITORY"
             exit 1
           fi
