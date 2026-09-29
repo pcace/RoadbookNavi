@@ -2,12 +2,12 @@
 
 ### Bug fixes
 
-* use package manager version in workflows ([b209774](https://github.com/pcace/RoadbookNavi/commit/b2097741e1c7ba2f817cd2823e44d966804c0f56))
+- use package manager version in workflows ([b209774](https://github.com/pcace/RoadbookNavi/commit/b2097741e1c7ba2f817cd2823e44d966804c0f56))
 
 ### Build and dependencies
 
-* configure stable and beta releases ([499a7ad](https://github.com/pcace/RoadbookNavi/commit/499a7ad00abd55867a409cc983a728f7e4625a10))
-* use compatible changelog preset ([bfdfbc6](https://github.com/pcace/RoadbookNavi/commit/bfdfbc6a9fc9bc7880a429858817ba3c5b1eac19))
+- configure stable and beta releases ([499a7ad](https://github.com/pcace/RoadbookNavi/commit/499a7ad00abd55867a409cc983a728f7e4625a10))
+- use compatible changelog preset ([bfdfbc6](https://github.com/pcace/RoadbookNavi/commit/bfdfbc6a9fc9bc7880a429858817ba3c5b1eac19))
 
 # Changelog
 
