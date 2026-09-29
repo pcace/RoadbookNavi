@@ -182,6 +182,9 @@ jobs:
           codesign --verify --deep --strict --verbose=2 "$MAC_APP"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$MAC_APP/Contents/Info.plist")" = "de.roadbooknavi.client"
           test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleName' "$MAC_APP/Contents/Info.plist")" = "RoadbookNavi"
+          test -n "$(/usr/libexec/PlistBuddy -c 'Print :NSLocationWhenInUseUsageDescription' "$MAC_APP/Contents/Info.plist")"
+          codesign -d --entitlements "$RUNNER_TEMP/roadbooknavi-entitlements.plist" --xml "$MAC_APP"
+          test "$(/usr/libexec/PlistBuddy -c 'Print :com.apple.security.personal-information.location' "$RUNNER_TEMP/roadbooknavi-entitlements.plist")" = "true"
           hdiutil detach "$MOUNT_POINT"
           rmdir "$MOUNT_POINT"
           trap - EXIT
