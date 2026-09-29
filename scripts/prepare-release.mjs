@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { format } from 'prettier';
 
 const [version, tag] = process.argv.slice(2);
 
@@ -45,6 +46,11 @@ if (updatedLock === cargoLock) {
 }
 
 await writeFile(cargoLockPath, updatedLock);
+
+const changelogPath = 'CHANGELOG.md';
+const changelog = await readFile(changelogPath, 'utf8');
+await writeFile(changelogPath, await format(changelog, { parser: 'markdown' }));
+
 await writeFile(
   '.semantic-release-output.json',
   `${JSON.stringify({ version, tag })}\n`
