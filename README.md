@@ -45,7 +45,7 @@ for component boundaries and data flows.
 
 ## Developer quick start
 
-Requirements: Node.js 20+, pnpm 10+, Rust, and JDK 17. Android builds also need
+Requirements: Node.js 24.10+, pnpm 10+, Rust, and JDK 17. Android builds also need
 the Android SDK/NDK and the `aarch64-linux-android` Rust target.
 
 ```bash
@@ -68,7 +68,8 @@ Build native packages with `pnpm desktop:build`, `pnpm android:build`, or
 sibling BRouter checkout by default; set `BROUTER_SOURCE=/path/to/brouter` to use
 another checkout.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a change. Stable and
+beta versioning is documented in [RELEASING.md](RELEASING.md).
 
 ## License
 

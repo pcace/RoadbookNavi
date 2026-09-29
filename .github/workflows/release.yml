@@ -1,8 +1,9 @@
-name: Release Please (Dev)
+name: Release RoadbookNavi
 
 on:
   push:
     branches:
+      - main
       - dev
   workflow_dispatch:
     inputs:
@@ -11,31 +12,74 @@ on:
         required: false
         type: string
 
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
-  release-please:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
+  create-release:
+    needs: verify
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
       pull-requests: write
     outputs:
-      releases_created: ${{ steps.release.outputs.releases_created }}
-      release_requested: ${{ steps.release.outputs.releases_created == 'true' || inputs.release_tag != '' }}
-      tag_name: ${{ steps.release.outputs.tag_name || inputs.release_tag }}
+      release_requested: ${{ steps.metadata.outputs.release_requested }}
+      tag_name: ${{ steps.metadata.outputs.tag_name }}
     steps:
-      - name: Run Release Please
-        id: release
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
-        uses: googleapis/release-please-action@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-          target-branch: dev
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        if: inputs.release_tag == ''
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        if: inputs.release_tag == ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install release dependencies
+        if: inputs.release_tag == ''
+        run: pnpm install --frozen-lockfile
+
+      - name: Create release
+        if: inputs.release_tag == ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: pnpm exec semantic-release
+
+      - name: Resolve release metadata
+        id: metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_TAG: ${{ inputs.release_tag }}
+        run: |
+          if [ -n "$REQUESTED_TAG" ]; then
+            gh release view "$REQUESTED_TAG" >/dev/null
+            echo "release_requested=true" >> "$GITHUB_OUTPUT"
+            echo "tag_name=$REQUESTED_TAG" >> "$GITHUB_OUTPUT"
+          elif [ -f .semantic-release-output.json ]; then
+            echo "release_requested=true" >> "$GITHUB_OUTPUT"
+            echo "tag_name=$(jq -r .tag .semantic-release-output.json)" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_requested=false" >> "$GITHUB_OUTPUT"
+            echo "tag_name=" >> "$GITHUB_OUTPUT"
+          fi
 
   build-native-apps:
-    needs: release-please
+    needs: create-release
     runs-on: macos-14
-    if: needs.release-please.outputs.release_requested == 'true'
+    if: needs.create-release.outputs.release_requested == 'true'
     permissions:
       contents: write
     outputs:
@@ -50,16 +94,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag_name }}
 
       - name: Resolve release version
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
         run: |
           test -n "$RELEASE_TAG"
           gh release view "$RELEASE_TAG" >/dev/null
-          echo "version=${RELEASE_TAG##*-v}" >> "$GITHUB_OUTPUT"
+          echo "version=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Validate Android signing secrets
         run: |
@@ -76,7 +122,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
@@ -158,13 +204,13 @@ jobs:
       - name: Upload macOS and Android release assets
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
         run: gh release upload "$RELEASE_TAG" release-assets/* --clobber
 
   build-windows-app:
-    needs: release-please
+    needs: create-release
     runs-on: windows-latest
-    if: needs.release-please.outputs.release_requested == 'true'
+    if: needs.create-release.outputs.release_requested == 'true'
     permissions:
       contents: write
     env:
@@ -172,17 +218,19 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag_name }}
 
       - name: Resolve release version
         id: version
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
         run: |
           if (-not $env:RELEASE_TAG) { throw 'Release tag is missing' }
           gh release view $env:RELEASE_TAG | Out-Null
-          "version=$($env:RELEASE_TAG -replace '^.*-v', '')" >> $env:GITHUB_OUTPUT
+          "version=$($env:RELEASE_TAG -replace '^v', '')" >> $env:GITHUB_OUTPUT
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -190,7 +238,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
@@ -237,14 +285,14 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
           VERSION: ${{ steps.version.outputs.version }}
         run: gh release upload $env:RELEASE_TAG "release-assets/RoadbookNavi-Windows-$env:VERSION-x64.exe" --clobber
 
   build-linux-app:
-    needs: release-please
+    needs: create-release
     runs-on: ubuntu-24.04
-    if: needs.release-please.outputs.release_requested == 'true'
+    if: needs.create-release.outputs.release_requested == 'true'
     permissions:
       contents: write
     env:
@@ -252,16 +300,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.create-release.outputs.tag_name }}
 
       - name: Resolve release version
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
         run: |
           test -n "$RELEASE_TAG"
           gh release view "$RELEASE_TAG" >/dev/null
-          echo "version=${RELEASE_TAG##*-v}" >> "$GITHUB_OUTPUT"
+          echo "version=${RELEASE_TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Install Linux system dependencies
         run: |
@@ -277,7 +327,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
@@ -330,5 +380,5 @@ jobs:
       - name: Upload Linux release assets
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+          RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
         run: gh release upload "$RELEASE_TAG" release-assets/* --clobber

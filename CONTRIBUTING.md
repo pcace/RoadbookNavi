@@ -11,7 +11,7 @@ artwork, or data from sources whose terms are incompatible with GPL-3.0.
 
 ## Setup
 
-Install Node.js 20+, pnpm 10+, Rust, and JDK 17, then run:
+Install Node.js 24.10+, pnpm 10+, Rust, and JDK 17, then run:
 
 ```bash
 pnpm install
@@ -27,10 +27,13 @@ default. Set `BROUTER_SOURCE` when it lives elsewhere.
 2. Keep platform-independent logic in `src/core`.
 3. Keep comments, identifiers, commit messages, and developer documentation in
    English. User-visible text belongs in both locale files.
-4. Do not commit OSM extracts, RD5 segments, build output, signing material,
+4. Use a Conventional Commit title for the pull request. `feat:` adds a feature,
+   `fix:` fixes user-visible behavior, and `perf:` improves performance. Write the
+   rest of the title so it can appear unchanged in the release notes.
+5. Do not commit OSM extracts, RD5 segments, build output, signing material,
    generated runtimes, or local configuration.
-5. Run the relevant focused tests while working, then run the full checks below.
-6. Describe behavior changes, migration effects, and manual platform testing in
+6. Run the relevant focused tests while working, then run the full checks below.
+7. Describe behavior changes, migration effects, and manual platform testing in
    the pull request.
 
 ```bash
@@ -48,3 +51,5 @@ information in `THIRD_PARTY_NOTICES.md` or next to the asset. New project-owned
 code should use `SPDX-License-Identifier: GPL-3.0-only` when a source header is
 appropriate; generated files and third-party material retain their original
 notices.
+
+See [RELEASING.md](RELEASING.md) for the stable and beta release process.
