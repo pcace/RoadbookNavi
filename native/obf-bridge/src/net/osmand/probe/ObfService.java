@@ -78,10 +78,57 @@ public class ObfService {
         return switch (req.get("op").getAsString()) {
             case "ping" -> "{\"ok\":true}";
             case "open" -> open(req);
+            case "bounds" -> bounds();
             case "query" -> query(req);
             case "search" -> search(req);
             default -> error("Unbekannter Vorgang");
         };
+    }
+
+    private synchronized String bounds() {
+        StringBuilder sb = new StringBuilder("{\"bounds\":[");
+        boolean first = true;
+        for (String path : opened) {
+            BinaryMapIndexReader reader = readers.get(path);
+            if (reader == null) {
+                continue;
+            }
+            int w = Integer.MAX_VALUE, s = Integer.MAX_VALUE;
+            int e = Integer.MIN_VALUE, n = Integer.MIN_VALUE;
+            boolean any = false;
+            for (BinaryIndexPart part : reader.getIndexes()) {
+                if (!(part instanceof BinaryMapIndexReader.MapIndex)) {
+                    continue;
+                }
+                BinaryMapIndexReader.MapIndex mi = (BinaryMapIndexReader.MapIndex) part;
+                for (BinaryMapIndexReader.MapRoot r : mi.getRoots()) {
+                    any = true;
+                    w = Math.min(w, r.getLeft());
+                    e = Math.max(e, r.getRight());
+                    n = Math.min(n, r.getTop()); // y grows southward
+                    s = Math.max(s, r.getBottom());
+                }
+            }
+            if (!first) {
+                sb.append(',');
+            }
+            first = false;
+            if (!any) {
+                sb.append("null");
+                continue;
+            }
+            sb.append('[')
+                    .append(String.format(Locale.ROOT, "%.6f", MapUtils.get31LongitudeX(w)))
+                    .append(',')
+                    .append(String.format(Locale.ROOT, "%.6f", MapUtils.get31LatitudeY(s)))
+                    .append(',')
+                    .append(String.format(Locale.ROOT, "%.6f", MapUtils.get31LongitudeX(e)))
+                    .append(',')
+                    .append(String.format(Locale.ROOT, "%.6f", MapUtils.get31LatitudeY(n)))
+                    .append(']');
+        }
+        sb.append("]}");
+        return sb.toString();
     }
 
     private String open(JsonObject req) throws IOException {
