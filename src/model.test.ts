@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { newProject, validateProject, validPoint } from './model';
-import { requireCoverage, serializePolygons } from './geometry';
+import { serializePolygons } from './geometry';
 import { parseRoute } from './core/routeParser';
 import { detectTurns } from './core/turnDetection';
 import { getMapStyleSpec } from './ui/components/RouteBuilder/mapStyles';
@@ -34,11 +34,6 @@ describe('offline projects', () => {
   });
 });
 describe('coverage and routing', () => {
-  it('does not silently plan with missing regional data', () => {
-    expect(() => requireCoverage([{ lat: 47, lon: 9 }], [])).toThrow(
-      /geladenen/
-    );
-  });
   it('serializes separate no-go polygons for BRouter', () => {
     expect(
       serializePolygons({
@@ -84,14 +79,10 @@ describe('coverage and routing', () => {
   });
 });
 describe('map sources', () => {
-  it('keeps online vector presets separate from the local offline source', () => {
+  it('uses OpenFreeMap without the volunteer OSM raster servers', () => {
     const style = JSON.stringify(getMapStyleSpec());
     expect(style).toContain('https://tiles.openfreemap.org/planet');
     expect(style).not.toContain('local-osm');
     expect(style).not.toContain('tile.openstreetmap.org');
-    const offline = getMapStyleSpec('osm_offline');
-    expect(Object.keys(offline.sources)).toEqual(['local-osm']);
-    expect(offline.layers.some(l => l.type === 'symbol')).toBe(true);
-    expect(offline.glyphs).toBe('/map-fonts/{fontstack}/{range}.pbf');
   });
 });

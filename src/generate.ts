@@ -1,18 +1,17 @@
-import type { Project, Region, Entry } from './model';
+import type { Project, Entry } from './model';
 import type { BRouterGeoJSON, Turn } from './core/types';
 import { osm, routing } from './services';
-import { detailBounds, requireCoverage, covered } from './geometry';
+import { detailBounds } from './geometry';
 import { retainedRn2Entries } from './rn2-edit';
+import { prefetchOpenFreeMap } from './openFreeMap';
 
 export async function generate(
   project: Project,
-  regions: Region[],
   progress: (text: string, progress?: number, total?: number) => void,
   signal: AbortSignal
 ): Promise<Project> {
   if (project.waypoints.length < 2)
     throw new Error('Mindestens zwei Wegpunkte setzen.');
-  requireCoverage(project.waypoints, regions);
   const check = () => {
     if (signal.aborted) throw new Error('Abgebrochen');
   };
@@ -24,10 +23,6 @@ export async function generate(
     : await routing.route(project.waypoints, project.profile, '');
   const coords = track.features[0]?.geometry.coordinates;
   if (!coords?.length) throw new Error('BRouter hat keine Route geliefert.');
-  requireCoverage(
-    coords.map(c => ({ lon: c[0], lat: c[1] })),
-    regions
-  );
   check();
   const worker = new Worker(new URL('./roadbook.worker.ts', import.meta.url), {
     type: 'module',
@@ -68,6 +63,22 @@ export async function generate(
     });
     const preserved = retainedRn2Entries(project, track);
     const entries: Entry[] = [...preserved];
+    const pendingTurns = turns.filter(
+      turn =>
+        !preserved.some(
+          entry => Math.abs(entry.distance - turn.distanceFromStart) < 10
+        )
+    );
+    await prefetchOpenFreeMap(
+      pendingTurns.map(turn =>
+        detailBounds({
+          lat: turn.points[0].latitude,
+          lon: turn.points[0].longitude,
+        })
+      ),
+      (current, total) => progress('Kartendaten laden …', current, total),
+      signal
+    );
     for (let i = 0; i < turns.length; i++) {
       check();
       progress(
@@ -82,18 +93,6 @@ export async function generate(
       )
         continue;
       const bounds = detailBounds(p);
-      // Require a margin around a turn, not merely its center inside a package.
-      if (
-        ![
-          [bounds[0], bounds[1]],
-          [bounds[0], bounds[3]],
-          [bounds[2], bounds[1]],
-          [bounds[2], bounds[3]],
-        ].every(c => covered({ lon: c[0], lat: c[1] }, regions))
-      )
-        throw new Error(
-          'Eine Kreuzung liegt am Gebietsrand. Für vollständige Zeichnungen das Nachbargebiet laden.'
-        );
       const data = await osm.query(bounds, 'detail');
       check();
       const drawing = await ask<{
@@ -115,7 +114,6 @@ export async function generate(
       entries,
       revision: project.revision + 1,
       updatedAt: new Date().toISOString(),
-      regionVersions: Object.fromEntries(regions.map(r => [r.id, r.version])),
     };
   } finally {
     worker.terminate();

@@ -3,9 +3,8 @@ import type {
   ProjectRepository,
   RoutingEngine,
   OsmFeatureProvider,
-  Geocoder,
-  Region,
 } from './model';
+import { queryOpenFreeMap } from './openFreeMap';
 export const repository: ProjectRepository = {
   list: () => invoke('list_projects'),
   save: project => invoke('save_project', { project }),
@@ -20,12 +19,12 @@ export const routing: RoutingEngine = {
     }),
 };
 export const osm: OsmFeatureProvider = {
-  query: (bbox, purpose) => invoke('query_features', { bbox, purpose }),
+  query: bbox => queryOpenFreeMap(bbox),
 };
-export const geocoder: Geocoder = {
-  search: query => invoke('search_places', { query }),
-};
-export const loadLibrary = () =>
-  invoke<{ regions: Region[]; profiles: string[] }>('library');
+export const loadLibrary = () => invoke<{ profiles: string[] }>('library');
 export const deviceStorage = () =>
   invoke<{ available: number; total: number }>('storage_usage');
+export const geographicCacheUsage = () =>
+  invoke<{ mapTiles: number; routing: number }>('geographic_cache_usage');
+export const clearGeographicCache = (kind: 'mapTiles' | 'routing') =>
+  invoke<void>('clear_geographic_cache', { kind });

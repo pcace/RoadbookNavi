@@ -7,8 +7,8 @@ import { offlineCache } from './offlineCache';
 
 export async function completeAppReset(): Promise<void> {
   try {
-    // Keep saved projects and downloaded map regions. Only derived roadbook
-    // files and UI preferences are reset.
+    // Keep saved projects and native routing/map caches. Only derived roadbook
+    // previews and UI preferences are reset.
     await offlineCache.clearAllCache();
     const language = localStorage.getItem('i18nextLng');
     localStorage.clear();

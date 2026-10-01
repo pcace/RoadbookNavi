@@ -1,10 +1,13 @@
 # Hilfe & Dokumentation
 
-## Offline arbeiten
+## Lokale Daten
 
-Lade unter **Einstellungen → Gebiete** die Regionen deiner Strecke vollständig herunter. Danach werden Routing, Kreuzungszeichnungen und PDFs auf dem Gerät berechnet. Die grünen Umrisse in der Planung zeigen die geladenen Regionen. Das Rechteck eines Länderextrakts kann Flächen außerhalb des eigentlichen Datengebiets enthalten; für Strecken am Rand gegebenenfalls das Nachbargebiet laden.
-
-OpenFreeMap-Kartenstile benötigen Internet. **Offline · Gebietsdaten** zeigt die heruntergeladenen OSM-Daten. Die optionale Online-Ortssuche wird in den Einstellungen eingerichtet.
+Beim Berechnen einer Route lädt RoadbookNavi fehlende BRouter-Routingsegmente und
+die OpenFreeMap-Kacheln für die Kreuzungszeichnungen automatisch. Die Daten
+werden auf dem Gerät gespeichert und für weitere Roadbooks wiederverwendet.
+Gespeicherte Roadbooks und bereits geladene Routendaten funktionieren ohne
+Verbindung. Für neue Strecken in einem noch nicht verwendeten Gebiet sowie für
+die Online-Karte wird eine Verbindung benötigt.
 
 ## Roadbooks planen
 
@@ -13,20 +16,25 @@ Wegpunkte auf der Karte setzen, verschieben oder löschen. Das Routingprofil bes
 Die folgenden Bedienvideos stammen aus der Web-Version; einzelne Menüs und Kartenstile unterscheiden sich in der App.
 
 ### Routingprofile
+
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/routeprofiles.mp4" type="video/mp4"></video>
 
 ### Wegpunkte bearbeiten
+
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/movecreatedelete.mp4" type="video/mp4"></video>
 
 ### Adresssuche
-Suche mit Enter oder „Suchen“ ausführen. Ohne Onlinedienst stehen Orte aus geladenen Gebieten zur Verfügung.
+
+Suche mit Enter oder „Suchen“ ausführen. Ohne Onlinedienst ist die Adresssuche nicht verfügbar; Wegpunkte können weiterhin direkt auf der Karte gesetzt werden.
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/adresssearch.mp4" type="video/mp4"></video>
 
 ### Oberflächen
+
 Die farbigen Streckenabschnitte verwenden BRouter-/OSM-Tags. Fehlt `surface`, werden – wie in der Web-Version – Wegklasse und `tracktype` als Näherung genutzt. „Unbekannt“ ist keine Offroad-Zusage.
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/analysis.mp4" type="video/mp4"></video>
 
 ### Vorhandene Roadbooks
+
 In der Planung ein gespeichertes Roadbook auswählen und bearbeiten. In der Liste oben nach Namen filtern und nach Datum, Name oder Länge sortieren. Das Datum ist die letzte Änderung; ohne bekannte Länge erscheint die Route am Ende der Längensortierung.
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/loadRoadbook.mp4" type="video/mp4"></video>
 

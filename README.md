@@ -7,14 +7,16 @@ required.
 
 ## What it does
 
-- downloads regional OpenStreetMap data for local maps and place lookup
+- caches OpenFreeMap vector tiles needed for roadbook drawings
+- downloads BRouter routing segments automatically when a route needs them
 - calculates routes on the device with BRouter and custom routing profiles
 - creates, edits, renders, and navigates digital roadbooks
 - imports and exports Rally Navigator 2 (`.rn2`) files
 - exports GPX, GeoJSON, A5 PDF, and roll PDF files
 
-Network access is used only to download geographic data or to access an optional
-online map or geocoding provider.
+Network access is used only to download routing and map data or to access the
+optional Nominatim geocoding provider. Previously cached routes and roadbooks
+remain available without a connection.
 
 ## Architecture
 
@@ -29,16 +31,17 @@ Documentation/                File-format and asset documentation
 docs/                         Static GitHub Pages website
 ```
 
-The React application calls a small set of typed local services. Tauri commands
-store projects and imported OSM regions in SQLite, run BRouter locally, and expose
-native file, location, and download functions. See [ARCHITECTURE.md](ARCHITECTURE.md)
-for component boundaries and data flows.
+The React application calls a small set of typed local services. Tauri stores
+projects in SQLite, runs BRouter locally, and maintains independent RD5 and MVT
+caches. See [ARCHITECTURE.md](ARCHITECTURE.md) for component boundaries and data
+flows.
 
 ## Tech stack
 
 - React 19, TypeScript, Vite, Chakra UI, Zustand
 - Tauri 2 and Rust
-- SQLite for local projects and regional OSM indexes
+- SQLite for local projects and geocoding responses
+- OpenFreeMap/OpenMapTiles MVT data for roadbook backgrounds
 - BRouter for local routing on desktop and Android
 - MapLibre GL for map rendering
 - Vitest for TypeScript tests and Cargo test for native tests

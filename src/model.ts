@@ -1,27 +1,7 @@
-import type {
-  Feature,
-  FeatureCollection,
-  Polygon,
-  MultiPolygon,
-} from 'geojson';
+import type { FeatureCollection } from 'geojson';
 import type { BRouterGeoJSON, Turn } from './core/types';
 export type Bbox = [number, number, number, number];
 export type Waypoint = { lat: number; lon: number };
-export type Region = {
-  id: string;
-  name: string;
-  bbox: Bbox;
-  geometry?: Polygon | MultiPolygon;
-  version: string;
-  downloadedAt: number;
-  stats?: { features: number; incomplete: number };
-  segments: string[];
-  size?: number;
-};
-export type RegionOffer = Pick<Region, 'id' | 'name' | 'version' | 'size'> & {
-  url: string;
-  date?: string;
-};
 export type Entry = {
   turn: Turn;
   distance: number;
@@ -43,7 +23,6 @@ export type Project = {
   profile: string;
   track: BRouterGeoJSON | null;
   entries: Entry[];
-  regionVersions: Record<string, string>;
   rn2Original?: import('./core/rn2/document').Rn2Document;
   rn2Source?: import('./core/rn2/document').Rn2Document;
 };
@@ -65,9 +44,6 @@ export interface OsmFeatureProvider {
     purpose: 'detail' | 'map' | 'map-overview'
   ): Promise<FeatureCollection>;
 }
-export interface Geocoder {
-  search(query: string): Promise<Feature[]>;
-}
 export const newProject = (profile = 'trekking'): Project => ({
   schemaVersion: 1,
   id: crypto.randomUUID(),
@@ -78,7 +54,6 @@ export const newProject = (profile = 'trekking'): Project => ({
   profile,
   track: null,
   entries: [],
-  regionVersions: {},
 });
 
 export function validPoint(p: unknown): p is Waypoint {
@@ -142,7 +117,6 @@ export function validateProject(raw: unknown): Project {
   return {
     ...p,
     revision: Number.isInteger(p.revision) ? p.revision : 0,
-    regionVersions: p.regionVersions || {},
     entries: p.entries.map(e => ({
       ...e,
       note: typeof e.note === 'string' ? e.note : '',

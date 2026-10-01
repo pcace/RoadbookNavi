@@ -2,7 +2,7 @@ import { Box, Button, HStack } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import { useColorModeValue } from '../ui/color-mode';
 
-type SettingsTab = 'interface' | 'app' | 'about' | 'regions';
+type SettingsTab = 'interface' | 'app' | 'about';
 
 interface SettingsNavigationProps {
   activeTab: string;
@@ -19,10 +19,6 @@ export const SettingsNavigation = ({
   const tabs = [
     { id: 'interface' as const, label: t('settings:tabs.interface') },
     { id: 'app' as const, label: t('settings:tabs.app') },
-    {
-      id: 'regions' as const,
-      label: t('settings:tabs.regions', { defaultValue: 'Gebiete' }),
-    },
     { id: 'about' as const, label: t('settings:tabs.about') },
   ];
 

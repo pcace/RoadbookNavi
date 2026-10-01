@@ -1,5 +1,4 @@
 import { routeSurfacePreview } from './utils/routeSurfaces';
-import { useNativeMapSetup } from '../../config/runtime';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Map, AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
@@ -87,7 +86,6 @@ const RouteMap: React.FC = () => {
     setMapStyleState(style);
     void settingsStore.updateAppSettings({ defaultMapStyle: style });
   };
-  const nativeMapSetup = useNativeMapSetup();
   const [mapLoaded, setMapLoaded] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
@@ -186,17 +184,20 @@ const RouteMap: React.FC = () => {
 
     const registerPattern = () => {};
 
-    const cleanupNativeMap = nativeMapSetup?.(map);
+    map.setPitch(
+      (map.getStyle().metadata as Record<string, unknown>)?.['roadbooknavi:3d']
+        ? 60
+        : 0
+    );
     registerPattern();
     map.on('load', registerPattern);
     map.on('styledata', registerPattern);
 
     return () => {
-      cleanupNativeMap?.();
       map.off('load', registerPattern);
       map.off('styledata', registerPattern);
     };
-  }, [mapRef, mapStyleSpec, nativeMapSetup, mapLoaded]);
+  }, [mapRef, mapStyleSpec, mapLoaded]);
 
   const zoomToCurrentLocation = async () => {
     setIsLoadingLocation(true);
