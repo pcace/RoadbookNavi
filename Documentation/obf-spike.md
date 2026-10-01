@@ -53,6 +53,31 @@ Address search "Bahnhof" → structured street hits with city + coordinates.
 - Version pinning: OBF v2 + reader from OsmAnd master work today; pin the jars
   at integration time.
 
+## Licensing (checked 2026-10-01)
+
+- **Data (map OBF files)**: OBFs are a database derived from OpenStreetMap
+  data; redistribution is governed by the **ODbL** (share-alike + attribution
+  "© OpenStreetMap contributors") — the app already ships that attribution and
+  is GPL-3.0-only, so nothing to change. OsmAnd adds no restrictive license on
+  the files themselves (served freely, no auth, no click-through; no ToS page
+  exists for the download server). We only consume `type=map` files — other
+  OBF kinds (DEM/hillshade/depth, Wikipedia) carry separate, partly restrictive
+  attributions (GEBCO/NOAA/JAXA, CC-BY-SA) and stay out.
+- **Code (osmand-java jars in the bundle)**: GPLv3 (verified) — compatible with
+  this repo's GPL-3.0-only. License notices ship with the jars (SOURCE.json
+  provenance pattern, same as BRouter). We do not copy OsmAnd assets
+  (their artwork is CC-BY-NC-ND / partly proprietary) — the OBF is only read at
+  runtime; our styles and fonts stay our own.
+- **Endpoint (download.osmand.net)**: a service, not a licensed resource. No
+  prohibition exists (no ToS published), but no guarantee either. Self-imposed
+  rules, built into the downloader: identifying User-Agent, no bulk crawling
+  (catalog cached ~daily, one file per user action), tolerant error handling.
+  The planned Contabo mirror removes the dependency; the catalog carries
+  mirror-capable URLs from day one.
+- The `free=false` index flag is OsmAnd's own app-business marker (the free
+  flavor counts downloads of certain items, MAXIMUM_AVAILABLE_FREE_DOWNLOADS
+  = 7 in their code) — not a license; the catalog parser ignores it.
+
 ## Consequences for Issue #8
 
 - No converter of our own is needed for the product: OsmAnd's build farm
