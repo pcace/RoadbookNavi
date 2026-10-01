@@ -1,6 +1,7 @@
 mod download;
 mod geocoding;
 mod location;
+mod obf;
 mod osm;
 mod store;
 #[cfg(target_os = "android")]
