@@ -1,3 +1,4 @@
+use crate::obf::Bridge;
 use rusqlite::{params, Connection};
 use serde_json::{json, Value};
 use std::{
@@ -68,9 +69,12 @@ pub fn put(root: &Path, table: &str, value: &Value) -> Result<()> {
 }
 pub fn region_path(root: &Path, region: &Value) -> Result<PathBuf> {
     let file = key(region["version"].as_str().ok_or("Gebietsversion fehlt")?)?;
-    Ok(root.join("regions").join(format!("{file}.sqlite")))
+    Ok(root.join("regions").join(format!("{file}.obf")))
 }
-pub fn features(root: &Path, bbox: [f64; 4], purpose: &str) -> Result<Value> {
+/// Map features for the offline style, served by the resident OBF bridge.
+/// `purpose` filters like before: `map-overview` keeps major roads, places and
+/// water only; `map` and `detail` return everything the bridge whitelist has.
+pub fn features(root: &Path, bridge: &Bridge, bbox: [f64; 4], purpose: &str) -> Result<Value> {
     let [w, s, e, n] = bbox;
     if !bbox.iter().all(|v| v.is_finite())
         || w > e
@@ -82,13 +86,11 @@ pub fn features(root: &Path, bbox: [f64; 4], purpose: &str) -> Result<Value> {
     {
         return Err("Ungültiger Kartenausschnitt".into());
     }
-    let filter = match purpose {
-        "map-overview" => " AND f.kind IN ('major-road','place','water')",
-        "map" | "detail" => "",
+    match purpose {
+        "map" | "map-overview" | "detail" => {}
         _ => return Err("Unbekannte Abfrage".into()),
-    };
-    let mut found = std::collections::BTreeMap::new();
-    let mut truncated = false;
+    }
+    let mut files: Vec<PathBuf> = vec![];
     for region in list(root, "regions")? {
         if let Some(bounds) = region["bbox"].as_array() {
             if bounds.len() == 4 {
@@ -101,61 +103,30 @@ pub fn features(root: &Path, bbox: [f64; 4], purpose: &str) -> Result<Value> {
                 }
             }
         }
-        let db = Connection::open_with_flags(
-            region_path(root, &region)?,
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-        )
-        .map_err(err)?;
-        let mut stmt = db.prepare(&format!("SELECT f.osm_id,f.body FROM features f JOIN bounds b ON f.id=b.id WHERE b.maxx>=?1 AND b.minx<=?3 AND b.maxy>=?2 AND b.miny<=?4 {filter} LIMIT 20001")).map_err(err)?;
-        let rows = stmt
-            .query_map(params![w, s, e, n], |r| {
-                Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
-            })
-            .map_err(err)?;
-        for (i, row) in rows.enumerate() {
-            if i == 20000 {
-                truncated = true;
-                break;
-            }
-            let (id, body) = row.map_err(err)?;
-            found
-                .entry(id)
-                .or_insert(serde_json::from_str::<Value>(&body).map_err(err)?);
+        let path = region_path(root, &region)?;
+        if path.exists() {
+            files.push(path);
         }
     }
-    if truncated && purpose != "map" && purpose != "map-overview" {
-        return Err("Zu viele Geometrien. Kleineres Gebiet wählen.".into());
+    if files.is_empty() {
+        return Ok(json!({"type":"FeatureCollection","features":[],"truncated":false}));
     }
-    Ok(
-        json!({"type":"FeatureCollection","features":found.into_values().collect::<Vec<_>>(),"truncated":truncated}),
-    )
+    bridge.query(&files, bbox, purpose, 20001).map_err(err)
 }
-pub fn search(root: &Path, query: &str) -> Result<Vec<Value>> {
+/// Structured place/street search (city → street) from the OBF Address section.
+pub fn search(root: &Path, bridge: &Bridge, query: &str) -> Result<Vec<Value>> {
     if query.chars().count() < 2 {
         return Ok(vec![]);
     }
-    let text = query
-        .to_lowercase()
-        .replace('\\', "\\\\")
-        .replace('%', "\\%")
-        .replace('_', "\\_");
-    let mut output = vec![];
-    for region in list(root, "regions")? {
-        let db = Connection::open_with_flags(
-            region_path(root, &region)?,
-            rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-        )
-        .map_err(err)?;
-        let mut stmt = db.prepare("SELECT body FROM features WHERE name LIKE ?1 ESCAPE '\' ORDER BY CASE WHEN kind='place' THEN 0 ELSE 1 END LIMIT 20").map_err(err)?;
-        let rows = stmt
-            .query_map([format!("%{text}%")], |r| r.get::<_, String>(0))
-            .map_err(err)?;
-        for row in rows {
-            output.push(serde_json::from_str(&row.map_err(err)?).map_err(err)?);
-        }
+    let files: Vec<PathBuf> = list(root, "regions")?
+        .into_iter()
+        .map(|region| region_path(root, &region))
+        .filter(|path| matches!(path, Ok(p) if p.exists()))
+        .collect::<Result<Vec<PathBuf>>>()?;
+    if files.is_empty() {
+        return Ok(vec![]);
     }
-    output.truncate(40);
-    Ok(output)
+    bridge.search(&files, query, 40).map_err(err)
 }
 
 #[cfg(test)]

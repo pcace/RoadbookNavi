@@ -142,6 +142,42 @@ impl Bridge {
         Err("OBF-Abfrage fehlgeschlagen".into())
     }
 
+    /// Per-file overall bounds (w, s, e, n) in degrees; `None` for files
+    /// without map data. Used by the installer to record region coverage.
+    pub fn bounds(&self, files: &[PathBuf]) -> Result<Vec<Option<[f64; 4]>>, String> {
+        if files.is_empty() {
+            return Ok(vec![]);
+        }
+        let mut guard = self.ensure_open(files)?;
+        let session = guard.as_mut().expect("session opened");
+        self.send(session, "{\"op\":\"bounds\"}")?;
+        let answer = Self::recv(session, OPEN_TIMEOUT)?;
+        serde_json::from_value(
+            answer
+                .get("bounds")
+                .cloned()
+                .ok_or("OBF-Service: Antwort ohne Grenzen")?,
+        )
+        .map_err(|e| format!("OBF-Service: ungültige Grenzen: {e}"))
+    }
+
+    /// Default desktop wiring: the bundled jlink runtime (same one BRouter
+    /// uses) plus the obf-bridge classpath. Env vars allow overrides for tests.
+    pub fn bundled(resources: &std::path::Path) -> Bridge {
+        let java = std::env::var("OBF_JAVA").map(PathBuf::from).unwrap_or_else(|_| {
+            let path = resources.join("runtime/bin/java");
+            if cfg!(target_os = "windows") {
+                path.with_extension("exe")
+            } else {
+                path
+            }
+        });
+        let classpath = std::env::var("OBF_BRIDGE_LIB")
+            .map(PathBuf::from)
+            .unwrap_or_else(|_| resources.join("obf-bridge/lib"));
+        Bridge::new(java, classpath)
+    }
+
     /// Address search (cities and streets) from the OBF Address section.
     pub fn search(&self, files: &[PathBuf], query: &str, limit: usize) -> Result<Vec<Value>, String> {
         if query.chars().count() < 2 {

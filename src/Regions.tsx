@@ -12,9 +12,8 @@ import { invoke } from '@tauri-apps/api/core';
 import { open, confirm } from '@tauri-apps/plugin-dialog';
 import { readTextFile } from '@tauri-apps/plugin-fs';
 import { useTranslation } from 'react-i18next';
-import type { Feature } from 'geojson';
-import { extent, fmtBytes } from './geometry';
-import { loadLibrary, catalogueSizes, deviceStorage } from './services';
+import { fmtBytes } from './geometry';
+import { loadLibrary, deviceStorage } from './services';
 import type { Region, RegionOffer } from './model';
 type Status = {
   phase: string;
@@ -29,15 +28,10 @@ type Status = {
 const size = (n: number) => `${(n / 1024 / 1024).toFixed(1)} MB`;
 // The importer reports stable phase labels that are translated for the UI here.
 const PHASE_KEYS: Record<string, string> = {
-  'OSM herunterladen (1/3)': 'phases.download',
-  'OSM-Daten aufbereiten (2/3)': 'phases.prepare',
-  'Routingdaten (3/3)': 'phases.routing',
+  'Kartenpaket herunterladen (1/2)': 'phases.download',
+  'Kartenpaket entpacken (2/2)': 'phases.prepare',
   Fertig: 'phases.done',
   Abgebrochen: 'phases.cancelled',
-};
-const SUFFIX_KEYS: Record<string, string> = {
-  'Indizes erstellen': 'phases.indexing',
-  'Datenbank verdichten': 'phases.compacting',
 };
 export function Regions() {
   const { t } = useTranslation('regions');
@@ -46,13 +40,7 @@ export function Regions() {
     const text = PHASE_KEYS[base]
       ? t(PHASE_KEYS[base], { defaultValue: base })
       : base;
-    const suffixText =
-      suffix == null
-        ? ''
-        : SUFFIX_KEYS[suffix]
-          ? t(SUFFIX_KEYS[suffix], { defaultValue: suffix })
-          : suffix;
-    return suffixText ? `${text} · ${suffixText}` : text;
+    return suffix ? `${text} · ${suffix}` : text;
   };
   const [regions, setRegions] = useState<Region[]>([]),
     [catalog, setCatalog] = useState<RegionOffer[]>([]),
@@ -61,11 +49,10 @@ export function Regions() {
     [status, setStatus] = useState<Status | null>(null),
     [loadingCatalog, setLoadingCatalog] = useState(false);
   const lastPhase = useRef<string | undefined>(undefined);
-  const [sizes, setSizes] = useState<Record<string, number>>({}),
-    [storage, setStorage] = useState<{
-      available: number;
-      total: number;
-    } | null>(null);
+  const [storage, setStorage] = useState<{
+    available: number;
+    total: number;
+  } | null>(null);
   const run = async (fn: () => Promise<unknown>) => {
     setError('');
     try {
@@ -114,50 +101,22 @@ export function Regions() {
   const visible = catalog
     .filter(r => r.name.toLowerCase().includes(query.toLowerCase()))
     .slice(0, 60);
-  // Resolve download sizes for the visible regions. The native layer caches each URL.
-  useEffect(() => {
-    const missing = visible.map(r => r.url).filter(u => sizes[u] == null);
-    if (missing.length)
-      void catalogueSizes(missing)
-        .then(m => setSizes(s => ({ ...s, ...m })))
-        .catch(console.error);
-  }, [catalog, query]);
   const catalogue = async () => {
     setLoadingCatalog(true);
     try {
-      const data = await invoke<{ features: Feature[] }>('get_catalogue', {
+      const data = await invoke<{ regions: RegionOffer[] }>('get_catalogue', {
         refresh: false,
       });
-      setCatalog(
-        data.features
-          .filter(
-            f =>
-              f.properties?.urls?.pbf &&
-              ['Polygon', 'MultiPolygon'].includes(f.geometry.type)
-          )
-          .map(f => ({
-            id: String(f.properties!.id).replace(/[^\w-]/g, '-'),
-            name: f.properties!.name,
-            url: f.properties!.urls.pbf,
-            bbox: extent(f),
-            geometry: f.geometry as Region['geometry'],
-          }))
-      );
+      setCatalog(data.regions);
     } finally {
       setLoadingCatalog(false);
     }
   };
-  const objectsMatch = status?.detail?.match(
-    /^(\d[\d.]*) Objekte verarbeitet$/
-  );
-  const detail = objectsMatch
-    ? t('objectsProcessed', { count: objectsMatch[1].replace(/\./g, '') })
-    : (status?.detail ??
-      (status && status.phase.includes('aufbereiten')
-        ? t('objects', { count: status.current.toLocaleString() })
-        : status?.total
-          ? `${size(status.current)} / ${size(status.total)}`
-          : size(status?.current ?? 0)));
+  const detail =
+    status?.detail ??
+    (status?.total
+      ? `${size(status.current)} / ${size(status.total)}`
+      : size(status?.current ?? 0));
   return (
     <Stack
       gap="4"
@@ -312,7 +271,7 @@ export function Regions() {
           <Stack maxH="45vh" overflowY="auto">
             {visible.map(r => {
               const loaded = regions.find(x => x.id === r.id);
-              const bytes = loaded?.size ?? sizes[r.url];
+              const bytes = loaded?.size ?? r.size;
               const tooBig =
                 bytes != null && storage != null && bytes > storage.available;
               return (

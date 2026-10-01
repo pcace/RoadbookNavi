@@ -27,10 +27,5 @@ export const geocoder: Geocoder = {
 };
 export const loadLibrary = () =>
   invoke<{ regions: Region[]; profiles: string[] }>('library');
-// The native command wraps its result; expose a plain URL-to-byte-count map.
-export const catalogueSizes = (urls: string[]) =>
-  invoke<{ sizes: Record<string, number> }>('catalogue_sizes', { urls }).then(
-    r => r?.sizes ?? {}
-  );
 export const deviceStorage = () =>
   invoke<{ available: number; total: number }>('storage_usage');

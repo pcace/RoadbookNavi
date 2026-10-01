@@ -1,5 +1,5 @@
 use crate::{
-    osm,
+    obf::Bridge,
     store::{self, err, Result},
 };
 use serde_json::{json, Value};
@@ -17,7 +17,7 @@ use std::{
 use tauri::{AppHandle, Emitter, Manager};
 
 pub fn is_allowed_host(host: &str) -> bool {
-    host == "brouter.de" || host.ends_with("geofabrik.de") || host.ends_with("gwdg.de")
+    host == "brouter.de" || host == "download.osmand.net"
 }
 
 pub fn client() -> Result<reqwest::blocking::Client> {
@@ -48,35 +48,6 @@ fn write_json(path: &Path, value: &Value) -> Result<()> {
     file.sync_all().map_err(err)?;
     fs::rename(temp, path).map_err(err)
 }
-/// File size of a downloadable URL. HEAD alone is not reliable here: Geofabrik
-/// (and some CDNs) answer HEAD with Content-Length 0 (reqwest reports the
-/// decoded body size, which is empty for HEAD). A 1-byte Range-GET carries the
-/// real total in the Content-Range header instead.
-pub fn content_length(url: &str) -> Result<Option<u64>> {
-    let client = client()?;
-    let response = client
-        .get(url)
-        .timeout(Duration::from_secs(30))
-        .header(reqwest::header::RANGE, "bytes=0-0")
-        .header(reqwest::header::ACCEPT_ENCODING, "identity")
-        .send()
-        .map_err(err)?
-        .error_for_status()
-        .map_err(err)?;
-    if let Some(range) = response
-        .headers()
-        .get(reqwest::header::CONTENT_RANGE)
-        .and_then(|v| v.to_str().ok())
-    {
-        if let Some((_, total)) = range.split_once('/') {
-            if let Ok(total) = total.trim().parse::<u64>() {
-                return Ok(Some(total));
-            }
-        }
-    }
-    Ok(response.content_length().filter(|l| *l > 0))
-}
-
 // ---------------------------------------------------------------------------
 // Persist the region download queue in the app data directory across restarts.
 // ---------------------------------------------------------------------------
@@ -142,10 +113,10 @@ pub fn progress_detail(
 pub fn progress(app: &AppHandle, phase: &str, current: u64, total: Option<u64>) {
     progress_detail(app, phase, current, total, None)
 }
-fn download(app: &AppHandle, url: &str, path: &Path, cancel: &AtomicBool) -> Result<String> {
+fn download(app: &AppHandle, url: &str, path: &Path, cancel: &AtomicBool, phase: &str) -> Result<String> {
     let parsed = reqwest::Url::parse(url).map_err(err)?;
     if parsed.scheme() != "https"
-        || !["download.geofabrik.de", "brouter.de"].contains(&parsed.host_str().unwrap_or(""))
+        || !["download.osmand.net", "brouter.de"].contains(&parsed.host_str().unwrap_or(""))
     {
         return Err("Nicht unterstützte Datenquelle".into());
     }
@@ -153,8 +124,7 @@ fn download(app: &AppHandle, url: &str, path: &Path, cancel: &AtomicBool) -> Res
         url,
         path,
         cancel,
-        |current, total| progress(app, "OSM herunterladen (1/3)", current, total),
-        true,
+        |current, total| progress(app, phase, current, total),
     )
 }
 // Range requests use a server validator so a refreshed extract can never be appended to an older one.
@@ -163,19 +133,13 @@ fn download_file(
     path: &Path,
     cancel: &AtomicBool,
     report: impl Fn(u64, Option<u64>),
-    check_pbf: bool,
 ) -> Result<String> {
     let metadata = path.with_extension("resume.json");
     let complete = path.with_extension("complete.json");
     if path.exists() && complete.exists() {
         let value: Value =
             serde_json::from_slice(&fs::read(&complete).map_err(err)?).map_err(err)?;
-        // The PBF signature only applies to OSM extracts — BRouter segment
-        // files (.rd5) are a different binary format and must not be rejected.
-        if value["url"] == url
-            && value["length"].as_u64() == Some(fs::metadata(path).map_err(err)?.len())
-            && (!check_pbf || pbf_header_ok(path))
-        {
+        if value["url"] == url && value["length"].as_u64() == Some(fs::metadata(path).map_err(err)?.len()) {
             if let Some(hash) = value["sha256"].as_str() {
                 return Ok(hash.into());
             }
@@ -320,22 +284,6 @@ fn download_file(
             }
         }
     }
-    if check_pbf && !pbf_header_ok(path) {
-        let _ = fs::remove_file(&metadata);
-        let size = fs::metadata(path).map(|m| m.len()).unwrap_or(0);
-        let mut head = [0u8; 16];
-        let preview = File::open(path)
-            .ok()
-            .and_then(|mut f| f.read_exact(&mut head).ok())
-            .map(|_| {
-                head.iter()
-                    .map(|b| format!("{b:02x}"))
-                    .collect::<Vec<_>>()
-                    .join(" ")
-            })
-            .unwrap_or_default();
-        return Err(format!("Die heruntergeladene Datei enthält keine gültigen OSM-Daten (kein PBF-Format). Größe: {size} B, Dateianfang: {preview}. Die Quelle hat vermutlich eine Fehler- oder Hinweisseite geliefert."));
-    }
     let mut hash = Sha256::new();
     let mut file = File::open(path).map_err(err)?;
     let mut buf = [0u8; 256 * 1024];
@@ -367,50 +315,6 @@ fn valid_range(value: Option<&str>, offset: u64) -> bool {
         ))
     })();
     parsed.is_some_and(|(start, end, total)| start == offset && end >= start && end < total)
-}
-
-/// An OSM PBF starts with a four-byte big-endian blob length followed by
-/// "OSMHeader". Validate it early so an HTTP error page produces a clear error.
-fn pbf_header_ok(path: &Path) -> bool {
-    // PBF layout: 4-byte big-endian BlobHeader length, then protobuf field
-    // header 0a 09 (field 1, len 9) followed by the ASCII type "OSMHeader".
-    let mut buf = [0u8; 16];
-    match File::open(path).and_then(|mut f| f.read_exact(&mut buf)) {
-        Ok(()) => {
-            let len = u32::from_be_bytes([buf[0], buf[1], buf[2], buf[3]]);
-            buf[4] == 0x0A && buf[5] == 0x09 && &buf[6..14] == b"OSMHeade" && len < 0x10000
-        }
-        Err(_) => false,
-    }
-}
-
-#[cfg(test)]
-mod pbf_header_tests {
-    use super::*;
-    use std::io::Write;
-
-    #[test]
-    fn pbf_header_accepts_valid_header_blob() {
-        // Real-world structure (verified against Geofabrik Bremen extract):
-        // length=14, protobuf: 0a 09 "OSMHeader", datasize varint follows.
-        let mut dir = std::env::temp_dir();
-        dir.push(format!("rn-pbf-test-{}", std::process::id()));
-        fs::create_dir_all(&dir).unwrap();
-        let path = dir.join("valid.osm.pbf");
-        let mut f = File::create(&path).unwrap();
-        f.write_all(&[
-            0x00, 0x00, 0x00, 0x0e, 0x0a, 0x09, b'O', b'S', b'M', b'H', b'e', b'a', b'd', b'e',
-            b'r', 0x18, 0xb5, 0x01, 0x78, 0x9c,
-        ])
-        .unwrap();
-        assert!(pbf_header_ok(&path));
-        // HTML error page must be rejected
-        let bad = dir.join("invalid.osm.pbf");
-        let mut f = File::create(&bad).unwrap();
-        f.write_all(b"<!DOCTYPE html><html>404</html>").unwrap();
-        assert!(!pbf_header_ok(&bad));
-        let _ = fs::remove_dir_all(&dir);
-    }
 }
 
 pub fn segment_names(bbox: [f64; 4]) -> Result<Vec<String>> {
@@ -449,35 +353,128 @@ pub fn segment_names(bbox: [f64; 4]) -> Result<Vec<String>> {
 
 pub fn catalogue(root: &Path, refresh: bool) -> Result<Value> {
     let file = root.join("catalogue.json");
-    if !refresh && file.exists() {
-        return serde_json::from_slice(&fs::read(file).map_err(err)?).map_err(err);
+    // Cache the index for a day — polite towards OsmAnd's donation-funded
+    // server; a manual refresh (UI) always refetches.
+    if !refresh {
+        let fresh = fs::metadata(&file)
+            .ok()
+            .and_then(|m| m.modified().ok())
+            .and_then(|t| t.elapsed().ok())
+            .map(|age| age < Duration::from_secs(24 * 3600))
+            .unwrap_or(false);
+        if fresh {
+            return serde_json::from_slice(&fs::read(file).map_err(err)?).map_err(err);
+        }
     }
-    let data: Value = client()?
-        .get("https://download.geofabrik.de/index-v1.json")
-        .timeout(Duration::from_secs(60))
+    let raw = client()?
+        .get("https://download.osmand.net/get_indexes?gzip")
+        .timeout(Duration::from_secs(120))
         .send()
         .map_err(err)?
         .error_for_status()
         .map_err(err)?
-        .json()
+        .bytes()
         .map_err(err)?;
-    if !data["features"].is_array() {
+    let xml = read_gzip(&raw)?;
+    let xml = String::from_utf8(xml).map_err(err)?;
+    let regions = parse_indexes(&xml)?;
+    fs::write(&file, serde_json::to_vec(&regions).map_err(err)?).map_err(err)?;
+    Ok(json!({"type":"osmand","regions":regions}))
+}
+
+/// The index body is gzip data regardless of the URL suffix.
+fn read_gzip(raw: &[u8]) -> Result<Vec<u8>> {
+    if raw.starts_with(&[0x1f, 0x8b]) {
+        let mut out = vec![];
+        flate2::read::GzDecoder::new(raw).read_to_end(&mut out).map_err(err)?;
+        Ok(out)
+    } else {
+        Ok(raw.to_vec())
+    }
+}
+
+/// Parse the `osmand_regions` XML into flat region offers. Only `type=map`
+/// files are offered (DEM/hillshade/wiki carry separate attributions; the
+/// `free` attribute is OsmAnd's app-business marker and is ignored).
+fn parse_indexes(xml: &str) -> Result<Vec<Value>> {
+    let mut regions = vec![];
+    let mut reader = quick_xml::Reader::from_str(xml);
+    let mut buf = Vec::new();
+    loop {
+        match reader.read_event_into(&mut buf) {
+            Ok(quick_xml::events::Event::Start(e)) | Ok(quick_xml::events::Event::Empty(e)) => {
+                if e.name().as_ref() != b"region" {
+                    buf.clear();
+                    continue;
+                }
+                let mut attrs: std::collections::HashMap<String, String> = Default::default();
+                for attr in e.attributes().with_checks(false) {
+                    let attr = attr.map_err(err)?;
+                    attrs.insert(
+                        String::from_utf8_lossy(attr.key.local_name().as_ref()).into_owned(),
+                        attr.unescape_value().map_err(err)?.into_owned(),
+                    );
+                }
+                buf.clear();
+                if attrs.get("type").map(String::as_str) != Some("map") {
+                    continue;
+                }
+                let Some(name) = attrs.get("name").cloned() else {
+                    continue;
+                };
+                let Some(id) = name.strip_suffix(".obf.zip") else {
+                    continue;
+                };
+                let date = attrs.get("date").cloned().unwrap_or_default();
+                let stamp: String = date.split('.').rev().collect::<Vec<_>>().join("");
+                let size = attrs
+                    .get("containerSize")
+                    .and_then(|s| s.parse::<u64>().ok())
+                    .unwrap_or(0);
+                regions.push(json!({
+                    "id": id,
+                    "name": id.replace("_", " "),
+                    "version": format!("{id}-{stamp}"),
+                    "date": date,
+                    "size": size,
+                    "url": format!("https://download.osmand.net/download?event=2&file={name}"),
+                }));
+            }
+            Ok(quick_xml::events::Event::Eof) => break,
+            Ok(_) => buf.clear(),
+            Err(e) => return Err(format!("Ungültiger Gebietskatalog: {e}")),
+        }
+    }
+    if regions.is_empty() {
         return Err("Ungültiger Gebietskatalog".into());
     }
-    fs::write(&file, serde_json::to_vec(&data).map_err(err)?).map_err(err)?;
-    Ok(data)
+    Ok(regions)
+}
+
+/// Old-format artifacts (Geofabrik catalogue cache, per-region SQLite files)
+/// are removed once at startup — the OBF flow keeps no compatibility mode.
+pub fn sweep_legacy(root: &Path) {
+    let _ = fs::remove_file(root.join("catalogue.json"));
+    let _ = fs::remove_file(root.join("catalogue-sizes.json"));
+    if let Ok(entries) = fs::read_dir(root.join("regions")) {
+        for entry in entries.flatten() {
+            if entry.path().extension().and_then(|e| e.to_str()) == Some("sqlite") {
+                let _ = fs::remove_file(entry.path());
+            }
+        }
+    }
 }
 
 pub fn install(
     app: &AppHandle,
     root: &Path,
+    bridge: &Bridge,
     region: Value,
     cancel: Arc<AtomicBool>,
     aborted: Arc<AtomicBool>,
 ) -> Result<Value> {
     let id = store::key(region["id"].as_str().ok_or("Gebiets-ID fehlt")?)?;
-    let bbox: [f64; 4] = serde_json::from_value(region["bbox"].clone()).map_err(err)?;
-    let segments = segment_names(bbox)?;
+    let version = store::key(region["version"].as_str().ok_or("Gebietsversion fehlt")?)?.to_owned();
     let url = region["url"].as_str().ok_or("Downloadquelle fehlt")?;
     let cache = root.join("downloads").join(&id);
     fs::create_dir_all(&cache).map_err(err)?;
@@ -485,71 +482,52 @@ pub fn install(
     let mut job: Value = fs::read(&manifest)
         .ok()
         .and_then(|v| serde_json::from_slice(&v).ok())
-        .unwrap_or(json!({"version":uuid::Uuid::new_v4().to_string(),"region":region}));
-    if job["region"] != region {
-        return Err("Gespeicherter Download gehört zu einer anderen Gebietsversion".into());
+        .unwrap_or(json!({"version":version,"region":region}));
+    if job["version"] != version || job["region"] != region {
+        // A different version replaces the whole job — the old file is
+        // removed after a successful install (see below), never resumed.
+        job = json!({"version":version,"region":region});
     }
-    let version = job["version"]
-        .as_str()
-        .ok_or("Ungültiger Downloadstatus")?
-        .to_owned();
     store::key(&version)?;
     let dir = root.join("regions");
     fs::create_dir_all(&dir).map_err(err)?;
-    let pbf = cache.join("OSM.osm.pbf.part");
-    let temp = cache.join("import.sqlite.part");
-    let target = dir.join(format!("{version}.sqlite"));
+    let zip_path = cache.join(format!("{version}.obf.zip.part"));
+    let target = dir.join(format!("{version}.obf"));
     write_json(&manifest, &job)?;
     write_json(
         &root.join("download-status.json"),
-        &json!({"region":region,"phase":"OSM herunterladen (1/3)","current":0,"total":null}),
+        &json!({"region":region,"phase":"Kartenpaket herunterladen (1/2)","current":0,"total":region["size"]}),
     )?;
     let result = (|| {
-        let checksum = download(app, url, &pbf, &cancel)?;
-        if job["stats"].is_null() || !target.exists() {
-            let _ = fs::remove_file(&temp);
-            progress(app, "OSM-Daten aufbereiten (2/3)", 0, None);
-            let stats = osm::import(
-                &pbf,
-                &temp,
-                &target,
-                cancel.clone(),
-                |phase, objects, current, total| {
-                    progress_detail(
-                        app,
-                        phase,
-                        current,
-                        Some(total),
-                        Some(format!("{objects} Objekte verarbeitet")),
-                    )
-                },
-            )?;
-            job["stats"] = stats;
-            write_json(&manifest, &job)?;
-        }
+        let checksum = download(app, url, &zip_path, &cancel, "Kartenpaket herunterladen (1/2)")?;
+        progress(app, "Kartenpaket entpacken (2/2)", 0, None);
+        unzip_obf(&zip_path, &target)?;
+        let bbox = bounds_for(bridge, &target)?;
         let segment_dir = root.join("engine/segments4");
         fs::create_dir_all(&segment_dir).map_err(err)?;
+        let segments = segment_names(bbox)?;
         for (i, name) in segments.iter().enumerate() {
+            if cancel.load(Ordering::Relaxed) {
+                return Err("Pausiert".into());
+            }
             let dest = segment_dir.join(name);
             if dest.exists() {
                 continue;
             }
             let part = cache.join(format!("{name}.part"));
-            let phase = format!("Routingdaten (3/3) · {}/{}", i + 1, segments.len());
+            let phase = format!("Routingdaten (2/2) · {}/{}", i + 1, segments.len());
             download_file(
                 &format!("https://brouter.de/brouter/segments4/{name}"),
                 &part,
                 &cancel,
                 |current, total| progress(app, &phase, current, total),
-                false,
             )?;
             fs::rename(part, dest).map_err(err)?;
         }
         if cancel.load(Ordering::Relaxed) {
             return Err("Pausiert".into());
         }
-        // osm::import writes the compact target with VACUUM INTO.
-        let installed = json!({"id":id,"name":region["name"],"bbox":bbox,"geometry":region["geometry"],"version":version,"sha256":checksum,"stats":job["stats"],"segments":segments,"downloadedAt":std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(err)?.as_secs(),"source":url});
+        let installed = json!({"id":id,"name":region["name"],"bbox":bbox,"version":version,"sha256":checksum,"size":fs::metadata(&target).map(|m| m.len()).unwrap_or(0),"segments":segments,"downloadedAt":std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map_err(err)?.as_secs(),"source":url});
         let previous = store::list(root, "regions")?
             .into_iter()
             .find(|r| r["id"] == id);
@@ -572,16 +550,15 @@ pub fn install(
             if aborted.load(Ordering::Relaxed) {
                 // Cancellation removes every partial file from this operation.
                 let _ = fs::remove_dir_all(&cache);
-                let _ = fs::remove_file(target.with_extension("sqlite.part"));
+                let _ = fs::remove_file(target.with_extension("obf.part"));
                 let _ = write_json(
                     &root.join("download-status.json"),
                     &json!({"phase":"Abgebrochen","current":0,"total":null}),
                 );
             } else {
-                // Pausing preserves the resumable PBF download but removes
-                // incomplete importer state, which cannot be resumed safely.
-                let _ = fs::remove_file(&temp);
-                let _ = fs::remove_file(target.with_extension("sqlite.part"));
+                // Pausing preserves the resumable download; the extracted
+                // region is only complete or absent.
+                let _ = fs::remove_file(target.with_extension("obf.part"));
                 let mut state = status(root).unwrap_or(json!({}));
                 state["error"] = json!(error);
                 let _ = write_json(&root.join("download-status.json"), &state);
@@ -589,6 +566,41 @@ pub fn install(
         }
     }
     result
+}
+
+/// The .obf.zip contains exactly one .obf file; a mismatched or broken archive
+/// fails loudly instead of leaving a truncated region behind.
+fn unzip_obf(zip_path: &Path, target: &Path) -> Result<()> {
+    let mut archive = zip::ZipArchive::new(File::open(zip_path).map_err(err)?).map_err(err)?;
+    if archive.len() != 1 {
+        return Err(format!("Unerwartetes Kartenpaket ({} Einträge)", archive.len()));
+    }
+    let name = archive.by_index(0).map_err(err)?.name().to_string();
+    let mut entry = archive.by_index(0).map_err(err)?;
+    if !name.ends_with(".obf") || entry.is_dir() {
+        return Err(format!("Unerwarteter Kartenpaket-Inhalt: {name}"));
+    }
+    let mut out = File::create(target.with_extension("obf.part")).map_err(err)?;
+    std::io::copy(&mut entry, &mut out).map_err(err)?;
+    out.sync_all().map_err(err)?;
+    drop(entry);
+    drop(archive);
+    fs::rename(target.with_extension("obf.part"), target).map_err(err)?;
+    Ok(())
+}
+
+/// Read the region bounds from the downloaded OBF via the bridge. Failing to
+/// determine bounds is fatal for the install: coverage checks (roadbook turns)
+/// depend on them.
+fn bounds_for(bridge: &Bridge, target: &Path) -> Result<[f64; 4]> {
+    let list = bridge
+        .bounds(&[target.to_path_buf()])
+        .map_err(err)?
+        .into_iter()
+        .flatten()
+        .next()
+        .ok_or("OBF enthält keine Kartendaten")?;
+    Ok(list)
 }
 
 #[cfg(test)]
@@ -629,14 +641,14 @@ mod tests {
         });
         let dir = tempfile::tempdir().unwrap();
         let file = dir.path().join("extract.part");
-        let hash = download_file(&url, &file, &AtomicBool::new(false), |_, _| {}, false).unwrap();
+        let hash = download_file(&url, &file, &AtomicBool::new(false), |_, _| {}).unwrap();
         server.join().unwrap();
         let expected: Vec<u8> = b"\x00\x00\x00\x0fOSMHeader-12345678".to_vec();
         assert_eq!(fs::read(&file).unwrap(), expected);
         assert_eq!(hash, format!("{:x}", Sha256::digest(&expected)));
         // A completed stage is reusable with the server already stopped.
         assert_eq!(
-            download_file(&url, &file, &AtomicBool::new(false), |_, _| {}, false).unwrap(),
+            download_file(&url, &file, &AtomicBool::new(false), |_, _| {}).unwrap(),
             hash
         );
     }
@@ -655,28 +667,6 @@ mod tests {
     #[test]
     fn unbounded_downloads_are_rejected() {
         assert!(segment_names([-180., -90., 180., 90.]).is_err());
-    }
-}
-
-#[cfg(test)]
-mod head_probe_tests {
-    use super::*;
-
-    /// Regression: Geofabrik HEAD answers Content-Length 0 (reqwest decodes an
-    /// empty body), which poisoned the size cache with 0. The Range-GET helper
-    /// must return the real total from Content-Range.
-    #[test]
-    #[ignore = "network test — run explicitly with `cargo test -- --ignored`"]
-    fn content_length_returns_total_for_geofabrik() {
-        let url = "https://download.geofabrik.de/europe/germany/bremen-latest.osm.pbf";
-        let length = content_length(url)
-            .expect("content_length call")
-            .expect("some length");
-        println!("{url} → {length} B");
-        assert!(
-            length > 1_000_000,
-            "expected the real file size, got {length}"
-        );
     }
 }
 
@@ -702,5 +692,33 @@ mod queue_tests {
         assert!(read_queue(&dir).is_empty());
         assert!(dequeue(&dir).is_none()); // An empty queue returns None.
         let _ = fs::remove_dir_all(&dir);
+    }
+}
+
+#[cfg(test)]
+mod catalogue_tests {
+    use super::*;
+
+    #[test]
+    fn osmand_index_parse_keeps_map_files_only() {
+        let xml = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<osmand_regions mapversion="1" gentime="0.2" timestamp="01.10.2026 09:13">
+  <region name="Germany_bremen-city_europe_2.obf.zip" type="map" date="01.09.2026" size="27.8" containerSize="29127526" free="false"/>
+  <region name="Germany_bremen-city_europe_2.wiki.obf.zip" type="wiki" date="06.09.2026" containerSize="15057130" free="false"/>
+  <region name="Netherlands_europe_2.obf.zip" type="map" date="01.09.2026" containerSize="999"/>
+</osmand_regions>"#;
+        let regions = parse_indexes(xml).unwrap();
+        assert_eq!(regions.len(), 2, "wiki files must be skipped");
+        let bremen = &regions[0];
+        assert_eq!(bremen["id"], json!("Germany_bremen-city_europe_2"));
+        assert_eq!(bremen["version"], json!("Germany_bremen-city_europe_2-20260901"));
+        assert_eq!(bremen["size"], json!(29127526));
+        assert_eq!(bremen["name"], json!("Germany bremen-city europe 2"));
+        assert_eq!(
+            bremen["url"],
+            json!("https://download.osmand.net/download?event=2&file=Germany_bremen-city_europe_2.obf.zip")
+        );
+        // version keys must pass the filename validator
+        assert!(store::key(bremen["version"].as_str().unwrap()).is_ok());
     }
 }

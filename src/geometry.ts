@@ -1,10 +1,4 @@
-import {
-  bbox,
-  booleanPointInPolygon,
-  point,
-  feature,
-  buffer,
-} from '@turf/turf';
+import { bbox, point, buffer } from '@turf/turf';
 import type {
   Feature,
   FeatureCollection,
@@ -16,8 +10,12 @@ export function extent(value: unknown): Bbox {
   return bbox(value as Feature) as Bbox;
 }
 export function covered(p: Waypoint, regions: Region[]): boolean {
-  return regions.some(r =>
-    booleanPointInPolygon(point([p.lon, p.lat]), feature(r.geometry))
+  return regions.some(
+    r =>
+      p.lon >= r.bbox[0] &&
+      p.lon <= r.bbox[2] &&
+      p.lat >= r.bbox[1] &&
+      p.lat <= r.bbox[3]
   );
 }
 export function detailBounds(p: Waypoint): Bbox {

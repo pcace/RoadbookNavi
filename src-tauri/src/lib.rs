@@ -2,7 +2,6 @@ mod download;
 mod geocoding;
 mod location;
 mod obf;
-mod osm;
 mod store;
 #[cfg(target_os = "android")]
 include!(concat!(env!("OUT_DIR"), "/profiles.rs"));
@@ -28,6 +27,7 @@ struct LocalState {
     cancel: Arc<AtomicBool>,
     busy: Arc<AtomicBool>,
     aborted: Arc<AtomicBool>,
+    bridge: std::sync::Arc<obf::Bridge>,
 }
 
 fn dir_size(path: &PathBuf) -> u64 {
@@ -126,62 +126,6 @@ fn storage_usage(state: State<LocalState>) -> Result<Value> {
     }
     Ok(json!({"available":available(&state.root),"total":dir_size(&state.root)}))
 }
-// Cache PBF Content-Length values because the Geofabrik catalogue omits sizes.
-// Query up to eight allowed hosts concurrently.
-#[tauri::command]
-async fn catalogue_sizes(state: State<'_, LocalState>, urls: Vec<String>) -> Result<Value> {
-    let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        let cache_path = root.join("catalogue-sizes.json");
-        let mut cache: Value = fs::read(&cache_path)
-            .ok()
-            .and_then(|b| serde_json::from_slice(&b).ok())
-            .unwrap_or(json!({}));
-        // Cached zeros are stale poison from the old HEAD-based sizing — treat them as missing.
-        let missing: Vec<String> = urls
-            .into_iter()
-            .filter(|u| cache[u.as_str()].as_u64().unwrap_or(0) == 0)
-            .collect();
-        for batch in missing.chunks(8) {
-            let results: Vec<(String, Option<u64>)> = std::thread::scope(|s| {
-                batch
-                    .iter()
-                    .map(|u| {
-                        s.spawn(move || {
-                            if let Ok(parsed) = reqwest::Url::parse(u) {
-                                if parsed.scheme() == "https"
-                                    && download::is_allowed_host(parsed.host_str().unwrap_or(""))
-                                {
-                                    return (
-                                        u.clone(),
-                                        download::content_length(parsed.as_str()).ok().flatten(),
-                                    );
-                                }
-                            }
-                            (u.clone(), None)
-                        })
-                    })
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .map(|h| h.join())
-                    .filter_map(|r| r.ok())
-                    .collect()
-            });
-            for (u, len) in results {
-                if let Some(len) = len.filter(|l| *l > 0) {
-                    cache[u.as_str()] = json!(len);
-                }
-            }
-        }
-        let tmp = cache_path.with_extension("json.tmp");
-        if fs::write(&tmp, serde_json::to_vec(&cache).map_err(err)?).is_ok() {
-            let _ = fs::rename(&tmp, &cache_path);
-        }
-        Ok(json!({"sizes":cache}))
-    })
-    .await
-    .map_err(err)?
-}
 #[tauri::command]
 fn download_status(state: State<LocalState>) -> Option<Value> {
     let mut value = match download::status(&state.root) {
@@ -253,6 +197,7 @@ async fn install_region(
     let cancel = state.cancel.clone();
     let busy = state.busy.clone();
     let aborted = state.aborted.clone();
+    let bridge = state.bridge.clone();
     // Install the requested region, then process the queue in FIFO order.
     // A failed region does not block later items. Pausing preserves the queue;
     // cancellation clears it.
@@ -266,8 +211,9 @@ async fn install_region(
             let root2 = root.clone();
             let c2 = cancel.clone();
             let a2 = aborted.clone();
+            let bridge2 = bridge.clone();
             let outcome = tauri::async_runtime::spawn_blocking(move || {
-                download::install(&app2, &root2, region_to_install, c2, a2)
+                download::install(&app2, &root2, &bridge2, region_to_install, c2, a2)
             })
             .await
             .map_err(err);
@@ -311,14 +257,16 @@ async fn query_features(
     purpose: String,
 ) -> Result<Value> {
     let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || store::features(&root, bbox, &purpose))
+    let bridge = state.bridge.clone();
+    tauri::async_runtime::spawn_blocking(move || store::features(&root, &bridge, bbox, &purpose))
         .await
         .map_err(err)?
 }
 #[tauri::command]
 async fn search_places(state: State<'_, LocalState>, query: String) -> Result<Vec<Value>> {
     let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || store::search(&root, &query))
+    let bridge = state.bridge.clone();
+    tauri::async_runtime::spawn_blocking(move || store::search(&root, &bridge, &query))
         .await
         .map_err(err)?
 }
@@ -444,11 +392,16 @@ pub fn run() {
                     fs::write(dest, content)?;
                 }
             }
+            // No compatibility mode for the OBF migration: old-format artifacts
+            // (Geofabrik catalogue cache, per-region SQLite files) are removed.
+            download::sweep_legacy(&root);
+            let resources = app.path().resource_dir().unwrap_or_else(|_| root.join(".."));
             app.manage(LocalState {
                 root,
                 cancel: Arc::new(AtomicBool::new(false)),
                 busy: Arc::new(AtomicBool::new(false)),
                 aborted: Arc::new(AtomicBool::new(false)),
+                bridge: Arc::new(obf::Bridge::bundled(&resources)),
             });
             app.manage(location::LocationState::default());
             Ok(())
@@ -462,7 +415,6 @@ pub fn run() {
             import_profile,
             get_catalogue,
             storage_usage,
-            catalogue_sizes,
             download_status,
             cancel_download,
             abort_install,

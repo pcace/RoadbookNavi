@@ -11,15 +11,16 @@ export type Region = {
   id: string;
   name: string;
   bbox: Bbox;
-  geometry: Polygon | MultiPolygon;
+  geometry?: Polygon | MultiPolygon;
   version: string;
   downloadedAt: number;
-  stats: { features: number; incomplete: number };
+  stats?: { features: number; incomplete: number };
   segments: string[];
   size?: number;
 };
-export type RegionOffer = Pick<Region, 'id' | 'name' | 'bbox' | 'geometry'> & {
+export type RegionOffer = Pick<Region, 'id' | 'name' | 'version' | 'size'> & {
   url: string;
+  date?: string;
 };
 export type Entry = {
   turn: Turn;
