@@ -6,13 +6,11 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 import commonDE from './locales/de/common.json';
 import roadbookDE from './locales/de/roadbook.json';
 import settingsDE from './locales/de/settings.json';
-import regionsDE from './locales/de/regions.json';
 import routeBuilderDE from './locales/de/routeBuilder.json';
 
 import commonEN from './locales/en/common.json';
 import roadbookEN from './locales/en/roadbook.json';
 import settingsEN from './locales/en/settings.json';
-import regionsEN from './locales/en/regions.json';
 import routeBuilderEN from './locales/en/routeBuilder.json';
 
 // Define resources
@@ -21,14 +19,12 @@ const resources = {
     common: commonDE,
     roadbook: roadbookDE,
     settings: settingsDE,
-    regions: regionsDE,
     routeBuilder: routeBuilderDE,
   },
   en: {
     common: commonEN,
     roadbook: roadbookEN,
     settings: settingsEN,
-    regions: regionsEN,
     routeBuilder: routeBuilderEN,
   },
 };
@@ -46,7 +42,7 @@ i18n
 
     // Namespace settings
     defaultNS: 'common',
-    ns: ['common', 'roadbook', 'settings', 'routeBuilder', 'regions'],
+    ns: ['common', 'roadbook', 'settings', 'routeBuilder'],
 
     // Interpolation settings
     interpolation: {

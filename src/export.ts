@@ -5,8 +5,8 @@ import 'svg2pdf.js';
 import type { Project } from './model';
 import { exportRn2, completeRn2Geometry, importRn2 } from './rn2';
 import { rn2IconResolver } from './rn2-icons';
-import { loadLibrary, osm, repository } from './services';
-import { detailBounds, requireCoverage } from './geometry';
+import { osm, repository } from './services';
+import { detailBounds } from './geometry';
 import { routeSurfacePreview } from './ui/components/RouteBuilder/utils/routeSurfaces';
 import {
   getSurfaceLabel,
@@ -122,26 +122,9 @@ export async function saveRn2(project: Project) {
     filters: [{ name: 'Rally Navigator', extensions: ['rn2'] }],
   });
   if (!path) return;
-  let library: ReturnType<typeof loadLibrary> | undefined;
   const completed = await completeRn2Geometry(project, async entry => {
-    const { regions } = await (library ??= loadLibrary());
     const p = entry.turn.points[0],
       bounds = detailBounds({ lat: p.latitude, lon: p.longitude });
-    try {
-      requireCoverage(
-        [
-          [bounds[0], bounds[1]],
-          [bounds[0], bounds[3]],
-          [bounds[2], bounds[1]],
-          [bounds[2], bounds[3]],
-        ].map(c => ({ lon: c[0], lat: c[1] })),
-        regions
-      );
-    } catch {
-      throw new Error(
-        'Für den vollständigen RN2-Export dieses älteren Roadbooks fehlen lokale Gebietsdaten. Bitte das Gebiet einschließlich Kreuzungsumgebung unter Einstellungen laden.'
-      );
-    }
     return (await osm.query(bounds, 'detail')).features;
   });
   const body = JSON.stringify(exportRn2(completed), null, 2) + '\n';

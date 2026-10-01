@@ -3,8 +3,7 @@
   "tabs": {
     "interface": "Interface",
     "app": "App",
-    "about": "About",
-    "regions": "Areas"
+    "about": "About"
   },
   "interface": {
     "theme": "Theme",
@@ -74,10 +73,16 @@
     "clearCache": "Clear previews",
     "clearing": "Clearing...",
     "noCachedRoutes": "No rendered roadbook previews found.",
+    "geographicCache": "Local map and routing data",
+    "geographicCacheDescription": "Missing data is downloaded automatically when creating a route and reused later.",
+    "mapTileCache": "OpenFreeMap tiles",
+    "routingCache": "BRouter routing segments",
+    "clearDataCache": "Clear data",
+    "clearGeographicCacheConfirm": "Clear this data? It will be downloaded again when needed.",
     "resetApp": "Complete App Reset",
-    "resetAppDescription": "Reset interface preferences and rendered previews. Saved roadbooks and map regions are preserved.",
+    "resetAppDescription": "Reset interface preferences and rendered previews. Saved roadbooks and routing/map caches are preserved.",
     "resetAppButton": "Reset App & Reload",
-    "resetAppConfirm": "Reset interface preferences and rendered roadbook previews? Saved roadbooks and map regions are preserved.",
+    "resetAppConfirm": "Reset interface preferences and rendered roadbook previews? Saved roadbooks and routing/map caches are preserved.",
     "resetAppError": "Error resetting the app. Please try again.",
     "resetting": "Resetting..."
   },
@@ -87,7 +92,7 @@
     "serviceUrl": "Nominatim service URL",
     "apiKey": "Nominatim API key",
     "apiKeyPlaceholder": "API key (optional)",
-    "privacyNotice": "Search terms and selected coordinates are sent to this provider. Local search remains available without a connection.",
+    "privacyNotice": "Search terms and selected coordinates are sent to this provider. Address search is unavailable without a connection.",
     "usageNotice": "The public OSM service permits at most one request per second across all app users. Use another provider for a larger user base.",
     "usagePolicy": "Usage policy",
     "testConnection": "Test connection",

@@ -147,6 +147,7 @@
   },
   "states": {
     "routeCalculating": "Route wird berechnet...",
+    "loadingRoutingData": "Routingdaten werden geladen...",
     "savingChanges": "Änderungen werden gespeichert...",
     "savingRoute": "Roadbook wird gespeichert..."
   },

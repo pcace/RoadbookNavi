@@ -72,3 +72,10 @@ Thumbs.db
 *.sublime-project
 *-debug.log*
 pnpm-debug.log*
+
+# OBF bridge build output (generated classpath from OsmAnd checkout)
+native/obf-bridge/resources/
+/native/region-format/testdata/
+
+# Rust build output (rnregion crate)
+native/region-format/target/

@@ -26,6 +26,9 @@ importers:
       '@emotion/styled':
         specifier: 11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
+      '@mapbox/vector-tile':
+        specifier: 2.0.5
+        version: 2.0.5
       '@tauri-apps/api':
         specifier: ^2
         version: 2.11.1
@@ -71,6 +74,9 @@ importers:
       next-themes:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      pbf:
+        specifier: 4.0.2
+        version: 4.0.2
       pdfjs-dist:
         specifier: 5.4.296
         version: 5.4.296

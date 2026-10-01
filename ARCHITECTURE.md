@@ -9,7 +9,7 @@ without Tauri.
 ### `src`
 
 The application shell and local feature services live here. Top-level modules
-handle region downloads, OSM queries, route generation, import/export, and native
+handle OpenFreeMap tile decoding, route generation, import/export, and native
 bridges. `src/ui` contains screens, stores, translations, and presentation logic.
 UI code should call the service interfaces instead of invoking Tauri commands
 directly when a service already exists.
@@ -23,9 +23,8 @@ remain independent of React, browser storage, Tauri, and operating-system APIs.
 ### `src-tauri`
 
 The Rust host owns local persistence and operating-system integration. Its SQLite
-library stores projects, downloaded-region metadata, and preferences. Region
-files contain indexed OSM data. Commands also manage downloads, geocoding,
-location access, and the desktop BRouter process.
+library stores projects and preferences. Commands also manage the persistent MVT
+and RD5 caches, geocoding, location access, and the desktop BRouter process.
 
 ### `native/brouter` and `native/tauri-plugin-brouter`
 
@@ -36,15 +35,19 @@ bundled profiles, license, and build resources for both targets.
 
 ## Data flow
 
-1. A region download stores the source extract, indexed OSM features, and required
-   BRouter segment names locally.
-2. Route planning sends waypoints and a selected `.brf` profile to the local
-   BRouter engine.
-3. The returned GeoJSON is parsed in `src/core`; a worker detects turns and
-   generates tulip geometry from the local OSM index.
-4. Projects are saved in the local SQLite library. Rendered PDFs are cached in
+1. Route planning derives the required 5° BRouter segments from the waypoints,
+   downloads missing RD5 files, and sends the route to the local engine.
+2. If BRouter reports another required segment while routing, that exact segment
+   is downloaded and the calculation is retried.
+3. The returned GeoJSON is parsed in `src/core`; a worker detects turns.
+4. The app downloads the unique z14 OpenFreeMap MVT tiles covering the 420-metre
+   turn windows. Rust stores the raw tiles by OpenFreeMap planet version, while
+   TypeScript converts OpenMapTiles layers to the renderer's GeoJSON contract.
+5. Tulip arrows and the travelled path come from BRouter. MVT data contributes
+   surrounding roads, buildings, railways, and water only.
+6. Projects are saved in the local SQLite library. Rendered PDFs are cached in
    IndexedDB because the PDF viewer consumes browser-native blobs.
-5. RN2 is the editable interchange format. GPX, GeoJSON, and PDF are export-only
+7. RN2 is the editable interchange format. GPX, GeoJSON, and PDF are export-only
    formats.
 
 ## Design rules

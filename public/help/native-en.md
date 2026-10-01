@@ -1,10 +1,12 @@
 # Help & Documentation
 
-## Working offline
+## Local data
 
-Download complete regions under **Settings → Regions** before your trip. Routing, intersection drawings and PDFs are computed on the device. Green outlines show downloaded regions. A region's bounding rectangle can include areas outside its actual data coverage; download neighbouring regions for routes near a border.
-
-OpenFreeMap styles require internet. **Offline · Gebietsdaten** displays downloaded OSM features. Optional online address search is configured in Settings.
+When calculating a route, RoadbookNavi automatically downloads missing BRouter
+routing segments and the OpenFreeMap tiles used for intersection drawings. Data
+is stored on the device and reused by later roadbooks. Saved roadbooks and
+previously downloaded routing data remain available without a connection. A new
+route in a previously unused area and the online map require a connection.
 
 ## Planning roadbooks
 
@@ -13,20 +15,25 @@ Add, move or remove waypoints on the map. Routing profiles determine the route. 
 These videos were recorded in the web version; some menus and map styles differ in the native app.
 
 ### Routing profiles
+
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/routeprofiles.mp4" type="video/mp4"></video>
 
 ### Editing waypoints
+
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/movecreatedelete.mp4" type="video/mp4"></video>
 
 ### Address search
-Submit a search using Enter or the search button. Without an online provider, downloaded places remain available.
+
+Submit a search using Enter or the search button. Address search is unavailable without an online provider; waypoints can still be placed directly on the map.
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/adresssearch.mp4" type="video/mp4"></video>
 
 ### Surfaces
+
 Coloured route segments use BRouter/OSM tags. Missing `surface` values are inferred from `tracktype` and road class, as in the web version. Unknown does not mean offroad.
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/analysis.mp4" type="video/mp4"></video>
 
 ### Existing roadbooks
+
 Select a saved roadbook in the planner to edit it. Filter the list by name and sort by date, name or distance. Date means last modification; unknown distances sort last.
 <video controls preload="metadata" loop muted playsinline><source src="/help/img/small/loadRoadbook.mp4" type="video/mp4"></video>
 

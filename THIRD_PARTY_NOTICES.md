@@ -14,10 +14,10 @@ code, not independently licensed third-party material listed here.
   embedded in individual SVG files. Glyphs marked `CC BY-NC-SA` by upstream are
   intentionally not distributed with RoadbookNavi. The remaining asset terms
   continue to apply and are not replaced by RoadbookNavi's GPL-3.0 license.
-- **OpenStreetMap data** is downloaded from external regional providers under
-  the Open Database License (ODbL). Required attribution remains visible in maps.
-- **OpenFreeMap/OpenMapTiles styles** preserve their BSD, MIT, and Creative
-  Commons notices in `src/map-presets/`.
+- **OpenStreetMap data** is accessed through OpenFreeMap vector tiles under the
+  Open Database License (ODbL). Required attribution remains visible in maps.
+- **OpenFreeMap/OpenMapTiles vector tiles and styles** preserve their BSD, MIT,
+  Creative Commons, and data notices in `src/map-presets/` and in the map UI.
 - **Noto Sans map glyphs** use the SIL Open Font License. See
   `public/map-fonts/OFL.txt`.
 
