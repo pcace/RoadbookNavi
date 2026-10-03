@@ -28,3 +28,10 @@ export const geographicCacheUsage = () =>
   invoke<{ mapTiles: number; routing: number }>('geographic_cache_usage');
 export const clearGeographicCache = (kind: 'mapTiles' | 'routing') =>
   invoke<void>('clear_geographic_cache', { kind });
+export interface UpdateStatus {
+  currentVersion: string;
+  latestVersion: string;
+  releaseUrl: string;
+  updateAvailable: boolean;
+}
+export const checkForUpdate = () => invoke<UpdateStatus>('check_for_update');

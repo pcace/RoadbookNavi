@@ -3,6 +3,7 @@ mod geocoding;
 mod location;
 mod map_tiles;
 mod store;
+mod updates;
 #[cfg(target_os = "android")]
 include!(concat!(env!("OUT_DIR"), "/profiles.rs"));
 use serde_json::{json, Value};
@@ -13,6 +14,14 @@ use tauri::{AppHandle, Manager, State};
 #[tauri::command]
 fn platform() -> &'static str {
     std::env::consts::OS
+}
+
+#[tauri::command]
+async fn check_for_update(app: AppHandle) -> Result<updates::UpdateStatus> {
+    let current_version = app.package_info().version.to_string();
+    tauri::async_runtime::spawn_blocking(move || updates::check(&current_version))
+        .await
+        .map_err(err)?
 }
 
 struct LocalState {
@@ -292,6 +301,7 @@ pub fn run() {
             storage_usage,
             geographic_cache_usage,
             clear_geographic_cache,
+            check_for_update,
             get_map_tile,
             geocode,
             calculate_route,
