@@ -1,3 +1,9 @@
+## [1.39.0-beta.2](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.1...v1.39.0-beta.2) (2026-10-03)
+
+### New features
+
+- **settings:** add GitHub release update check ([4cc28c6](https://github.com/pcace/RoadbookNavi/commit/4cc28c6b1d8bd949773c57200873443fe5c28ec7))
+
 ## [1.39.0-beta.1](https://github.com/pcace/RoadbookNavi/compare/v1.38.5...v1.39.0-beta.1) (2026-10-01)
 
 ### New features
