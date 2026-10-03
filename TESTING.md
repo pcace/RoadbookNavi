@@ -22,4 +22,4 @@ OFFLINE_PBF_FIXTURE=/path/to/extract.osm.pbf \
 
 Generated installers should also be smoke-tested on their target platform. A
 release build must open the local project list, import an RN2 file, calculate a
-route inside a downloaded region, render a roadbook, and export it again.
+route using cached map and routing data, render a roadbook, and export it again.

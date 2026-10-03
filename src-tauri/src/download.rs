@@ -216,26 +216,6 @@ pub fn missing_segment(error: &str) -> Option<String> {
         .map(str::to_owned)
 }
 
-pub fn sweep_legacy(root: &Path) {
-    for name in [
-        "regions",
-        "downloads",
-        "catalogue.json",
-        "download-status.json",
-        "download-queue.json",
-    ] {
-        let path = root.join(name);
-        if path.is_dir() {
-            let _ = fs::remove_dir_all(path);
-        } else {
-            let _ = fs::remove_file(path);
-        }
-    }
-    if let Ok(db) = crate::store::open(root) {
-        let _ = db.execute("DROP TABLE IF EXISTS regions", []);
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -278,9 +278,6 @@ pub fn run() {
                     fs::write(dest, content)?;
                 }
             }
-            // Region packages belonged to the retired OBF prototype. Routing
-            // and map tiles now use independent on-demand caches.
-            download::sweep_legacy(&root);
             app.manage(LocalState { root });
             app.manage(location::LocationState::default());
             Ok(())
