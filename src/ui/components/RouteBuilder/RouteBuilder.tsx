@@ -76,7 +76,6 @@ export const RouteBuilder: React.FC<RouteBuilderProps> = ({
     setTurnPoints,
   } = useRouteBuilderStoreActions();
   const routes = useRoutesStore(state => state.routes);
-  const maxDistanceKm = 40_000;
   const settingsStore = useSettings();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -216,7 +215,6 @@ export const RouteBuilder: React.FC<RouteBuilderProps> = ({
     isSidebarCollapsed,
     loadingRouteData,
     mapRef,
-    maxDistanceKm,
     reloadCurrentRoute,
     routeData,
     routeNameInput,
