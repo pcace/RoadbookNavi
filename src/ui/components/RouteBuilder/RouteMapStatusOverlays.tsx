@@ -13,7 +13,6 @@ interface HoverInfo {
 }
 
 interface RouteMapStatusOverlaysProps {
-  distanceWarning: string | null;
   error: string | null;
   hoverInfo: HoverInfo | null;
   isAnalysisOpen: boolean;
@@ -24,7 +23,6 @@ interface RouteMapStatusOverlaysProps {
 }
 
 export const RouteMapStatusOverlays: React.FC<RouteMapStatusOverlaysProps> = ({
-  distanceWarning,
   error,
   hoverInfo,
   isAnalysisOpen,
@@ -92,31 +90,6 @@ export const RouteMapStatusOverlays: React.FC<RouteMapStatusOverlaysProps> = ({
             textAlign="center"
           >
             ❌ {error}
-          </Text>
-        </Flex>
-      )}
-
-      {distanceWarning && (
-        <Flex
-          position="absolute"
-          top={error ? '80px' : '20px'}
-          left="20px"
-          right="20px"
-          bg={notificationColors.warning.bg}
-          alignItems="center"
-          justifyContent="center"
-          zIndex={1001}
-          p={4}
-          borderRadius="md"
-          boxShadow="lg"
-        >
-          <Text
-            fontSize="md"
-            fontWeight="medium"
-            color={notificationColors.warning.color}
-            textAlign="center"
-          >
-            ⚠️ {distanceWarning}
           </Text>
         </Flex>
       )}

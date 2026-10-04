@@ -3,86 +3,26 @@ import { Layer, Source } from 'react-map-gl/maplibre';
 import type { FeatureCollection, LineString, Point } from 'geojson';
 
 interface RouteMapLayersProps {
-  dragNeighborCircles: FeatureCollection | null;
   effectiveLoadingRouteData: FeatureCollection<LineString> | null;
   gpxUnderlay: FeatureCollection<LineString> | null;
   hoveredSurfaceKey: string | null;
-  isLoading: boolean;
   loadingRouteData: FeatureCollection<LineString> | null;
-  maxDistanceCircle: FeatureCollection | null;
   normalizedRouteData: FeatureCollection<LineString> | null;
   routeLineColor: any;
   turnPoints: FeatureCollection<Point> | null;
 }
 
 export const RouteMapLayers: React.FC<RouteMapLayersProps> = ({
-  dragNeighborCircles,
   effectiveLoadingRouteData,
   gpxUnderlay,
   hoveredSurfaceKey,
-  isLoading,
   loadingRouteData,
-  maxDistanceCircle,
   normalizedRouteData,
   routeLineColor,
   turnPoints,
 }) => {
   return (
     <>
-      {dragNeighborCircles && (
-        <Source
-          id="drag-neighbor-circles"
-          type="geojson"
-          data={dragNeighborCircles}
-        >
-          <Layer
-            id="drag-neighbor-circles-fill"
-            type="fill"
-            paint={{
-              'fill-color': '#f59e0b',
-              'fill-opacity': 0.1,
-            }}
-          />
-          <Layer
-            id="drag-neighbor-circles-outline"
-            type="line"
-            paint={{
-              'line-color': '#f59e0b',
-              'line-width': 2,
-              'line-opacity': 0.6,
-              'line-dasharray': [4, 4],
-            }}
-          />
-        </Source>
-      )}
-
-      {maxDistanceCircle && !isLoading && (
-        <Source
-          id="max-distance-circle"
-          type="geojson"
-          data={maxDistanceCircle}
-        >
-          <Layer
-            id="max-distance-circle-fill"
-            type="fill"
-            paint={{
-              'fill-color': '#3b82f6',
-              'fill-opacity': 0.05,
-            }}
-          />
-          <Layer
-            id="max-distance-circle-outline"
-            type="line"
-            paint={{
-              'line-color': '#3b82f6',
-              'line-width': 2,
-              'line-opacity': 0.4,
-              'line-dasharray': [4, 4],
-            }}
-          />
-        </Source>
-      )}
-
       {gpxUnderlay && gpxUnderlay.features && gpxUnderlay.features[0] && (
         <Source id="gpx-underlay" type="geojson" data={gpxUnderlay}>
           <Layer

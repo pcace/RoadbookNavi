@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import type { FeatureCollection, LineString } from 'geojson';
-import { circle, point } from '@turf/turf';
 import { formatMeters } from '../utils/routeAnalysis';
 import { normalizeSurfaceKey } from '../utils/surfaces';
 import type { RoutePoint } from '../types';
@@ -14,7 +13,6 @@ interface UseRouteMapInteractionsArgs {
   handleRouteMouseDown: (lng: number, lat: number) => string | null;
   isLoading: boolean;
   loadingRouteData: FeatureCollection<LineString> | null;
-  maxDistanceKm: number;
   removePoint: (id: string) => void;
   routeData: FeatureCollection<LineString> | null;
   routePoints: RoutePoint[];
@@ -31,7 +29,6 @@ export const useRouteMapInteractions = ({
   handleRouteMouseDown,
   isLoading,
   loadingRouteData,
-  maxDistanceKm,
   removePoint,
   routeData,
   routePoints,
@@ -108,79 +105,6 @@ export const useRouteMapInteractions = ({
     effectiveRoutePoints,
     loadingRouteData,
     localDragPosition,
-    routeDraggingPointId,
-  ]);
-
-  const maxDistanceCircle = useMemo(() => {
-    const activelyDraggingId = routeDraggingPointId || draggingPointId;
-    if (effectiveRoutePoints.length === 0 || activelyDraggingId) {
-      return null;
-    }
-
-    const lastPoint = effectiveRoutePoints[effectiveRoutePoints.length - 1];
-    const center = point([lastPoint.lon, lastPoint.lat]);
-
-    return {
-      type: 'FeatureCollection',
-      features: [
-        circle(center, maxDistanceKm, {
-          steps: 64,
-          units: 'kilometers',
-        }),
-      ],
-    } as FeatureCollection;
-  }, [
-    draggingPointId,
-    effectiveRoutePoints,
-    maxDistanceKm,
-    routeDraggingPointId,
-  ]);
-
-  const dragNeighborCircles = useMemo(() => {
-    const activelyDraggingId = routeDraggingPointId || draggingPointId;
-    if (!activelyDraggingId) {
-      return null;
-    }
-
-    const pointIndex = effectiveRoutePoints.findIndex(
-      point => point.id === activelyDraggingId
-    );
-    if (pointIndex === -1) {
-      return null;
-    }
-
-    const circles = [];
-
-    if (pointIndex > 0) {
-      const prevPoint = effectiveRoutePoints[pointIndex - 1];
-      circles.push(
-        circle(point([prevPoint.lon, prevPoint.lat]), maxDistanceKm, {
-          steps: 64,
-          units: 'kilometers',
-        })
-      );
-    }
-
-    if (pointIndex < effectiveRoutePoints.length - 1) {
-      const nextPoint = effectiveRoutePoints[pointIndex + 1];
-      circles.push(
-        circle(point([nextPoint.lon, nextPoint.lat]), maxDistanceKm, {
-          steps: 64,
-          units: 'kilometers',
-        })
-      );
-    }
-
-    return circles.length > 0
-      ? ({
-          type: 'FeatureCollection',
-          features: circles,
-        } as FeatureCollection)
-      : null;
-  }, [
-    draggingPointId,
-    effectiveRoutePoints,
-    maxDistanceKm,
     routeDraggingPointId,
   ]);
 
@@ -331,11 +255,9 @@ export const useRouteMapInteractions = ({
   };
 
   return {
-    dragNeighborCircles,
     effectiveLoadingRouteData,
     effectiveRoutePoints,
     hoverInfo,
-    maxDistanceCircle,
     onMapClick: !isLoading ? onMapClick : undefined,
     onMapMouseDown: !isLoading && routeData ? onMapMouseDown : undefined,
     onMapMouseMove,
