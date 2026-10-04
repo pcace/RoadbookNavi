@@ -28,6 +28,17 @@ struct LocalState {
     root: PathBuf,
 }
 
+fn java_compatible_path(path: &std::path::Path) -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        // Java's launcher cannot open JAR files through Windows verbatim paths
+        // such as `\\?\C:\...`, which Tauri may return for resource files.
+        return dunce::simplified(path).to_path_buf();
+    }
+    #[cfg(not(target_os = "windows"))]
+    path.to_path_buf()
+}
+
 fn routing_failure(root: &std::path::Path, detail: impl AsRef<str>) -> String {
     let detail = detail.as_ref().trim();
     let log_path = root.join("last-routing-error.log");
@@ -228,12 +239,14 @@ async fn calculate_route(
                         process::{Command, Stdio},
                     };
                     let resources = app.path().resource_dir().map_err(err)?.join("engine");
-                    let java = resources.join(if cfg!(target_os = "windows") {
-                        "runtime/bin/java.exe"
-                    } else {
-                        "runtime/bin/java"
-                    });
-                    let jar = resources.join("brouter.jar");
+                    let java =
+                        java_compatible_path(&resources.join(if cfg!(target_os = "windows") {
+                            "runtime/bin/java.exe"
+                        } else {
+                            "runtime/bin/java"
+                        }));
+                    let jar = java_compatible_path(&resources.join("brouter.jar"));
+                    let routing_root = java_compatible_path(&root);
                     if !java.is_file() {
                         return Err(format!(
                             "Bundled Java runtime is missing: {}",
@@ -253,9 +266,9 @@ async fn calculate_route(
                         command.creation_flags(0x08000000);
                     }
                     let mut child = command
-                        .args(["-Xmx512m", "-jar"])
+                        .args(["-Xmx512m", "-Dfile.encoding=UTF-8", "-jar"])
                         .arg(&jar)
-                        .arg(&root)
+                        .arg(&routing_root)
                         .arg(&profile)
                         .stdin(Stdio::piped())
                         .stdout(Stdio::piped())

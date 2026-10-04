@@ -2809,6 +2809,7 @@ name = "roadbooknavi"
 version = "1.39.0-beta.3"
 dependencies = [
  "base64 0.22.1",
+ "dunce",
  "libc",
  "objc2",
  "objc2-core-location",
