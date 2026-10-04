@@ -1,3 +1,9 @@
+## [1.39.0-beta.4](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.3...v1.39.0-beta.4) (2026-10-04)
+
+### Bug fixes
+
+- **windows:** normalize routing engine paths ([f260d46](https://github.com/pcace/RoadbookNavi/commit/f260d46026fad020490d6d77cee2b04b50580f72))
+
 ## [1.39.0-beta.3](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.2...v1.39.0-beta.3) (2026-10-04)
 
 ### Bug fixes
