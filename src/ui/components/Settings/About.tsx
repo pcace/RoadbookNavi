@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Text, Link } from '@chakra-ui/react';
+import { Box, Button, Text, Link } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import { useColorModeValue } from '../ui/color-mode';
 import { useAppStore } from '../../stores/appStore';
+import { checkForUpdate, type UpdateStatus } from '../../../services';
 
 const About: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -12,6 +13,24 @@ const About: React.FC = () => {
   // Get version info from store
   const versionInfo = useAppStore(state => state.versionInfo);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isChecking, setIsChecking] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null);
+  const [updateError, setUpdateError] = useState(false);
+
+  const checkVersion = async () => {
+    if (isChecking || !isOnline) return;
+    setIsChecking(true);
+    setUpdateError(false);
+    try {
+      setUpdateStatus(await checkForUpdate());
+    } catch (error) {
+      console.error('Unable to check for updates:', error);
+      setUpdateStatus(null);
+      setUpdateError(true);
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   // Monitor online status
   useEffect(() => {
@@ -88,7 +107,47 @@ const About: React.FC = () => {
                 {t('settings:about.offline')}
               </Text>
             )}
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={!isOnline || isChecking}
+              loading={isChecking}
+              onClick={checkVersion}
+            >
+              {isChecking
+                ? t('settings:about.checking')
+                : t('settings:about.checkForUpdates')}
+            </Button>
           </Box>
+
+          {updateStatus?.updateAvailable && (
+            <Box mt="0.75rem">
+              <Text color="green.600" fontSize="0.85rem" mb="0.5rem">
+                {t('settings:about.updateAvailable', {
+                  version: updateStatus.latestVersion,
+                })}
+              </Text>
+              <Button asChild size="sm" colorPalette="blue">
+                <a
+                  href={updateStatus.releaseUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {t('settings:about.openRelease')}
+                </a>
+              </Button>
+            </Box>
+          )}
+          {updateStatus && !updateStatus.updateAvailable && (
+            <Text color="green.600" fontSize="0.85rem" mt="0.75rem">
+              {t('settings:about.upToDate')}
+            </Text>
+          )}
+          {updateError && (
+            <Text color="red.500" fontSize="0.85rem" mt="0.75rem">
+              {t('settings:about.checkFailed')}
+            </Text>
+          )}
         </Box>
 
         <Text color={textColor} fontSize="0.9rem" mb="0.5rem">

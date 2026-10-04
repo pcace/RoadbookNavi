@@ -231,7 +231,7 @@ export function exportRn2(project: Project): Rn2Document {
       : undefined;
     if (e && !elements) {
       throw new Error(
-        'RN2-Geometrien fehlen. Bitte den Export über den Speicherdialog starten, damit die lokalen Gebietsdaten ergänzt werden.'
+        'RN2-Geometrien fehlen. Bitte den Export über den Speicherdialog starten, damit die benötigten Kartendaten ergänzt werden.'
       );
     }
     return {

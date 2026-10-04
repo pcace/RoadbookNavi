@@ -1,3 +1,39 @@
+## [1.39.0-beta.4](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.3...v1.39.0-beta.4) (2026-10-04)
+
+### Bug fixes
+
+- **windows:** normalize routing engine paths ([f260d46](https://github.com/pcace/RoadbookNavi/commit/f260d46026fad020490d6d77cee2b04b50580f72))
+
+## [1.39.0-beta.3](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.2...v1.39.0-beta.3) (2026-10-04)
+
+### Bug fixes
+
+- :bug: windows routing problems ([f1738cc](https://github.com/pcace/RoadbookNavi/commit/f1738ccf9e3bc98797ed3baeb5ef5842b2cebd96))
+
+## [1.39.0-beta.2](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.1...v1.39.0-beta.2) (2026-10-03)
+
+### New features
+
+- **settings:** add GitHub release update check ([4cc28c6](https://github.com/pcace/RoadbookNavi/commit/4cc28c6b1d8bd949773c57200873443fe5c28ec7))
+
+## [1.39.0-beta.1](https://github.com/pcace/RoadbookNavi/compare/v1.38.5...v1.39.0-beta.1) (2026-10-01)
+
+### New features
+
+- **map:** use on-demand OpenFreeMap and BRouter data ([61116e3](https://github.com/pcace/RoadbookNavi/commit/61116e33fd4088137060d18642df8d4dc635cba2))
+- **obf-bridge:** resident OBF query service with vendored sources and build script ([baaf442](https://github.com/pcace/RoadbookNavi/commit/baaf442a377742288b05d0eaf24602c87e25e972))
+- **obf-bridge:** rust bridge client with end-to-end test against real OBF ([56ab3ea](https://github.com/pcace/RoadbookNavi/commit/56ab3eab3a925f8675316b6b4117ec490406b8f5))
+- **obf:** rebuild storage, catalogue and install around OBF bridge; drop legacy import pipeline ([b5658da](https://github.com/pcace/RoadbookNavi/commit/b5658da967e343823b4c5f84f42ac30566628ebb))
+
+### Documentation
+
+- **obf-spike:** license assessment for OBF data, jars and download endpoint ([9160248](https://github.com/pcace/RoadbookNavi/commit/9160248b89306ec04996f1020c7c095a3e4fc017))
+- **region-format:** document OsmAnd OBF spike results and reproduction ([c6e2bda](https://github.com/pcace/RoadbookNavi/commit/c6e2bda130d5b55bebb87d031e8d6f0b6ac2edd1))
+
+### Build and dependencies
+
+- close pull requests with malformed titles ([#4](https://github.com/pcace/RoadbookNavi/issues/4)) ([#5](https://github.com/pcace/RoadbookNavi/issues/5)) ([8172144](https://github.com/pcace/RoadbookNavi/commit/8172144a5c7c47d2759f2ecbb638c3862a56f4bd))
+
 ## [1.38.5](https://github.com/pcace/RoadbookNavi/compare/v1.38.4...v1.38.5) (2026-09-29)
 
 ### Bug fixes

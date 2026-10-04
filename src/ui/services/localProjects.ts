@@ -1,8 +1,7 @@
 import { joinLegacyTrack } from '../../legacy-track';
 import type { Project } from '../../model';
 import { newProject } from '../../model';
-import { loadLibrary, repository, routing, geocoder } from '../../services';
-import { requireCoverage, extent } from '../../geometry';
+import { repository, routing } from '../../services';
 import { generate } from '../../generate';
 import {
   renderPdf,
@@ -157,8 +156,6 @@ export async function fetchBrouterRoute(
       };
     }
   }
-  const { regions } = await loadLibrary();
-  requireCoverage(params.points, regions);
   if (signal?.aborted) throw new DOMException('Abgebrochen', 'AbortError');
   const routeData = await routing.route(
     params.points,
@@ -192,10 +189,8 @@ async function ready(id: string, onEvent?: (e: RoadbookProgressEvent) => void) {
   let promise = inFlight.get(id);
   if (!promise) {
     promise = (async () => {
-      const { regions } = await loadLibrary();
       p = await generate(
         p,
-        regions,
         (message, progress, total) =>
           onEvent?.({ event: 'status', data: { message, progress, total } }),
         new AbortController().signal
@@ -281,21 +276,7 @@ export async function exportRoadbook(params: {
 }
 export async function searchAddress(query: string, limit = 8) {
   const online = await onlineSearch(query);
-  if (online?.length) return { query, results: online.slice(0, limit) };
-  const features = await geocoder.search(query);
-  return {
-    query,
-    results: features.slice(0, limit).map((f, i) => {
-      const b = extent(f);
-      return {
-        id: i,
-        lat: (b[1] + b[3]) / 2,
-        lon: (b[0] + b[2]) / 2,
-        displayName: f.properties?.name || query,
-        address: {},
-      };
-    }),
-  };
+  return { query, results: online?.slice(0, limit) || [] };
 }
 export async function reverseGeocode(lat: number, lon: number) {
   return (

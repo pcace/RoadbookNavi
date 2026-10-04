@@ -41,7 +41,7 @@ preserves its drawings and only applies user edits such as a renamed roadbook.
 
 All visible entries become editable waypoints. Older imports containing only
 start and finish points are expanded when read. An unchanged route reuses its
-stored track without running routing or requiring downloaded region data.
+stored track without running routing or requiring previously cached map data.
 
 After an edit, the source document remains available as `rn2Source`, while the
 new route preview supplies the track used for regeneration. A drawing is retained

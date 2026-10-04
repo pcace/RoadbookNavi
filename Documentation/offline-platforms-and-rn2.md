@@ -16,7 +16,7 @@ does not depend on a RoadbookNavi service or account system.
 | iOS           | Not implemented; the Java routing engine needs a different integration | None             |
 
 CI builds all supported desktop targets and Android when Release Please creates a
-release. Hardware tests remain necessary for GPS, file dialogs, large region
+release. Hardware tests remain necessary for GPS, file dialogs, large map-data
 imports, suspend/resume, and route calculation.
 
 ## Project exchange through RN2
@@ -29,7 +29,7 @@ unmodified drawings are retained for round trips.
 Imported visible entries become editable route waypoints. If the route geometry
 around an entry changes, its custom drawing is discarded and regenerated from
 local OSM data. Unchanged drawings remain intact. Editing or regenerating a route
-requires the relevant map region to be installed.
+requires the relevant map and routing data to be cached.
 
 RN2 files may reference icons that are not embedded. RoadbookNavi maps known
 symbols to the bundled FIA/Tulip set. Unsupported private icons are represented

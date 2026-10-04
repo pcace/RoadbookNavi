@@ -3,6 +3,7 @@ import type { MutableRefObject } from 'react';
 import type { FeatureCollection, GeoJsonProperties, Point } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { fetchBrouterRoute } from '../../../services/localProjects';
+import { getErrorMessage } from '../../../utils/errorMessage';
 import { generateRandomColor } from '../../../utils/colorUtils';
 import { useRoutesStore } from '../../../stores/routesStore';
 import type { RoutePoint } from '../types';
@@ -123,10 +124,14 @@ export const useRouteBuilderEffects = ({
         setLoadingRouteData(null);
 
         setIsRouteTooLong(false);
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          const errorMessage =
-            err instanceof Error ? err.message : t('errors.routeLoadError');
+      } catch (err: unknown) {
+        const isAbortError =
+          typeof err === 'object' &&
+          err !== null &&
+          'name' in err &&
+          err.name === 'AbortError';
+        if (!isAbortError) {
+          const errorMessage = getErrorMessage(err, t('errors.routeLoadError'));
           setError(errorMessage);
           console.error('Error fetching route:', err);
 

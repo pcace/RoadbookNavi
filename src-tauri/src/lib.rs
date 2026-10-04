@@ -1,19 +1,13 @@
 mod download;
 mod geocoding;
 mod location;
-mod osm;
+mod map_tiles;
 mod store;
+mod updates;
 #[cfg(target_os = "android")]
 include!(concat!(env!("OUT_DIR"), "/profiles.rs"));
 use serde_json::{json, Value};
-use std::{
-    fs,
-    path::PathBuf,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-};
+use std::{fs, path::PathBuf};
 use store::{err, Result};
 use tauri::{AppHandle, Manager, State};
 
@@ -22,11 +16,50 @@ fn platform() -> &'static str {
     std::env::consts::OS
 }
 
+#[tauri::command]
+async fn check_for_update(app: AppHandle) -> Result<updates::UpdateStatus> {
+    let current_version = app.package_info().version.to_string();
+    tauri::async_runtime::spawn_blocking(move || updates::check(&current_version))
+        .await
+        .map_err(err)?
+}
+
 struct LocalState {
     root: PathBuf,
-    cancel: Arc<AtomicBool>,
-    busy: Arc<AtomicBool>,
-    aborted: Arc<AtomicBool>,
+}
+
+fn java_compatible_path(path: &std::path::Path) -> PathBuf {
+    #[cfg(target_os = "windows")]
+    {
+        // Java's launcher cannot open JAR files through Windows verbatim paths
+        // such as `\\?\C:\...`, which Tauri may return for resource files.
+        return dunce::simplified(path).to_path_buf();
+    }
+    #[cfg(not(target_os = "windows"))]
+    path.to_path_buf()
+}
+
+fn routing_failure(root: &std::path::Path, detail: impl AsRef<str>) -> String {
+    let detail = detail.as_ref().trim();
+    let log_path = root.join("last-routing-error.log");
+    let report = format!(
+        "RoadbookNavi routing diagnostic\nPlatform: {} {}\nData directory: {}\n\n{}\n",
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+        root.display(),
+        detail
+    );
+    let log_note = if fs::write(&log_path, report).is_ok() {
+        format!(" Diagnostic file: {}", log_path.display())
+    } else {
+        String::new()
+    };
+    let visible = if detail.chars().count() > 1200 {
+        format!("{}…", detail.chars().take(1200).collect::<String>())
+    } else {
+        detail.to_owned()
+    };
+    format!("{visible}{log_note}")
 }
 
 fn dir_size(path: &PathBuf) -> u64 {
@@ -55,14 +88,7 @@ fn library(state: State<LocalState>) -> Result<Value> {
         }
     }
     profiles.sort();
-    let mut regions = store::list(&state.root, "regions")?;
-    for region in regions.iter_mut() {
-        let size = store::region_path(&state.root, region)
-            .map(|p| fs::metadata(p).map(|m| m.len()).unwrap_or(0))
-            .unwrap_or(0);
-        region["size"] = json!(size);
-    }
-    Ok(json!({"regions":regions,"profiles":profiles}))
+    Ok(json!({"profiles":profiles}))
 }
 #[tauri::command]
 fn list_projects(state: State<LocalState>) -> Result<Vec<Value>> {
@@ -98,13 +124,6 @@ fn import_profile(state: State<LocalState>, name: String, content: String) -> Re
     .map_err(err)
 }
 #[tauri::command]
-async fn get_catalogue(state: State<'_, LocalState>, refresh: bool) -> Result<Value> {
-    let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || download::catalogue(&root, refresh))
-        .await
-        .map_err(err)?
-}
-#[tauri::command]
 fn storage_usage(state: State<LocalState>) -> Result<Value> {
     #[cfg(unix)]
     fn available(path: &std::path::Path) -> u64 {
@@ -125,199 +144,29 @@ fn storage_usage(state: State<LocalState>) -> Result<Value> {
     }
     Ok(json!({"available":available(&state.root),"total":dir_size(&state.root)}))
 }
-// Cache PBF Content-Length values because the Geofabrik catalogue omits sizes.
-// Query up to eight allowed hosts concurrently.
 #[tauri::command]
-async fn catalogue_sizes(state: State<'_, LocalState>, urls: Vec<String>) -> Result<Value> {
-    let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || {
-        let cache_path = root.join("catalogue-sizes.json");
-        let mut cache: Value = fs::read(&cache_path)
-            .ok()
-            .and_then(|b| serde_json::from_slice(&b).ok())
-            .unwrap_or(json!({}));
-        // Cached zeros are stale poison from the old HEAD-based sizing — treat them as missing.
-        let missing: Vec<String> = urls
-            .into_iter()
-            .filter(|u| cache[u.as_str()].as_u64().unwrap_or(0) == 0)
-            .collect();
-        for batch in missing.chunks(8) {
-            let results: Vec<(String, Option<u64>)> = std::thread::scope(|s| {
-                batch
-                    .iter()
-                    .map(|u| {
-                        s.spawn(move || {
-                            if let Ok(parsed) = reqwest::Url::parse(u) {
-                                if parsed.scheme() == "https"
-                                    && download::is_allowed_host(parsed.host_str().unwrap_or(""))
-                                {
-                                    return (
-                                        u.clone(),
-                                        download::content_length(parsed.as_str()).ok().flatten(),
-                                    );
-                                }
-                            }
-                            (u.clone(), None)
-                        })
-                    })
-                    .collect::<Vec<_>>()
-                    .into_iter()
-                    .map(|h| h.join())
-                    .filter_map(|r| r.ok())
-                    .collect()
-            });
-            for (u, len) in results {
-                if let Some(len) = len.filter(|l| *l > 0) {
-                    cache[u.as_str()] = json!(len);
-                }
-            }
-        }
-        let tmp = cache_path.with_extension("json.tmp");
-        if fs::write(&tmp, serde_json::to_vec(&cache).map_err(err)?).is_ok() {
-            let _ = fs::rename(&tmp, &cache_path);
-        }
-        Ok(json!({"sizes":cache}))
+fn geographic_cache_usage(state: State<LocalState>) -> Value {
+    json!({
+        "mapTiles": dir_size(&state.root.join("map-tiles")),
+        "routing": dir_size(&state.root.join("engine/segments4"))
     })
-    .await
-    .map_err(err)?
 }
 #[tauri::command]
-fn download_status(state: State<LocalState>) -> Option<Value> {
-    let mut value = match download::status(&state.root) {
-        Some(v) => v,
-        None => json!({}),
+fn clear_geographic_cache(state: State<LocalState>, kind: String) -> Result<()> {
+    let path = match kind.as_str() {
+        "mapTiles" => state.root.join("map-tiles"),
+        "routing" => state.root.join("engine/segments4"),
+        _ => return Err("Unbekannter Cache".into()),
     };
-    value["active"] = json!(state.busy.load(Ordering::SeqCst));
-    value["queue"] = json!(download::read_queue(&state.root));
-    if value.get("phase").is_none() {
-        if value["queue"].as_array().is_some_and(|q| !q.is_empty()) {
-            value["phase"] = json!("Warteschlange")
-        } else {
-            return None;
-        }
-    }
-    Some(value)
-}
-#[tauri::command]
-fn cancel_download(state: State<LocalState>) {
-    state.cancel.store(true, Ordering::Relaxed);
-}
-#[tauri::command]
-fn abort_install(app: AppHandle, state: State<LocalState>) {
-    state.aborted.store(true, Ordering::Relaxed);
-    state.cancel.store(true, Ordering::Relaxed);
-    // Cancellation affects both the active operation and the queue.
-    let _ = download::write_queue(&state.root, vec![]);
-    // If no operation is active after an error or an app restart while paused,
-    // discard stale state so the cancel button always has a visible effect.
-    // Remove cache directories and partial targets from the previous operation.
-    if !state.busy.load(Ordering::SeqCst) {
-        if let Ok(root) = app.path().app_data_dir() {
-            let status = download::status(&root).unwrap_or(json!({}));
-            if let Some(id) = status["region"]["id"].as_str() {
-                if let Ok(key) = store::key(id) {
-                    let _ = fs::remove_dir_all(root.join("downloads").join(key));
-                }
-            }
-            if let Ok(entries) = fs::read_dir(root.join("regions")) {
-                for entry in entries.flatten() {
-                    let p = entry.path();
-                    if p.extension().is_some_and(|x| x == "part") {
-                        let _ = fs::remove_file(p);
-                    }
-                }
-            }
-            let _ = fs::write(
-                root.join("download-status.json"),
-                serde_json::to_vec(&json!({"phase":"Abgebrochen","current":0,"total":null}))
-                    .unwrap_or_default(),
-            );
-        }
-    }
-}
-#[tauri::command]
-async fn install_region(
-    app: AppHandle,
-    state: State<'_, LocalState>,
-    region: Value,
-) -> Result<Value> {
-    // Queue and deduplicate a region when another download is already active.
-    if state.busy.swap(true, Ordering::SeqCst) {
-        let position = download::enqueue(&state.root, &region).map_err(err)?;
-        return Ok(json!({"queued":true,"position":position}));
-    }
-    state.cancel.store(false, Ordering::SeqCst);
-    state.aborted.store(false, Ordering::SeqCst);
-    let root = state.root.clone();
-    let cancel = state.cancel.clone();
-    let busy = state.busy.clone();
-    let aborted = state.aborted.clone();
-    // Install the requested region, then process the queue in FIFO order.
-    // A failed region does not block later items. Pausing preserves the queue;
-    // cancellation clears it.
-    tauri::async_runtime::spawn(async move {
-        let mut current = Some(region);
-        loop {
-            let Some(region_to_install) = current.take() else {
-                break;
-            };
-            let app2 = app.clone();
-            let root2 = root.clone();
-            let c2 = cancel.clone();
-            let a2 = aborted.clone();
-            let outcome = tauri::async_runtime::spawn_blocking(move || {
-                download::install(&app2, &root2, region_to_install, c2, a2)
-            })
-            .await
-            .map_err(err);
-            if cancel.load(Ordering::SeqCst) || aborted.load(Ordering::SeqCst) {
-                break;
-            }
-            if let Err(failure) = outcome {
-                download::progress_detail(&app, "Fehler", 0, None, Some(format!("{failure}")));
-            }
-            current = download::dequeue(&root);
-        }
-        busy.store(false, Ordering::SeqCst);
-    });
-    Ok(json!({"queued":false}))
-}
-#[tauri::command]
-fn remove_queued_region(state: State<LocalState>, id: String) -> Result<()> {
-    download::remove_queued(&state.root, &id).map_err(err)
-}
-#[tauri::command]
-fn remove_region(state: State<LocalState>, id: String) -> Result<()> {
-    if state.busy.load(Ordering::SeqCst) {
-        return Err("Download zuerst beenden".into());
-    }
-    if let Some(region) = store::list(&state.root, "regions")?
-        .into_iter()
-        .find(|r| r["id"] == id)
-    {
-        store::open(&state.root)?
-            .execute("DELETE FROM regions WHERE id=?1", [store::key(&id)?])
-            .map_err(err)?;
-        fs::remove_file(store::region_path(&state.root, &region)?).map_err(err)?;
-        // Shared routing segments are intentionally retained for other regions.
+    if path.exists() {
+        fs::remove_dir_all(path).map_err(err)?;
     }
     Ok(())
 }
 #[tauri::command]
-async fn query_features(
-    state: State<'_, LocalState>,
-    bbox: [f64; 4],
-    purpose: String,
-) -> Result<Value> {
+async fn get_map_tile(state: State<'_, LocalState>, z: u8, x: u32, y: u32) -> Result<Value> {
     let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || store::features(&root, bbox, &purpose))
-        .await
-        .map_err(err)?
-}
-#[tauri::command]
-async fn search_places(state: State<'_, LocalState>, query: String) -> Result<Vec<Value>> {
-    let root = state.root.clone();
-    tauri::async_runtime::spawn_blocking(move || store::search(&root, &query))
+    tauri::async_runtime::spawn_blocking(move || map_tiles::tile(&root, z, x, y))
         .await
         .map_err(err)?
 }
@@ -355,56 +204,129 @@ async fn calculate_route(
     {
         return Err("Routinganfrage ungültig oder zu groß".into());
     }
+    let points: Vec<(f64, f64)> = lonlats
+        .split('|')
+        .map(|point| {
+            let (lon, lat) = point.split_once(',').ok_or("Ungültiger Wegpunkt")?;
+            Ok((
+                lon.parse::<f64>().map_err(err)?,
+                lat.parse::<f64>().map_err(err)?,
+            ))
+        })
+        .collect::<Result<_>>()?;
+    if points.len() < 2 {
+        return Err("Mindestens zwei Wegpunkte setzen".into());
+    }
     let root = state.root.join("engine");
     tauri::async_runtime::spawn_blocking(move || {
-        #[cfg(target_os = "android")]
-        let output = tauri_plugin_brouter::route(
-            &app,
-            root.to_str().ok_or("Ungültiger Pfad")?,
-            &profile,
-            &lonlats,
-            &polygons,
-        )?;
-        #[cfg(not(target_os = "android"))]
-        let output = {
-            use std::{
-                io::Write,
-                process::{Command, Stdio},
-            };
-            let resources = app.path().resource_dir().map_err(err)?.join("engine");
-            let java = resources.join(if cfg!(target_os = "windows") {
-                "runtime/bin/java.exe"
-            } else {
-                "runtime/bin/java"
-            });
-            let mut command = Command::new(java);
-            #[cfg(target_os = "windows")]
-            {
-                use std::os::windows::process::CommandExt;
-                command.creation_flags(0x08000000);
+        download::ensure(&app, &root, &points)?;
+        for _ in 0..8 {
+            let result: Result<String> = (|| {
+                #[cfg(target_os = "android")]
+                {
+                    tauri_plugin_brouter::route(
+                        &app,
+                        root.to_str().ok_or("Ungültiger Pfad")?,
+                        &profile,
+                        &lonlats,
+                        &polygons,
+                    )
+                }
+                #[cfg(not(target_os = "android"))]
+                {
+                    use std::{
+                        io::Write,
+                        process::{Command, Stdio},
+                    };
+                    let resources = app.path().resource_dir().map_err(err)?.join("engine");
+                    let java =
+                        java_compatible_path(&resources.join(if cfg!(target_os = "windows") {
+                            "runtime/bin/java.exe"
+                        } else {
+                            "runtime/bin/java"
+                        }));
+                    let jar = java_compatible_path(&resources.join("brouter.jar"));
+                    let routing_root = java_compatible_path(&root);
+                    if !java.is_file() {
+                        return Err(format!(
+                            "Bundled Java runtime is missing: {}",
+                            java.display()
+                        ));
+                    }
+                    if !jar.is_file() {
+                        return Err(format!(
+                            "Bundled BRouter engine is missing: {}",
+                            jar.display()
+                        ));
+                    }
+                    let mut command = Command::new(java);
+                    #[cfg(target_os = "windows")]
+                    {
+                        use std::os::windows::process::CommandExt;
+                        command.creation_flags(0x08000000);
+                    }
+                    let mut child = command
+                        .args(["-Xmx512m", "-Dfile.encoding=UTF-8", "-jar"])
+                        .arg(&jar)
+                        .arg(&routing_root)
+                        .arg(&profile)
+                        .stdin(Stdio::piped())
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::piped())
+                        .spawn()
+                        .map_err(|error| {
+                            format!(
+                                "Could not start the bundled routing engine ({}): {error}",
+                                jar.display()
+                            )
+                        })?;
+                    if let Some(mut input) = child.stdin.take() {
+                        input
+                            .write_all(format!("{lonlats}\n{polygons}\n").as_bytes())
+                            .map_err(err)?;
+                    }
+                    let output = child.wait_with_output().map_err(err)?;
+                    if !output.status.success() {
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        let stdout = String::from_utf8_lossy(&output.stdout);
+                        return Err(format!(
+                            "BRouter exited with {}.\n{}{}",
+                            output.status,
+                            stderr.trim(),
+                            if stdout.trim().is_empty() {
+                                String::new()
+                            } else {
+                                format!("\nOutput: {}", stdout.trim())
+                            }
+                        ));
+                    }
+                    String::from_utf8(output.stdout).map_err(err)
+                }
+            })();
+            match result {
+                Ok(output) => {
+                    return serde_json::from_str(&output).map_err(|error| {
+                        routing_failure(
+                            &root,
+                            format!(
+                                "BRouter returned invalid JSON: {error}\nOutput: {}",
+                                output.chars().take(4000).collect::<String>()
+                            ),
+                        )
+                    })
+                }
+                Err(error) => {
+                    let Some(name) = download::missing_segment(&error) else {
+                        return Err(routing_failure(&root, error));
+                    };
+                    download::ensure_named(&app, &root, &name)?;
+                }
             }
-            let mut child = command
-                .args(["-Xmx512m", "-jar"])
-                .arg(resources.join("brouter.jar"))
-                .arg(&root)
-                .arg(&profile)
-                .stdin(Stdio::piped())
-                .stdout(Stdio::piped())
-                .stderr(Stdio::piped())
-                .spawn()
-                .map_err(err)?;
-            if let Some(mut input) = child.stdin.take() {
-                input
-                    .write_all(format!("{lonlats}\n{polygons}\n").as_bytes())
-                    .map_err(err)?;
-            }
-            let result = child.wait_with_output().map_err(err)?;
-            if !result.status.success() {
-                return Err(String::from_utf8_lossy(&result.stderr).into_owned());
-            }
-            String::from_utf8(result.stdout).map_err(err)?
-        };
-        serde_json::from_str(&output).map_err(err)
+        }
+        Err(routing_failure(
+            &root,
+            "BRouter requested an unexpected number of additional routing segments",
+        ))
     })
     .await
     .map_err(err)?
@@ -443,12 +365,7 @@ pub fn run() {
                     fs::write(dest, content)?;
                 }
             }
-            app.manage(LocalState {
-                root,
-                cancel: Arc::new(AtomicBool::new(false)),
-                busy: Arc::new(AtomicBool::new(false)),
-                aborted: Arc::new(AtomicBool::new(false)),
-            });
+            app.manage(LocalState { root });
             app.manage(location::LocationState::default());
             Ok(())
         })
@@ -459,19 +376,13 @@ pub fn run() {
             save_project,
             delete_project,
             import_profile,
-            get_catalogue,
             storage_usage,
-            catalogue_sizes,
-            download_status,
-            cancel_download,
-            abort_install,
-            install_region,
-            remove_region,
-            query_features,
-            search_places,
+            geographic_cache_usage,
+            clear_geographic_cache,
+            check_for_update,
+            get_map_tile,
             geocode,
             calculate_route,
-            remove_queued_region,
             location::location_start,
             location::location_current,
             location::location_stop

@@ -1,13 +1,14 @@
 # Place search
 
-RoadbookNavi always provides place search from installed OSM regions. Optional
-online search can be enabled under **Settings → App**. It uses a configurable
-Nominatim-compatible base URL and an optional user-provided token.
+Place search can be enabled under **Settings → App**. It uses a configurable
+Nominatim-compatible base URL and an optional user-provided token. Address search
+is unavailable without a connection; it is not required for routing or opening
+saved roadbooks.
 
 Search runs only after pressing Enter or the search button. Reverse geocoding runs
 when the user places or finishes moving a waypoint. Responses are cached locally
-in SQLite by provider URL, language, and query. Network failures fall back to the
-installed map data or coordinates.
+in SQLite by provider URL, language, and query. Reverse-geocoding failures fall
+back to coordinates.
 
 Requests originate from the device, use an identifying user agent, and are
 limited to one request every 1.1 seconds per running app. The public OSMF service

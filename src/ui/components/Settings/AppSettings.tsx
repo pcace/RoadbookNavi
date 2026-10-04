@@ -18,6 +18,14 @@ import { useState, useEffect } from 'react';
 import { offlineCache } from '../../utils/offlineCache';
 import { completeAppReset } from '../../utils/resetApp';
 import { MAP_STYLES } from '../RouteBuilder/mapStyles';
+import { clearGeographicCache, geographicCacheUsage } from '../../../services';
+
+const formatBytes = (bytes: number) =>
+  bytes >= 1024 ** 3
+    ? `${(bytes / 1024 ** 3).toFixed(2)} GB`
+    : bytes >= 1024 ** 2
+      ? `${(bytes / 1024 ** 2).toFixed(1)} MB`
+      : `${Math.round(bytes / 1024)} KB`;
 
 export const AppSettings = () => {
   const nativeProfiles = useNativeProfiles();
@@ -27,6 +35,10 @@ export const AppSettings = () => {
     routes: [],
   });
   const [isClearing, setIsClearing] = useState(false);
+  const [dataCache, setDataCache] = useState({ mapTiles: 0, routing: 0 });
+  const [clearingData, setClearingData] = useState<
+    'mapTiles' | 'routing' | null
+  >(null);
   const [isResetting, setIsResetting] = useState(false);
   const [tempScrollSpeed, setTempScrollSpeed] = useState<number | null>(null);
   const [tempCloseDistance, setTempCloseDistance] = useState<number | null>(
@@ -42,8 +54,12 @@ export const AppSettings = () => {
   useEffect(() => {
     const loadCacheInfo = async () => {
       try {
-        const routes = await offlineCache.getAllCachedRouteIds();
+        const [routes, geographic] = await Promise.all([
+          offlineCache.getAllCachedRouteIds(),
+          geographicCacheUsage(),
+        ]);
         setCacheInfo({ routes });
+        setDataCache(geographic);
       } catch (error) {
         console.error('Error loading cache info:', error);
       }
@@ -62,6 +78,18 @@ export const AppSettings = () => {
       console.error('Error clearing cache:', error);
     } finally {
       setIsClearing(false);
+    }
+  };
+
+  const clearData = async (kind: 'mapTiles' | 'routing') => {
+    if (clearingData) return;
+    if (!window.confirm(t('settings:app.clearGeographicCacheConfirm'))) return;
+    setClearingData(kind);
+    try {
+      await clearGeographicCache(kind);
+      setDataCache(await geographicCacheUsage());
+    } finally {
+      setClearingData(null);
     }
   };
 
@@ -427,6 +455,51 @@ export const AppSettings = () => {
       </Box>
 
       {/* Offline Cache Management */}
+      <Box borderTop={`1px solid ${borderColor}`} pt="1rem" mt="1rem">
+        <Text
+          color={headingColor}
+          fontSize="1.1rem"
+          fontWeight="600"
+          mb="0.5rem"
+        >
+          {t('settings:app.geographicCache')}
+        </Text>
+        <Text color={textColor} fontSize="0.9rem" mb="1rem">
+          {t('settings:app.geographicCacheDescription')}
+        </Text>
+        <VStack align="stretch" gap="0.75rem">
+          <HStack justify="space-between" align="center">
+            <Text color={textColor} fontSize="0.9rem">
+              {t('settings:app.mapTileCache')}:{' '}
+              {formatBytes(dataCache.mapTiles)}
+            </Text>
+            <Button
+              size="sm"
+              variant="outline"
+              loading={clearingData === 'mapTiles'}
+              disabled={dataCache.mapTiles === 0 || clearingData !== null}
+              onClick={() => void clearData('mapTiles')}
+            >
+              {t('settings:app.clearDataCache')}
+            </Button>
+          </HStack>
+          <HStack justify="space-between" align="center">
+            <Text color={textColor} fontSize="0.9rem">
+              {t('settings:app.routingCache')}: {formatBytes(dataCache.routing)}
+            </Text>
+            <Button
+              size="sm"
+              variant="outline"
+              loading={clearingData === 'routing'}
+              disabled={dataCache.routing === 0 || clearingData !== null}
+              onClick={() => void clearData('routing')}
+            >
+              {t('settings:app.clearDataCache')}
+            </Button>
+          </HStack>
+        </VStack>
+      </Box>
+
       <Box borderTop={`1px solid ${borderColor}`} pt="1rem" mt="1rem">
         <Text
           color={headingColor}

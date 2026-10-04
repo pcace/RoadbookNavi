@@ -147,6 +147,7 @@
   },
   "states": {
     "routeCalculating": "Calculating route...",
+    "loadingRoutingData": "Downloading routing data...",
     "savingChanges": "Saving changes...",
     "savingRoute": "Saving roadbook..."
   },
