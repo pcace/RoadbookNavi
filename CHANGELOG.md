@@ -1,3 +1,9 @@
+## [1.39.0-beta.3](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.2...v1.39.0-beta.3) (2026-10-04)
+
+### Bug fixes
+
+- :bug: windows routing problems ([f1738cc](https://github.com/pcace/RoadbookNavi/commit/f1738ccf9e3bc98797ed3baeb5ef5842b2cebd96))
+
 ## [1.39.0-beta.2](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.1...v1.39.0-beta.2) (2026-10-03)
 
 ### New features
