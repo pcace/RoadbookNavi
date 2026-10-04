@@ -264,6 +264,17 @@ jobs:
       - name: Build Windows installer
         run: pnpm desktop:build --bundles nsis
 
+      - name: Smoke-test bundled Windows routing engine
+        shell: pwsh
+        run: |
+          $java = 'native/brouter/resources/runtime/bin/java.exe'
+          $jar = 'native/brouter/resources/brouter.jar'
+          if (-not (Test-Path $java)) { throw "Bundled Java runtime is missing: $java" }
+          if (-not (Test-Path $jar)) { throw "Bundled BRouter engine is missing: $jar" }
+          $result = & $java -jar $jar --self-test native/brouter/resources
+          if ($LASTEXITCODE -ne 0) { throw "Routing engine self-test failed with exit code $LASTEXITCODE" }
+          if ($result -ne 'RoadbookNavi routing engine OK') { throw "Unexpected routing engine self-test output: $result" }
+
       - name: Validate and stage Windows download
         shell: pwsh
         env:

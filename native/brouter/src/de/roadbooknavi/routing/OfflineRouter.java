@@ -29,6 +29,16 @@ public final class OfflineRouter {
     return new FormatJson(context).format(engine.getFoundTrack());
   }
   public static void main(String[] args) throws Exception {
+    if (args.length == 2 && "--self-test".equals(args[0])) {
+      File root = new File(args[1]);
+      File profile = new File(root, "profiles2/trekking.brf");
+      File lookups = new File(root, "profiles2/lookups.dat");
+      if (!profile.isFile()) throw new FileNotFoundException("Self-test profile missing: " + profile);
+      if (!lookups.isFile()) throw new FileNotFoundException("Self-test lookups missing: " + lookups);
+      new RoutingContext();
+      System.out.print("RoadbookNavi routing engine OK");
+      return;
+    }
     if (args.length != 2) throw new IllegalArgumentException("root and profile required");
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
     String points = in.readLine();

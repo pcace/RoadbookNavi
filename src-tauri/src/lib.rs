@@ -28,6 +28,29 @@ struct LocalState {
     root: PathBuf,
 }
 
+fn routing_failure(root: &std::path::Path, detail: impl AsRef<str>) -> String {
+    let detail = detail.as_ref().trim();
+    let log_path = root.join("last-routing-error.log");
+    let report = format!(
+        "RoadbookNavi routing diagnostic\nPlatform: {} {}\nData directory: {}\n\n{}\n",
+        std::env::consts::OS,
+        std::env::consts::ARCH,
+        root.display(),
+        detail
+    );
+    let log_note = if fs::write(&log_path, report).is_ok() {
+        format!(" Diagnostic file: {}", log_path.display())
+    } else {
+        String::new()
+    };
+    let visible = if detail.chars().count() > 1200 {
+        format!("{}…", detail.chars().take(1200).collect::<String>())
+    } else {
+        detail.to_owned()
+    };
+    format!("{visible}{log_note}")
+}
+
 fn dir_size(path: &PathBuf) -> u64 {
     let mut total = 0u64;
     if let Ok(entries) = fs::read_dir(path) {
@@ -210,6 +233,19 @@ async fn calculate_route(
                     } else {
                         "runtime/bin/java"
                     });
+                    let jar = resources.join("brouter.jar");
+                    if !java.is_file() {
+                        return Err(format!(
+                            "Bundled Java runtime is missing: {}",
+                            java.display()
+                        ));
+                    }
+                    if !jar.is_file() {
+                        return Err(format!(
+                            "Bundled BRouter engine is missing: {}",
+                            jar.display()
+                        ));
+                    }
                     let mut command = Command::new(java);
                     #[cfg(target_os = "windows")]
                     {
@@ -218,14 +254,19 @@ async fn calculate_route(
                     }
                     let mut child = command
                         .args(["-Xmx512m", "-jar"])
-                        .arg(resources.join("brouter.jar"))
+                        .arg(&jar)
                         .arg(&root)
                         .arg(&profile)
                         .stdin(Stdio::piped())
                         .stdout(Stdio::piped())
                         .stderr(Stdio::piped())
                         .spawn()
-                        .map_err(err)?;
+                        .map_err(|error| {
+                            format!(
+                                "Could not start the bundled routing engine ({}): {error}",
+                                jar.display()
+                            )
+                        })?;
                     if let Some(mut input) = child.stdin.take() {
                         input
                             .write_all(format!("{lonlats}\n{polygons}\n").as_bytes())
@@ -233,22 +274,46 @@ async fn calculate_route(
                     }
                     let output = child.wait_with_output().map_err(err)?;
                     if !output.status.success() {
-                        return Err(String::from_utf8_lossy(&output.stderr).into_owned());
+                        let stderr = String::from_utf8_lossy(&output.stderr);
+                        let stdout = String::from_utf8_lossy(&output.stdout);
+                        return Err(format!(
+                            "BRouter exited with {}.\n{}{}",
+                            output.status,
+                            stderr.trim(),
+                            if stdout.trim().is_empty() {
+                                String::new()
+                            } else {
+                                format!("\nOutput: {}", stdout.trim())
+                            }
+                        ));
                     }
                     String::from_utf8(output.stdout).map_err(err)
                 }
             })();
             match result {
-                Ok(output) => return serde_json::from_str(&output).map_err(err),
+                Ok(output) => {
+                    return serde_json::from_str(&output).map_err(|error| {
+                        routing_failure(
+                            &root,
+                            format!(
+                                "BRouter returned invalid JSON: {error}\nOutput: {}",
+                                output.chars().take(4000).collect::<String>()
+                            ),
+                        )
+                    })
+                }
                 Err(error) => {
                     let Some(name) = download::missing_segment(&error) else {
-                        return Err(error);
+                        return Err(routing_failure(&root, error));
                     };
                     download::ensure_named(&app, &root, &name)?;
                 }
             }
         }
-        Err("BRouter benötigt unerwartet viele zusätzliche Routingsegmente".into())
+        Err(routing_failure(
+            &root,
+            "BRouter requested an unexpected number of additional routing segments",
+        ))
     })
     .await
     .map_err(err)?
