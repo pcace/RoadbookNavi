@@ -38,7 +38,7 @@ jobs:
 
       - name: Setup pnpm
         if: inputs.release_tag == ''
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         if: inputs.release_tag == ''
@@ -117,7 +117,7 @@ jobs:
           test "$missing" -eq 0
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -236,7 +236,7 @@ jobs:
           "version=$($env:RELEASE_TAG -replace '^v', '')" >> $env:GITHUB_OUTPUT
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -336,7 +336,7 @@ jobs:
             librsvg2-dev patchelf
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
