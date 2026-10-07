@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { MutableRefObject, RefObject } from 'react';
 import type { FeatureCollection, GeoJsonProperties, LineString } from 'geojson';
 import { useSearchParams } from 'react-router-dom';
@@ -9,7 +9,6 @@ import {
   cacheRoadbookForOffline,
   type RoadbookCacheProgress,
 } from '../../../utils/cacheRoadbookForOffline';
-import { calculateDistance } from '../../../utils/calcDistance';
 import { generateRandomColor } from '../../../utils/colorUtils';
 import { processGPXFile } from '../../../utils/gpxParser';
 import { useAppStore } from '../../../stores/appStore';
@@ -17,7 +16,6 @@ import { useRoutesStore } from '../../../stores/routesStore';
 import type { RoutePoint } from '../types';
 import {
   createStraightLineRoute,
-  DISTANCE_WARNING_TIMEOUT_MS,
   findRouteInsertIndex,
   isClickNearExistingPoint,
 } from '../utils/routeBuilderUtils';
@@ -78,15 +76,10 @@ export const useRouteBuilderActions = ({
   } = useRouteBuilderStoreActions();
   const routesStore = useRoutesStore();
   const isEditMode = Boolean(editRouteId);
-  const [distanceWarning, setDistanceWarning] = useState<string | null>(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
-  const warningTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     return () => {
-      if (warningTimeoutRef.current) {
-        clearTimeout(warningTimeoutRef.current);
-      }
       if (mapMoveTimeoutRef.current) {
         clearTimeout(mapMoveTimeoutRef.current);
       }
@@ -121,27 +114,6 @@ export const useRouteBuilderActions = ({
   useEffect(() => {
     if (!isRouteLoading) setGenerationProgress(null);
   }, [isRouteLoading]);
-
-  const showDistanceWarning = (message: string) => {
-    setDistanceWarning(message);
-
-    if (warningTimeoutRef.current) {
-      clearTimeout(warningTimeoutRef.current);
-    }
-
-    warningTimeoutRef.current = setTimeout(() => {
-      setDistanceWarning(null);
-    }, DISTANCE_WARNING_TIMEOUT_MS);
-  };
-
-  const clearDistanceWarning = () => {
-    if (warningTimeoutRef.current) {
-      clearTimeout(warningTimeoutRef.current);
-      warningTimeoutRef.current = null;
-    }
-
-    setDistanceWarning(null);
-  };
 
   const markRouteAsUnsaved = (resetCacheLoading = false) => {
     if (resetCacheLoading) {
@@ -187,39 +159,6 @@ export const useRouteBuilderActions = ({
     displayName,
   });
 
-  const validateInsertDistance = (
-    lat: number,
-    lon: number,
-    insertIndex: number
-  ) => {
-    if (routePoints.length === 0) {
-      return true;
-    }
-
-    const maxDistanceKm = 40_000;
-    const maxDistanceMeters = maxDistanceKm * 1000;
-    const nearbyPoint =
-      insertIndex > 0 ? routePoints[insertIndex - 1] : routePoints[0];
-    const distanceToNearby = calculateDistance(
-      nearbyPoint.lat,
-      nearbyPoint.lon,
-      lat,
-      lon
-    );
-
-    if (distanceToNearby > maxDistanceMeters) {
-      showDistanceWarning(
-        t('routeBuilder:warnings.pointTooFar', {
-          distance: (distanceToNearby / 1000).toFixed(1),
-          maxDistance: maxDistanceKm,
-        })
-      );
-      return false;
-    }
-
-    return true;
-  };
-
   const addPoint = (lng: number, lat: number) => {
     markRouteAsUnsaved(true);
 
@@ -235,15 +174,10 @@ export const useRouteBuilderActions = ({
       mapRef,
     });
 
-    if (!validateInsertDistance(lat, lng, insertIndex)) {
-      return;
-    }
-
     const newPoint = createPoint(lat, lng);
     const updatedPoints = [...routePoints];
     updatedPoints.splice(insertIndex, 0, newPoint);
     setRoutePoints(updatedPoints);
-    clearDistanceWarning();
     reverseGeocodePoint(newPoint.id, lat, lng, 'Error reverse geocoding:');
   };
 
@@ -273,29 +207,6 @@ export const useRouteBuilderActions = ({
     displayName?: string
   ) => {
     const isFirstPoint = routePoints.length === 0;
-    const maxDistanceKm = 40_000;
-    const maxDistanceMeters = maxDistanceKm * 1000;
-
-    if (routePoints.length > 0) {
-      const lastPoint = routePoints[routePoints.length - 1];
-      const distanceToLast = calculateDistance(
-        lastPoint.lat,
-        lastPoint.lon,
-        lat,
-        lon
-      );
-
-      if (distanceToLast > maxDistanceMeters) {
-        showDistanceWarning(
-          t('routeBuilder:warnings.pointTooFar', {
-            distance: (distanceToLast / 1000).toFixed(1),
-            maxDistance: maxDistanceKm,
-          })
-        );
-        return;
-      }
-    }
-
     if (!displayName) {
       addPoint(lon, lat);
       return;
@@ -304,7 +215,6 @@ export const useRouteBuilderActions = ({
     markRouteAsUnsaved(true);
     const newPoint = createPoint(lat, lon, displayName);
     setRoutePoints([...routePoints, newPoint]);
-    clearDistanceWarning();
 
     if (isFirstPoint) {
       mapRef.current?.flyTo?.({
@@ -319,51 +229,9 @@ export const useRouteBuilderActions = ({
     isRouteDraggingRef.current = false;
     markRouteAsUnsaved();
 
-    const maxDistanceKm = 40_000;
-    const maxDistanceMeters = maxDistanceKm * 1000;
     const pointIndex = routePoints.findIndex(point => point.id === id);
     if (pointIndex === -1) {
       return;
-    }
-
-    if (pointIndex > 0) {
-      const prevPoint = routePoints[pointIndex - 1];
-      const distanceToPrev = calculateDistance(
-        prevPoint.lat,
-        prevPoint.lon,
-        lat,
-        lng
-      );
-
-      if (distanceToPrev > maxDistanceMeters) {
-        showDistanceWarning(
-          t('routeBuilder:warnings.pointTooFarFromOthers', {
-            distance: (distanceToPrev / 1000).toFixed(1),
-            maxDistance: maxDistanceKm,
-          })
-        );
-        return;
-      }
-    }
-
-    if (pointIndex < routePoints.length - 1) {
-      const nextPoint = routePoints[pointIndex + 1];
-      const distanceToNext = calculateDistance(
-        nextPoint.lat,
-        nextPoint.lon,
-        lat,
-        lng
-      );
-
-      if (distanceToNext > maxDistanceMeters) {
-        showDistanceWarning(
-          t('routeBuilder:warnings.pointTooFarFromOthers', {
-            distance: (distanceToNext / 1000).toFixed(1),
-            maxDistance: maxDistanceKm,
-          })
-        );
-        return;
-      }
     }
 
     setRoutePoints(
@@ -407,15 +275,10 @@ export const useRouteBuilderActions = ({
       mapRef,
     });
 
-    if (!validateInsertDistance(lat, lng, insertIndex)) {
-      return;
-    }
-
     const newPoint = createPoint(lat, lng);
     const updatedPoints = [...routePoints];
     updatedPoints.splice(insertIndex, 0, newPoint);
     setRoutePoints(updatedPoints);
-    clearDistanceWarning();
     reverseGeocodePoint(newPoint.id, lat, lng, 'Error reverse geocoding:');
   };
 
@@ -430,10 +293,6 @@ export const useRouteBuilderActions = ({
       mapRef,
     });
 
-    if (!validateInsertDistance(lat, lng, insertIndex)) {
-      return null;
-    }
-
     const newPoint = createPoint(lat, lng);
     const updatedPoints = [...routePoints];
     updatedPoints.splice(insertIndex, 0, newPoint);
@@ -442,7 +301,6 @@ export const useRouteBuilderActions = ({
     setTurnPoints(null);
     setLoadingRouteData(createStraightLineRoute(updatedPoints));
     isRouteDraggingRef.current = true;
-    clearDistanceWarning();
 
     return newPoint.id;
   };
@@ -669,7 +527,6 @@ export const useRouteBuilderActions = ({
     addPointByAddress,
     generationProgress,
     clearPoints,
-    distanceWarning,
     generateRoute,
     handleGPXImport,
     handleMapMove,
