@@ -2,9 +2,6 @@
   "title": "Roadbook planen",
   "warnings": {
     "routeTooLong": "Das Roadbook ist bereits {{length}} km lang. Maximale Länge: {{maxLength}} km.",
-    "pointTooFar": "Der neue Punkt ist {{distance}} km vom letzten Punkt entfernt. Maximale Entfernung: {{maxDistance}} km.",
-    "pointTooFarFromOthers": "Der Punkt ist {{distance}} km von anderen Punkten entfernt. Maximale Entfernung: {{maxDistance}} km.",
-    "routeLimitReached": "Limit erreicht ({{maxRouteCount}}). Bitte lösche einige Roadbooks, um neue zu erstellen.",
     "editUnavailable": "Bearbeiten ist nur für online gespeicherte eigene Routen möglich.",
     "duplicateUnavailable": "Duplizieren ist nur für online gespeicherte eigene Routen möglich."
   },

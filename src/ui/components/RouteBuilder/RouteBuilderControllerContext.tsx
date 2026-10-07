@@ -18,7 +18,6 @@ export interface RouteBuilderControllerValue {
   addPoint: (lng: number, lat: number) => void;
   addPointByAddress: (lat: number, lon: number, displayName?: string) => void;
   clearPoints: () => void;
-  distanceWarning: string | null;
   error: string | null;
   generateRoute: (routeName: string) => Promise<void>;
   gpxUnderlay: RouteLineData;
@@ -39,7 +38,6 @@ export interface RouteBuilderControllerValue {
   isSidebarCollapsed: boolean;
   loadingRouteData: RouteLineData;
   mapRef: RefObject<any>;
-  maxDistanceKm: number;
   reloadCurrentRoute: () => void;
   removePoint: (id: string) => void;
   reorderPoints: (points: RoutePoint[]) => void;

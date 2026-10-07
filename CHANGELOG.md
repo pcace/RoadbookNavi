@@ -1,3 +1,9 @@
+## [1.39.0-beta.5](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.4...v1.39.0-beta.5) (2026-10-04)
+
+### Bug fixes
+
+- **route-builder:** remove obsolete distance limits ([616c058](https://github.com/pcace/RoadbookNavi/commit/616c05830611fa0acc4bb715f3476d0d43eaf702))
+
 ## [1.39.0-beta.4](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.3...v1.39.0-beta.4) (2026-10-04)
 
 ### Bug fixes

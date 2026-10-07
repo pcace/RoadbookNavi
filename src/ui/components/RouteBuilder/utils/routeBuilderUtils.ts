@@ -16,8 +16,6 @@ export const DEFAULT_ROUTE_BUILDER_VIEW: RouteBuilderMapView = {
 };
 
 export const ROUTE_POINT_PIXEL_TOLERANCE = 20;
-export const DISTANCE_WARNING_TIMEOUT_MS = 3000;
-
 export const getInitialRouteBuilderView = (
   storedMapView: RouteBuilderMapView | null,
   searchParams: URLSearchParams
