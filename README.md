@@ -89,3 +89,6 @@ The canonical source repository is
 the attribution in [NOTICE](NOTICE) when redistributing RoadbookNavi or a modified
 version. Bundled third-party components and assets keep their own licenses; see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+
+---

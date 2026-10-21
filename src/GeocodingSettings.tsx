@@ -4,14 +4,6 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useColorModeValue } from './ui/components/ui/color-mode';
 
-function errorTranslationKey(error: string) {
-  const [code, detail] = error.split(':', 2);
-  if (!code.startsWith('geocoding.')) return null;
-  return {
-    key: `settings:geocoding.errors.${code.slice('geocoding.'.length)}`,
-    detail,
-  };
-}
 
 export function GeocodingSettings() {
   const { t } = useTranslation();
@@ -110,4 +102,15 @@ export function GeocodingSettings() {
       </Text>
     </Box>
   );
+}
+
+
+
+function errorTranslationKey(error: string) {
+  const [code, detail] = error.split(':', 2);
+  if (!code.startsWith('geocoding.')) return null;
+  return {
+    key: `settings:geocoding.errors.${code.slice('geocoding.'.length)}`,
+    detail,
+  };
 }
