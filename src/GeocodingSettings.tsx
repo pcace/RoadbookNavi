@@ -21,6 +21,7 @@ export function GeocodingSettings() {
   const bg = useColorModeValue('white', 'gray.800'),
     muted = useColorModeValue('gray.600', 'gray.400');
   const error = config.error ? errorTranslationKey(config.error) : null;
+  console.log("just a test")
   const status = error
     ? t(error.key, { status: error.detail })
     : config.error || result;
