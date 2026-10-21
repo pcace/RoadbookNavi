@@ -1,0 +1,30 @@
+name: AI Review Provider Probe
+
+on:
+  push:
+    branches: [codex/review-resume-diagnostics]
+    paths:
+      - .github/workflows/ai-review-provider-probe.yml
+      - .github/ai-review/provider_probe.py
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    # Temporary bootstrap on the explicitly authorized owner-controlled branch.
+    # No PR code, GitHub token, session data or raw provider error is sent/logged.
+    if: >-
+      github.repository == 'pcace/RoadbookNavi' && github.actor == 'pcace' &&
+      github.ref == 'refs/heads/codex/review-resume-diagnostics'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check the fixed free provider without logging secrets or prompts
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python3 -B .github/ai-review/provider_probe.py
