@@ -747,8 +747,8 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
         }
 
         try {
-          if (typeof doc.destroy === 'function') {
-            await doc.destroy();
+          if (typeof loadingTask.destroy === 'function') {
+            await loadingTask.destroy();
           }
         } catch {
           // ignore
