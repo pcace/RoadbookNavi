@@ -19,6 +19,7 @@ from common import (
     repository, reviewable, same_repository, write_json,
 )
 from session import usage_since
+from diagnostics import FAILURES, process_failure
 
 SHA = re.compile(r'[0-9a-f]{40}')
 COMMENT = 'id url body createdAt updatedAt author { login __typename }'
@@ -383,7 +384,7 @@ def finish(root):
         if exit_code in (124, 137):
             raise ReviewError('timeout')
         if exit_code:
-            raise ReviewError('goose_process_failed')
+            raise ReviewError(process_failure(os.environ['RUNNER_TEMP']))
         path = Path(os.environ['RUNNER_TEMP']) / 'goose-review.json'
         if not path.is_file() or path.is_symlink() or path.stat().st_size > 64_000_000:
             raise ReviewError('cli_output_invalid')
@@ -493,10 +494,46 @@ def publish(root):
     print('Published review summary, push update and outstanding comment responses.')
 
 
+def publish_failure(root):
+    """Report failed investigations without replacing a previous successful review."""
+    number = pr_number(os.environ['PR_NUMBER'])
+    head = os.environ['HEAD_SHA']
+    if not SHA.fullmatch(head):
+        raise ReviewError('invalid_commit')
+    report = read_json(root / 'diagnostics.json')
+    # Failed runs never produce a successful review or checkpoint. All text below
+    # comes from this trusted allowlist, never from stderr or downloaded strings.
+    if report.get('status') != 'failed':
+        raise ReviewError('failure_report_invalid')
+    code = report.get('failure')
+    message = FAILURES.get(code, 'The review could not produce a validated result. See the workflow log.')
+    pr = pull_request(number)
+    if not reviewable(pr) or pr['head']['sha'] != head:
+        print('Skipped failure notice: PR is no longer eligible or its head changed.')
+        return
+    run_id = os.environ['GITHUB_RUN_ID']
+    if not re.fullmatch(r'[1-9][0-9]*', run_id):
+        raise ReviewError('invalid_run_id')
+    marker = '<!-- roadbooknavi-ai-pr-failure:' + run_id + ' -->'
+    comments = pages(f'repos/{repository()}/issues/{number}/comments')
+    if any(own_bot(item.get('user') or {}) and (item.get('body') or '').startswith(marker)
+           for item in comments):
+        print('Failure notice already published for this workflow run.')
+        return
+    run = f'{os.environ["GITHUB_SERVER_URL"]}/{repository()}/actions/runs/{run_id}'
+    body = '\n\n'.join([marker, '### AI review could not complete', message,
+                         f'Commit: `{head}` · Model: `{MODEL}`',
+                         'No new review or answer was generated. The last successful session is preserved. '
+                         'No paid/model fallback was attempted.', f'[Workflow log]({run})'])
+    api(f'repos/{repository()}/issues/{number}/comments', method='POST', payload={'body': body})
+    print('Published a safe failure notice; previous successful review and memory are unchanged.')
+
+
 if __name__ == '__main__':
     try:
         {'prepare': prepare, 'capture': capture, 'collect': collect, 'finish': finish,
-         'check-model': check_model, 'render': render, 'publish': publish}[sys.argv[1]](directory())
+         'check-model': check_model, 'render': render, 'publish': publish,
+         'publish-failure': publish_failure}[sys.argv[1]](directory())
     except Exception as error:
         fail(error)
         sys.exit(1)

@@ -79,6 +79,7 @@ jobs:
       saved: ${{ steps.snapshot.outputs.should_save }}
       head_sha: ${{ steps.capture.outputs.head_sha }}
       result_artifact: ${{ steps.capture.outputs.result_artifact }}
+      diagnostics_artifact: ${{ steps.capture.outputs.diagnostics_artifact }}
     steps:
       - name: Checkout pinned trusted automation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -140,7 +141,7 @@ jobs:
           path: ${{ runner.temp }}/ai-review/result.json
           retention-days: 1
           if-no-files-found: error
-      - name: Retain numeric diagnostics, including on failure
+      - name: Retain numeric diagnostics and safe failure categories
         if: always() && steps.collect.outputs.should_run == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -175,8 +176,37 @@ jobs:
           HEAD_SHA: ${{ needs.review.outputs.head_sha }}
         run: bash automation/.github/ai-review/publish.sh
 
+  notify_failure:
+    needs: [prepare, review]
+    if: >-
+      always() && !cancelled() && needs.prepare.outputs.mode == 'review' &&
+      needs.review.result == 'failure' && needs.review.outputs.head_sha != '' &&
+      needs.review.outputs.diagnostics_artifact != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.automation_sha }}
+          path: automation
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ${{ needs.review.outputs.diagnostics_artifact }}
+          path: ${{ runner.temp }}/ai-review
+      - name: Explain failure without publishing private provider output
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
+          HEAD_SHA: ${{ needs.review.outputs.head_sha }}
+        run: python3 automation/.github/ai-review/review.py publish-failure
+
   cleanup:
-    needs: [prepare, review, publish]
+    needs: [prepare, review, publish, notify_failure]
     if: always() && !cancelled() && needs.prepare.outputs.pr_number != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5

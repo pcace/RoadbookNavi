@@ -8,25 +8,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 from common import MODEL
-
-
-def category(message, status=None):
-    text = str(message).lower()
-    if 'free-models-per-day' in text or ('daily' in text and ('quota' in text or 'limit' in text)):
-        return 'free_daily_quota_exhausted'
-    if status == 429 or 'rate limit' in text or 'rate_limit' in text:
-        return 'provider_rate_limited'
-    if status == 401:
-        return 'authentication_failed'
-    if status == 402:
-        return 'provider_credit_limit'
-    if status in (500, 502, 503, 504):
-        return 'provider_unavailable'
-    if 'context' in text and ('length' in text or 'limit' in text):
-        return 'context_limit'
-    if status == 404:
-        return 'model_unavailable'
-    return 'provider_request_failed'
+from diagnostics import category
 
 
 def probe():
