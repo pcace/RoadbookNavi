@@ -1,0 +1,194 @@
+name: AI PR Review
+
+on:
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize, edited, closed]
+  issue_comment:
+    types: [created, edited, deleted]
+  workflow_run:
+    workflows: [AI Review Discussion Event]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Open PR number to review again (run this workflow on the default branch)
+        required: true
+        type: string
+
+permissions: {}
+
+# Keep the lock through publication and cleanup. In particular, a merge-cleanup
+# request must not be replaced by a newer pending comment event.
+concurrency:
+  group: ai-review-${{ github.repository_id }}-${{ github.event.pull_request.number || github.event.issue.number || github.event.workflow_run.pull_requests[0].number || inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  prepare:
+    if: >-
+      (github.event_name == 'pull_request_target' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
+       github.event.sender.type != 'Bot') ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.actor.type != 'Bot') ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == format('refs/heads/{0}', github.event.repository.default_branch))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      mode: ${{ steps.prepare.outputs.mode }}
+      pr_number: ${{ steps.prepare.outputs.pr_number }}
+      automation_sha: ${{ steps.automation.outputs.sha }}
+    steps:
+      - name: Checkout trusted default-branch automation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: automation
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Pin automation for all following jobs
+        id: automation
+        run: echo "sha=$(git -C automation rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Authorize the event and route review or cleanup
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash automation/.github/ai-review/prepare.sh
+
+  review:
+    needs: prepare
+    if: needs.prepare.outputs.mode == 'review'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    env:
+      PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
+      GOOSE_MODEL: nvidia/nemotron-3-ultra-550b-a55b:free
+      GOOSE_IMAGE: ${{ vars.GOOSE_REVIEW_IMAGE || 'ghcr.io/aaif-goose/goose@sha256:05b591fbd34f4da2469a946f23ab9c86e2307023f6ebed4787f7035fa933185e' }}
+    outputs:
+      saved: ${{ steps.snapshot.outputs.should_save }}
+      head_sha: ${{ steps.capture.outputs.head_sha }}
+      result_artifact: ${{ steps.capture.outputs.result_artifact }}
+    steps:
+      - name: Checkout pinned trusted automation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.automation_sha }}
+          path: automation
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Capture current commits and complete human discussion
+        id: capture
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash automation/.github/ai-review/prepare.sh capture
+      - name: Restore last valid full PR session
+        if: steps.capture.outputs.should_review == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 automation/.github/ai-review/session.py restore
+      - name: Checkout authorized PR commit as review data
+        if: steps.capture.outputs.should_review == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.capture.outputs.head_sha }}
+          path: repository
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Collect full and incremental immutable diffs
+        if: steps.capture.outputs.should_review == 'true'
+        id: collect
+        run: python3 automation/.github/ai-review/review.py collect
+      - name: Continue PR investigation with the fixed free model
+        if: steps.collect.outputs.should_run == 'true'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: bash automation/.github/ai-review/run.sh
+      - name: Prepare a consistent successful session checkpoint
+        if: steps.collect.outputs.should_run == 'true'
+        id: snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 automation/.github/ai-review/session.py snapshot
+      - name: Save full PR session for the next run
+        if: steps.snapshot.outputs.should_save == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.capture.outputs.session_artifact }}
+          path: ${{ runner.temp }}/ai-review/checkpoint/
+          retention-days: 90
+          if-no-files-found: error
+      - name: Transfer only the validated review to the writer job
+        if: steps.snapshot.outputs.should_save == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.capture.outputs.result_artifact }}
+          path: ${{ runner.temp }}/ai-review/result.json
+          retention-days: 1
+          if-no-files-found: error
+      - name: Retain numeric diagnostics, including on failure
+        if: always() && steps.collect.outputs.should_run == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.capture.outputs.diagnostics_artifact }}
+          path: ${{ runner.temp }}/ai-review/diagnostics.json
+          retention-days: 7
+          if-no-files-found: warn
+
+  publish:
+    needs: [prepare, review]
+    if: needs.review.outputs.saved == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.automation_sha }}
+          path: automation
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ${{ needs.review.outputs.result_artifact }}
+          path: ${{ runner.temp }}/ai-review
+      - name: Publish or update PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
+          HEAD_SHA: ${{ needs.review.outputs.head_sha }}
+        run: bash automation/.github/ai-review/publish.sh
+
+  cleanup:
+    needs: [prepare, review, publish]
+    if: always() && !cancelled() && needs.prepare.outputs.pr_number != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.automation_sha }}
+          path: automation
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Delete all PR memory when the PR was merged
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
+        run: python3 automation/.github/ai-review/session.py cleanup

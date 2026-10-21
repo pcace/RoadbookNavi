@@ -1,0 +1,27 @@
+name: AI Review Automation Checks
+
+on:
+  pull_request:
+    paths:
+      - .github/ai-review/**
+      - .github/workflows/ai-review*.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check shell syntax
+        run: |
+          for script in .github/ai-review/*.sh; do
+            bash -n "$script"
+          done
+      - name: Test event routing, session state, completion and merge cleanup
+        run: python3 -B -m unittest discover -s .github/ai-review -p 'test_*.py' -v
