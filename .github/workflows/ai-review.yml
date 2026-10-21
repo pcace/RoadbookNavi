@@ -30,7 +30,7 @@ jobs:
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
-       github.event.sender.type != 'Bot' && startsWith(github.event.comment.body, '/review')) ||
+       github.event.sender.type != 'Bot') ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.actor.type != 'Bot') ||
@@ -168,7 +168,7 @@ jobs:
         with:
           name: ${{ needs.review.outputs.result_artifact }}
           path: ${{ runner.temp }}/ai-review
-      - name: Update review summary and answer explicit review commands
+      - name: Update review summary and publish comment and push responses
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}

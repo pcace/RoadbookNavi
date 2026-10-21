@@ -14,7 +14,7 @@ import uuid
 from urllib.request import urlopen
 
 from common import (
-    DISCUSSION_WORKFLOW_PATH, MARKER, MODEL, REPLY_PREFIX, ReviewError, api, artifact_name,
+    DISCUSSION_WORKFLOW_PATH, MARKER, MODEL, PUSH_PREFIX, REPLY_PREFIX, ReviewError, api, artifact_name,
     directory, fail, fingerprint, output, pages, pr_number, pull_request, read_json,
     repository, reviewable, same_repository, write_json,
 )
@@ -51,7 +51,7 @@ def event_number_actor(event):
     if kind == 'issue_comment':
         if (not (event.get('issue') or {}).get('pull_request')
                 or event.get('action') not in {'created', 'edited'}
-                or not review_command((event.get('comment') or {}).get('body'))):
+                or not ((event.get('comment') or {}).get('body') or '').strip()):
             return None, None
         return event['issue']['number'], event.get('sender') or {}
     if kind == 'pull_request_target':
@@ -179,14 +179,14 @@ def reply_targets(discussion):
     messages += [item for thread in discussion.get('threads', []) for item in thread['comments']['nodes']]
     targets = {}
     for message in messages:
-        if not review_command(message.get('body')):
+        if not (message.get('body') or '').strip():
             continue
         key = fingerprint({'id': message['id'], 'body': message['body']})
         if key not in answered:
             targets[message['id']] = {'comment_id': message['id'], 'url': message['url'],
                                       'body': message['body'], 'version_key': key}
     if len(targets) > 100:
-        raise ReviewError('too_many_pending_review_commands')
+        raise ReviewError('too_many_pending_comments')
     return list(targets.values())
 
 
@@ -216,10 +216,10 @@ def capture(root):
     focus = re.sub(r'^/review\s*', '', body)[:1000] if command else ''
     discussion = context(number)
     targets = reply_targets(discussion)
-    # workflow_run carries no original inline comment body. The listener only
-    # signals commands; verify there is still an unanswered command on the PR.
+    # workflow_run carries no original inline comment body. Check that there is
+    # still an unanswered human message, including ordinary statements.
     if os.environ['GITHUB_EVENT_NAME'] in {'issue_comment', 'workflow_run'} and not targets:
-        print('No unanswered /review command remains; skipping model call.')
+        print('No unanswered human comment remains; skipping model call.')
         return
     write_json(root / 'discussion.json', discussion)
     write_json(root / 'reply-targets.json', targets)
@@ -228,6 +228,10 @@ def capture(root):
         'title': pr['title'], 'description': pr.get('body') or '', 'focus': focus,
         'force_review': command or os.environ['GITHUB_EVENT_NAME'] == 'workflow_dispatch',
         'reply_targets': targets,
+        # Stable across reruns of one push event, but different for later pushes
+        # (including a force-push back to an already reviewed commit).
+        'push_update_key': fingerprint({'number': number, 'run_id': os.environ['GITHUB_RUN_ID']})
+            if os.environ['GITHUB_EVENT_NAME'] == 'pull_request_target' and event.get('action') == 'synchronize' else None,
         'run_nonce': f'{os.environ["GITHUB_RUN_ID"]}-{os.environ["GITHUB_RUN_ATTEMPT"]}-{uuid.uuid4().hex}',
     }
     source['input_fingerprint'] = fingerprint({
@@ -235,8 +239,7 @@ def capture(root):
         'discussion': discussion_evidence(discussion),
     })
     write_json(root / 'input.json', source)
-    for key in ('head_sha', 'run_nonce'):
-        output(key, source[key])
+    output('head_sha', source['head_sha'])
     for kind in ('session', 'result', 'diagnostics'):
         output(kind + '_artifact', artifact_name(kind, number))
     output('should_review', True)
@@ -259,6 +262,7 @@ def collect(root):
     source = read_json(root / 'input.json')
     previous = read_json(root / 'resume.json')
     if (previous['resumed'] and not source['force_review'] and not source.get('reply_targets')
+            and not source.get('push_update_key')
             and previous.get('input_fingerprint') == source['input_fingerprint']):
         print('No new code or human discussion since the saved review; skipping model call.')
         return
@@ -357,14 +361,14 @@ def final_answer(value, nonce, targets=()):
     expected = {item['comment_id']: item for item in targets}
     if (set(decoded) != {'review', 'responses'} or not isinstance(replies, list)
             or len(replies) != len(expected)):
-        raise ReviewError('command_response_missing')
+        raise ReviewError('comment_response_missing')
     seen, validated = set(), []
     for reply in replies:
         if (not isinstance(reply, dict) or set(reply) != {'comment_id', 'response'}
                 or not isinstance(reply['comment_id'], str) or reply['comment_id'] not in expected
                 or reply['comment_id'] in seen or not isinstance(reply['response'], str)
                 or not 20 <= len(reply['response'].strip()) <= 6000):
-            raise ReviewError('command_response_invalid')
+            raise ReviewError('comment_response_invalid')
         seen.add(reply['comment_id'])
         target = expected[reply['comment_id']]
         validated.append({key: target[key] for key in ('comment_id', 'url', 'version_key')}
@@ -396,7 +400,8 @@ def finish(root):
         report['assistant_messages'] = sum(message.get('role') == 'assistant' for message in messages)
         report['resumed'] = baseline['resumed']
         result = {key: source[key] for key in ('number', 'head_sha', 'base_sha', 'changed_files', 'run_nonce')}
-        result.update(model=MODEL, review=answer, responses=responses, resumed=baseline['resumed'],
+        result.update(model=MODEL, review=answer, responses=responses,
+                      push_update_key=source.get('push_update_key'), resumed=baseline['resumed'],
                       previous_head=baseline.get('head_sha'), duration_seconds=seconds, **usage)
         write_json(root / 'result.json', result)
         report['status'] = 'complete'
@@ -446,12 +451,15 @@ def publish(root):
     number = pr_number(os.environ['PR_NUMBER'])
     if result['number'] != number or result['head_sha'] != os.environ['HEAD_SHA']:
         raise ReviewError('publication_identity_mismatch')
+    push_key = result.get('push_update_key')
+    if push_key and (not isinstance(push_key, str) or not re.fullmatch(r'[0-9a-f]{64}', push_key)):
+        raise ReviewError('invalid_push_update_key')
     pr = pull_request(number)
     if not reviewable(pr) or pr['head']['sha'] != result['head_sha']:
         print('Skipped publication: PR closed, draft, fork, or newer commit exists.')
         return
-    # Re-read live command bodies as well as existing replies. Do not answer a
-    # command that was edited/deleted while Goose worked, or publish duplicates.
+    # Re-read live comment bodies and existing replies. Do not answer a message
+    # that was edited/deleted while Goose worked, or publish duplicates.
     live = {item['comment_id']: item for item in reply_targets(context(number))}
     comments = [item for item in pages(f'repos/{repository()}/issues/{number}/comments')
                 if own_bot(item.get('user') or {})]
@@ -461,6 +469,15 @@ def publish(root):
     endpoint = (f'repos/{repository()}/issues/comments/{existing["id"]}' if existing
                 else f'repos/{repository()}/issues/{number}/comments')
     api(endpoint, method='PATCH' if existing else 'POST', payload={'body': body})
+    if push_key:
+        marker = PUSH_PREFIX + push_key + ' -->'
+        if not any((item.get('body') or '').startswith(marker) for item in comments):
+            run = f'{os.environ["GITHUB_SERVER_URL"]}/{repository()}/actions/runs/{os.environ["GITHUB_RUN_ID"]}'
+            body = '\n\n'.join([marker, '### AI review after push',
+                                f'Reviewed commit: `{result["head_sha"]}`', result['review'],
+                                f'[Workflow log]({run})'])
+            api(f'repos/{repository()}/issues/{number}/comments', method='POST',
+                payload={'body': body.replace('@', '@\u200b')})
     for reply in result.get('responses', []):
         target = live.get(reply['comment_id'])
         if not target or target['version_key'] != reply['version_key']:
@@ -469,11 +486,11 @@ def publish(root):
         if any((item.get('body') or '').startswith(marker) for item in comments):
             continue
         body = '\n\n'.join([marker, '### AI review response',
-                            f'[In response to your /review comment]({target["url"]})', reply['response']])
+                            f'[In response to your comment]({target["url"]})', reply['response']])
         api(f'repos/{repository()}/issues/{number}/comments', method='POST',
             payload={'body': body.replace('@', '@\u200b')})
         comments.append({'body': body})
-    print('Published review summary and outstanding command responses.')
+    print('Published review summary, push update and outstanding comment responses.')
 
 
 if __name__ == '__main__':

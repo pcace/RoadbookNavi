@@ -12,6 +12,7 @@ import subprocess
 MODEL = 'nvidia/nemotron-3-ultra-550b-a55b:free'
 MARKER = '<!-- roadbooknavi-ai-pr-review -->'
 REPLY_PREFIX = '<!-- roadbooknavi-ai-pr-response:'
+PUSH_PREFIX = '<!-- roadbooknavi-ai-pr-push:'
 WORKFLOW_PATH = '.github/workflows/ai-review.yml'
 DISCUSSION_WORKFLOW_PATH = '.github/workflows/ai-review-discussion.yml'
 SCHEMA_VERSION = 1

@@ -155,9 +155,18 @@ class ReviewTests(unittest.TestCase):
             event = {'workflow_run': {'path': common.DISCUSSION_WORKFLOW_PATH, 'conclusion': 'success',
                      'event': 'pull_request_review_comment', 'head_repository': {'full_name': common.repository()},
                      'pull_requests': [{'number': 7}], 'actor': {'login': 'pcace', 'type': 'User'}}}
-            self.assertEqual(review.event_number_actor(event)[0], 7)
+            for kind in ('pull_request_review', 'pull_request_review_comment'):
+                event['workflow_run']['event'] = kind
+                self.assertEqual(review.event_number_actor(event)[0], 7)
             event['workflow_run']['path'] = '.github/workflows/evil.yml'
             self.assertEqual(review.event_number_actor(event), (None, None))
+
+    def test_direct_review_events_are_not_worker_entry_points(self):
+        event = {'pull_request': {'number': 7}, 'sender': {'login': 'pcace', 'type': 'User'},
+                 'comment': {'body': '/review'}, 'review': {'body': '/review'}}
+        for kind in ('pull_request_review', 'pull_request_review_comment'):
+            with self.subTest(kind=kind), patch.dict(os.environ, {'GITHUB_EVENT_NAME': kind}):
+                self.assertEqual(review.event_number_actor(event), (None, None))
 
     def test_manual_dispatch_must_use_default_branch(self):
         event = {'repository': {'default_branch': 'main'}, 'inputs': {'pr_number': '7'}, 'sender': {'login': 'pcace'}}
@@ -256,6 +265,8 @@ class ReviewTests(unittest.TestCase):
         baseline = common.read_json(self.root / 'resume.json')
         self.assertTrue(baseline['resumed'])
         self.assertEqual(baseline['artifact_id'], 1)
+        self.assertTrue((self.root / 'previous-discussion.json').exists())
+        self.assertFalse((self.root / 'previous-result.json').exists())
         with session.connect_readonly(session.state_database(self.root)) as db:
             self.assertEqual(db.execute('SELECT content FROM messages').fetchone()[0], 'original evidence')
             row = db.execute('SELECT extension_data, recipe_json, system_prompt_override FROM sessions').fetchone()

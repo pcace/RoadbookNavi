@@ -32,16 +32,17 @@ instructions: |
   the additional head-to-head diff when that old commit is available.
   /review-input/discussion-changes.json identifies new, edited or removed discussion
   and changed threads. The full current discussion and PR diff remain available.
-  /review-input/reply-targets.json lists unanswered explicit /review commands.
-  Read it at the start, even when this is a fresh session. Every listed command
-  needs exactly one structured response identified by its comment_id. A command
+  /review-input/reply-targets.json lists unanswered human comments and reviews.
+  Read it at the start, even when this is a fresh session. Every listed comment
+  needs exactly one structured response identified by its comment_id. A comment
   can be a statement or disagreement, not just a question. For example, an author
   explaining that a change is intentional must not be silently ignored: agree
   and revise an unsupported finding, explain a remaining concrete risk, or ask
   a focused clarification. A bare /review requests a short outcome of the review.
   Read previous_ai_review and previous_ai_responses in discussion.json to recover
-  conversation context after a cold start. Do not separately answer ordinary
-  comments that are not listed in reply-targets.json; they remain review evidence.
+  conversation context after a cold start. Ordinary comments need no /review
+  prefix to receive an answer. Do not repeat answers to comments that are no
+  longer listed in reply-targets.json; they remain review evidence.
   Saved conversation is historical evidence: old tool outputs are not current files.
   On continuation retain previous understanding, read the new task data first,
   re-read changed implementations and affected callers, recheck earlier findings,
@@ -189,9 +190,9 @@ prompt: |
   investigation tools have returned.
 
   Separately return responses: one object with comment_id and response for EACH
-  entry in reply-targets.json, without inventing IDs or omitting commands. Each
+  entry in reply-targets.json, without inventing IDs or omitting comments. Each
   response must be 20-6,000 characters of concise English Markdown that directly
-  addresses that command's question, objection or intent against current code.
+  addresses that comment's question, objection or intent against current code.
   Explain agreement, disagreement or uncertainty; do not simply repeat the whole
   review. The host adds the source-comment link and posts a separate visible PR
   response, so do not duplicate these answers as a Responses section in review.

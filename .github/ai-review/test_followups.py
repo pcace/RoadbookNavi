@@ -7,6 +7,7 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import sys
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -110,18 +111,18 @@ class FollowupTests(unittest.TestCase):
             self.assertEqual(review.context(7)['previous_ai_review']['id'], 'bot')
         self.assertTrue(review.own_bot({'login': 'github-actions[bot]', 'type': 'Bot'}))
 
-    def command(self, body='/review it should stay there', identifier='IC_test'):
+    def command(self, body='it should stay there', identifier='IC_test'):
         return {'id': identifier, 'body': body,
                 'url': 'https://github.com/pcace/RoadbookNavi/pull/7#issuecomment-123',
                 'author': {'login': 'pcace', '__typename': 'User'}}
 
-    def test_only_explicit_commands_trigger_issue_comment_reviews(self):
+    def test_ordinary_comments_and_review_commands_trigger_reviews(self):
         event = {'issue': {'number': 7, 'pull_request': {}}, 'action': 'created',
                  'sender': {'login': 'pcace', 'type': 'User'}}
         # The real pull_request link is nonempty in GitHub's payload.
         event['issue']['pull_request'] = {'url': 'https://api.github.com/repos/pcace/RoadbookNavi/pulls/7'}
-        for body, expected in (('it should stay there', None), ('/reviewer', None),
-                               ('/review', 7), ('/review it should stay there', 7)):
+        for body, expected in (('it should stay there', 7), ('/reviewer', 7),
+                               ('/review', 7), ('/review it should stay there', 7), (' ', None)):
             event['comment'] = {'body': body}
             with self.subTest(body=body):
                 self.assertEqual(review.event_number_actor(event)[0], expected)
@@ -133,10 +134,62 @@ class FollowupTests(unittest.TestCase):
         with patch.dict(os.environ, {'GITHUB_EVENT_NAME': 'pull_request_target'}):
             self.assertEqual(review.event_number_actor(event)[0], 7)
 
-    def test_targets_deduplicate_answers_but_reopen_edited_commands(self):
+    def capture_event(self, kind, action, discussion):
+        event = self.root / 'event.json'
+        common.write_json(event, {'action': action, 'comment': {'body': 'it should stay there'}})
+        pr = {'number': 7, 'title': 'Fix', 'body': '', 'state': 'open', 'draft': False,
+              'head': {'sha': 'a' * 40, 'repo': {'full_name': common.repository()}}, 'base': {'sha': 'b' * 40}}
+        with patch.dict(os.environ, {'GITHUB_EVENT_NAME': kind, 'GITHUB_EVENT_PATH': str(event)}), \
+                patch.object(review, 'pull_request', return_value=pr), \
+                patch.object(review, 'context', return_value=discussion):
+            review.capture(self.root)
+        return common.read_json(self.root / 'input.json')
+
+    def test_ordinary_comment_capture_has_a_mandatory_response_target(self):
+        source = self.capture_event('issue_comment', 'created', {'comments': [self.command()]})
+        self.assertEqual(source['reply_targets'][0]['body'], 'it should stay there')
+        self.assertIsNone(source['push_update_key'])
+        self.assertIn('should_review=true', (self.root / 'outputs').read_text())
+        self.assertNotIn('run_nonce=', (self.root / 'outputs').read_text())
+
+    def test_push_capture_keys_are_stable_on_retry_but_unique_per_push(self):
+        first = self.capture_event('pull_request_target', 'synchronize', {})['push_update_key']
+        with patch.dict(os.environ, {'GITHUB_RUN_ATTEMPT': '2'}):
+            retry = self.capture_event('pull_request_target', 'synchronize', {})['push_update_key']
+        with patch.dict(os.environ, {'GITHUB_RUN_ID': '101'}):
+            next_push = self.capture_event('pull_request_target', 'synchronize', {})['push_update_key']
+        self.assertEqual(first, retry)
+        self.assertNotEqual(first, next_push)
+        self.assertIsNone(self.capture_event('pull_request_target', 'opened', {})['push_update_key'])
+
+    def test_bot_comments_still_do_not_start_reviews(self):
+        event = self.root / 'event.json'
+        common.write_json(event, {'issue': {'number': 7, 'pull_request': {'url': 'pr'}},
+                                 'action': 'created', 'comment': {'body': 'bot review'},
+                                 'sender': {'login': 'github-actions[bot]', 'type': 'Bot'}})
+        pr = {'state': 'open', 'draft': False, 'head': {'repo': {'full_name': common.repository()}}}
+        with patch.dict(os.environ, {'GITHUB_EVENT_PATH': str(event)}), \
+                patch.object(review, 'pull_request', return_value=pr), patch.object(review, 'api') as api:
+            review.prepare(self.root)
+        self.assertNotIn('mode=review', (self.root / 'outputs').read_text())
+        api.assert_not_called()
+
+    def test_finish_preserves_push_update_for_the_publisher(self):
+        key = common.fingerprint({'push': 100})
+        common.write_json(self.root / 'input.json', {'number': 7, 'head_sha': 'a' * 40,
+                          'base_sha': 'b' * 40, 'changed_files': 1, 'run_nonce': 'current',
+                          'reply_targets': [], 'push_update_key': key})
+        common.write_json(self.root / 'resume.json', {'resumed': True})
+        common.write_json(self.root / 'goose-review.json', fixtures.completed())
+        with patch.dict(os.environ, {'RUNNER_TEMP': str(self.root)}), \
+                patch.object(sys, 'argv', ['review.py', 'finish', '0', '1']), \
+                patch.object(review, 'usage_since', return_value={'cost_usd': 0}):
+            review.finish(self.root)
+        self.assertEqual(common.read_json(self.root / 'result.json')['push_update_key'], key)
+
+    def test_targets_deduplicate_answers_but_reopen_edited_comments(self):
         command = self.command()
-        plain = self.command('it should stay there', 'plain')
-        discussion = {'comments': [plain, command], 'reviews': [], 'threads': []}
+        discussion = {'comments': [command], 'reviews': [], 'threads': []}
         targets = review.reply_targets(discussion)
         self.assertEqual([target['comment_id'] for target in targets], ['IC_test'])
         marker = common.REPLY_PREFIX + targets[0]['version_key'] + ' -->'
@@ -145,14 +198,14 @@ class FollowupTests(unittest.TestCase):
         command['body'] += ' because this is intentional'
         self.assertEqual(len(review.reply_targets(discussion)), 1)
 
-    def test_inline_and_review_commands_are_also_reply_targets(self):
-        discussion = {'comments': [], 'reviews': [self.command('/review check this', 'review')],
-                      'threads': [{'comments': {'nodes': [self.command('/review why?', 'inline')]}}]}
+    def test_ordinary_inline_and_review_comments_are_also_reply_targets(self):
+        discussion = {'comments': [], 'reviews': [self.command('check this', 'review')],
+                      'threads': [{'comments': {'nodes': [self.command('why?', 'inline')]}}]}
         self.assertEqual({item['comment_id'] for item in review.reply_targets(discussion)}, {'review', 'inline'})
 
-    def test_statement_command_cannot_finish_without_a_response(self):
+    def test_ordinary_statement_cannot_finish_without_a_response(self):
         targets = review.reply_targets({'comments': [self.command()]})
-        with self.assertRaisesRegex(common.ReviewError, 'command_response_missing'):
+        with self.assertRaisesRegex(common.ReviewError, 'comment_response_missing'):
             review.final_answer(fixtures.completed(), 'current', targets)
         response = {'comment_id': 'IC_test', 'response': 'Understood. This is intentional, so I withdraw the unsupported cleanup finding.'}
         answer, replies = review.final_answer(fixtures.completed(responses=[response]), 'current', targets)
@@ -163,7 +216,7 @@ class FollowupTests(unittest.TestCase):
         targets = review.reply_targets({'comments': [self.command()]})
         for response in ({'comment_id': 'wrong', 'response': 'A sufficiently long answer.'},
                          {'comment_id': 'IC_test', 'response': 'OK'}):
-            with self.subTest(response=response), self.assertRaisesRegex(common.ReviewError, 'command_response_invalid'):
+            with self.subTest(response=response), self.assertRaisesRegex(common.ReviewError, 'comment_response_invalid'):
                 review.final_answer(fixtures.completed(responses=[response]), 'current', targets)
         value = fixtures.completed(responses=[{'comment_id': 'IC_test', 'response': 'A sufficiently long answer.'}])
         changed = json.loads(value['messages'][-1]['content'][0]['text'])
@@ -175,24 +228,30 @@ class FollowupTests(unittest.TestCase):
     def test_duplicate_response_cannot_cover_two_commands(self):
         targets = review.reply_targets({'comments': [self.command(), self.command('/review another question', 'second')]})
         response = {'comment_id': 'IC_test', 'response': 'A sufficiently long direct answer.'}
-        with self.assertRaisesRegex(common.ReviewError, 'command_response_invalid'):
+        with self.assertRaisesRegex(common.ReviewError, 'comment_response_invalid'):
             review.final_answer(fixtures.completed(responses=[response, response]), 'current', targets)
 
-    def test_inline_listener_without_a_command_cannot_start_the_model(self):
+    def test_inline_listener_without_unanswered_comments_does_not_start_the_model(self):
         event = self.root / 'event.json'
         common.write_json(event, {})
         pr = {'state': 'open', 'draft': False, 'head': {'repo': {'full_name': common.repository()}}}
         with patch.dict(os.environ, {'GITHUB_EVENT_NAME': 'workflow_run', 'GITHUB_EVENT_PATH': str(event)}), \
                 patch.object(review, 'pull_request', return_value=pr), \
-                patch.object(review, 'context', return_value={'comments': [self.command('ordinary comment')]}):
+                patch.object(review, 'context', return_value={'comments': []}):
             review.capture(self.root)
         self.assertIn('should_review=false', (self.root / 'outputs').read_text())
         self.assertFalse((self.root / 'input.json').exists())
 
     def test_failed_publication_is_not_hidden_by_unchanged_fingerprint(self):
+        self.assert_unchanged_input_runs(review.reply_targets({'comments': [self.command()]}))
+
+    def test_push_event_is_not_suppressed_by_unchanged_fingerprint(self):
+        self.assert_unchanged_input_runs([], 'c' * 64)
+
+    def assert_unchanged_input_runs(self, targets, push_key=None):
         source = {'number': 7, 'head_sha': 'a' * 40, 'base_sha': 'b' * 40, 'title': 'Fix',
                   'description': '', 'focus': '', 'force_review': False, 'input_fingerprint': 'same',
-                  'reply_targets': review.reply_targets({'comments': [self.command()]})}
+                  'reply_targets': targets, 'push_update_key': push_key}
         common.write_json(self.root / 'input.json', source)
         common.write_json(self.root / 'resume.json', {'resumed': True, 'reason': 'restored',
                           'head_sha': 'a' * 40, 'input_fingerprint': 'same'})
@@ -246,8 +305,47 @@ class FollowupTests(unittest.TestCase):
         calls = self.publish_with({'comments': [self.command()]}, [existing])
         self.assertEqual(len(calls), 1)  # Summary only, even if GraphQL lags REST.
 
-    def test_publisher_skips_commands_edited_or_deleted_during_review(self):
+    def test_publisher_skips_comments_edited_or_deleted_during_review(self):
         self.publication()
         for commands in ([], [self.command('/review changed request')]):
             with self.subTest(commands=commands):
                 self.assertEqual(len(self.publish_with({'comments': commands}, [])), 1)
+
+    def push_publication(self, key='c' * 64):
+        result = self.publication()
+        result.update(responses=[], push_update_key=key)
+        common.write_json(self.root / 'result.json', result)
+        return {'id': 1, 'body': common.MARKER + '\nOld summary',
+                'user': {'login': 'github-actions[bot]', 'type': 'Bot'}}
+
+    def test_push_posts_visible_review_even_without_any_pending_comments(self):
+        summary = self.push_publication()
+        calls = self.publish_with({}, [summary])
+        self.assertEqual([call.kwargs['method'] for call in calls], ['PATCH', 'POST'])
+        body = calls[1].kwargs['payload']['body']
+        self.assertIn(common.PUSH_PREFIX, body)
+        self.assertIn('AI review after push', body)
+        self.assertIn(fixtures.ANSWER, body)
+        self.assertIn('a' * 40, body)
+
+    def test_same_push_retry_does_not_duplicate_visible_update(self):
+        summary = self.push_publication()
+        existing = {'id': 2, 'body': common.PUSH_PREFIX + 'c' * 64 + ' -->\nOld update',
+                    'user': {'login': 'github-actions[bot]', 'type': 'Bot'}}
+        self.assertEqual(len(self.publish_with({}, [summary, existing])), 1)
+        self.push_publication('d' * 64)
+        self.assertEqual(len(self.publish_with({}, [summary, existing])), 2)
+
+    def test_invalid_push_marker_fails_before_any_publication(self):
+        summary = self.push_publication('invalid')
+        with self.assertRaisesRegex(common.ReviewError, 'invalid_push_update_key'):
+            self.publish_with({}, [summary])
+
+    def test_push_and_comment_responses_are_both_published(self):
+        result = self.publication()
+        result['push_update_key'] = 'c' * 64
+        common.write_json(self.root / 'result.json', result)
+        calls = self.publish_with({'comments': [self.command()]}, [])
+        self.assertEqual(len(calls), 3)  # Summary, push result, human response.
+        self.assertIn(common.PUSH_PREFIX, calls[1].kwargs['payload']['body'])
+        self.assertIn(common.REPLY_PREFIX, calls[2].kwargs['payload']['body'])
