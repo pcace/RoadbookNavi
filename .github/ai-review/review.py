@@ -239,8 +239,7 @@ def capture(root):
         'discussion': discussion_evidence(discussion),
     })
     write_json(root / 'input.json', source)
-    for key in ('head_sha', 'run_nonce'):
-        output(key, source[key])
+    output('head_sha', source['head_sha'])
     for kind in ('session', 'result', 'diagnostics'):
         output(kind + '_artifact', artifact_name(kind, number))
     output('should_review', True)

@@ -150,6 +150,7 @@ class FollowupTests(unittest.TestCase):
         self.assertEqual(source['reply_targets'][0]['body'], 'it should stay there')
         self.assertIsNone(source['push_update_key'])
         self.assertIn('should_review=true', (self.root / 'outputs').read_text())
+        self.assertNotIn('run_nonce=', (self.root / 'outputs').read_text())
 
     def test_push_capture_keys_are_stable_on_retry_but_unique_per_push(self):
         first = self.capture_event('pull_request_target', 'synchronize', {})['push_update_key']

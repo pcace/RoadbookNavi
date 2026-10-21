@@ -151,7 +151,6 @@ def restore(root):
                     system_prompt_extras_json=NULL, model_config_json=NULL,
                     provider_name='openrouter', goose_mode='auto', container_id=NULL''')
             (root / 'previous-discussion.json').write_bytes(contents['discussion.json'])
-            (root / 'previous-result.json').write_bytes(contents['result.json'])
             baseline = {**manifest, 'resumed': True, 'reason': 'checkpoint_restored',
                         'last_usage_id': usage_id, 'artifact_id': artifact['id']}
             break
