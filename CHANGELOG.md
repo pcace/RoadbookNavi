@@ -1,3 +1,9 @@
+## [1.39.0-beta.6](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.5...v1.39.0-beta.6) (2026-10-21)
+
+### New features
+
+- **ci:** add persistent Goose PR reviews ([d7c9b3e](https://github.com/pcace/RoadbookNavi/commit/d7c9b3e9527c35502ddf6651d6675c1bd7f86b1c))
+
 ## [1.39.0-beta.5](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.4...v1.39.0-beta.5) (2026-10-04)
 
 ### Bug fixes
