@@ -197,7 +197,7 @@ jobs:
           cp "$APK" "release-assets/RoadbookNavi-Android-${VERSION}-arm64.apk"
 
       - name: Upload macOS and Android workflow artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-downloads-macos-android
           path: release-downloads/
@@ -288,7 +288,7 @@ jobs:
           if ((Get-Item release-downloads/RoadbookNavi-Windows.exe).Length -le 0) { throw 'Windows installer is empty' }
 
       - name: Upload Windows workflow artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-downloads-windows
           path: release-downloads/
@@ -384,7 +384,7 @@ jobs:
           cp "$DEB" "release-assets/RoadbookNavi-Linux-${VERSION}-amd64.deb"
 
       - name: Upload Linux workflow artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: native-downloads-linux
           path: release-downloads/
