@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Restore consistent Goose SQLite checkpoints and remove PR memory after merge."""
 
+from contextlib import closing
 import io
 import json
 import os
@@ -20,15 +21,17 @@ from common import (
 )
 
 PAYLOAD_FILES = {'manifest.json', 'sessions.db', 'discussion.json', 'result.json'}
+LEGACY_SIDECARS = {'sessions.db-wal', 'sessions.db-shm'}
 SESSION_ID = re.compile(r'[A-Za-z0-9_-]{1,100}')
 
 
 def compatibility():
+    # Bump SCHEMA_VERSION for incompatible storage/extension-state contracts.
+    # Prompt changes use the new trusted recipe, not a fresh conversation.
     return {
         'schema_version': SCHEMA_VERSION,
         'model': MODEL,
         'image': os.environ['GOOSE_IMAGE'],
-        'recipe_sha256': digest(Path(__file__).with_name('recipe.yaml').read_bytes()),
     }
 
 
@@ -49,7 +52,7 @@ def connect_readonly(path):
 
 
 def inspect_database(path, expected_id=None):
-    with connect_readonly(path) as connection:
+    with closing(connect_readonly(path)) as connection:
         rows = connection.execute('SELECT id FROM sessions').fetchall()
         if len(rows) != 1 or not isinstance(rows[0][0], str) or not SESSION_ID.fullmatch(rows[0][0]):
             raise ReviewError('invalid_session_identity')
@@ -64,7 +67,7 @@ def checkpoint_artifacts(number):
     prefix = artifact_prefix('session', number)
     candidates = [item for item in pages(f'repos/{repository()}/actions/artifacts', 'artifacts')
                   if item.get('name', '').startswith(prefix) and not item.get('expired')]
-    return sorted(candidates, key=lambda item: int(item['id']), reverse=True)
+    return sorted(candidates, key=lambda item: (item.get('created_at', ''), int(item['id'])), reverse=True)
 
 
 def decode_checkpoint(blob, number):
@@ -73,10 +76,17 @@ def decode_checkpoint(blob, number):
     try:
         with zipfile.ZipFile(io.BytesIO(blob)) as archive:
             members = archive.infolist()
-            if len(members) != len(PAYLOAD_FILES) or {item.filename for item in members} != PAYLOAD_FILES:
+            names = {item.filename for item in members}
+            if (len(members) != len(names) or not PAYLOAD_FILES <= names
+                    or not names <= PAYLOAD_FILES | LEGACY_SIDECARS):
                 raise ReviewError('invalid_checkpoint_members')
             for member in members:
-                maximum = (MAX_DATABASE if member.filename == 'sessions.db' else
+                # Old exports accidentally included SQLite's read-side helpers.
+                # A nonempty WAL could contain unbacked data: never discard it.
+                if member.filename == 'sessions.db-wal' and member.file_size:
+                    raise ReviewError('uncheckpointed_legacy_wal')
+                maximum = (32768 if member.filename == 'sessions.db-shm' else
+                           MAX_DATABASE if member.filename == 'sessions.db' else
                            8_000_000 if member.filename == 'discussion.json' else 1_000_000)
                 if (member.file_size > maximum or member.flag_bits & 1
                         or stat.S_ISLNK(member.external_attr >> 16)):
@@ -134,7 +144,7 @@ def restore(root):
             session_id, usage_id = inspect_database(target, manifest['session_id'])
             # History and extension_data (including todo state) survive. Saved runtime
             # configuration must never replace this run's trusted recipe/model/tools.
-            with sqlite3.connect(target) as connection:
+            with closing(sqlite3.connect(target)) as connection, connection:
                 connection.execute('PRAGMA trusted_schema=OFF')
                 connection.execute('''UPDATE sessions SET recipe_json=NULL,
                     user_recipe_values_json=NULL, system_prompt_override=NULL,
@@ -145,7 +155,9 @@ def restore(root):
             baseline = {**manifest, 'resumed': True, 'reason': 'checkpoint_restored',
                         'last_usage_id': usage_id, 'artifact_id': artifact['id']}
             break
-        except (ReviewError, sqlite3.DatabaseError, OSError):
+        except (ReviewError, sqlite3.DatabaseError, OSError) as error:
+            code = str(error) if isinstance(error, ReviewError) else 'session_database_unusable'
+            print(f'Checkpoint {int(artifact["id"])} skipped: {code}.')
             baseline['reason'] = 'checkpoint_unusable'
             shutil.rmtree(state)
             state.mkdir()
@@ -157,7 +169,7 @@ def restore(root):
 def usage_since(root, baseline):
     database = state_database(root)
     session_id, _ = inspect_database(database, baseline.get('session_id'))
-    with connect_readonly(database) as connection:
+    with closing(connect_readonly(database)) as connection:
         connection.row_factory = sqlite3.Row
         rows = [dict(row) for row in connection.execute(
             '''SELECT input_tokens, output_tokens, total_tokens, cost, cost_source, model
@@ -193,12 +205,16 @@ def snapshot(root):
     target = checkpoint / 'sessions.db'
     # SQLite's backup API produces one consistent file, even if a WAL exists.
     # The Goose process has exited before this function is invoked.
-    with sqlite3.connect(source_database) as connection, sqlite3.connect(target) as destination:
+    with closing(connect_readonly(source_database)) as connection, closing(sqlite3.connect(target)) as destination:
         connection.backup(destination)
+        # backup() inherits the source's WAL journal mode. Seal a standalone
+        # database before validating/hashing it, and close every connection.
+        destination.execute('PRAGMA journal_mode=DELETE')
     inspect_database(target, session_id)
     current = workflow_run()
     manifest = {
         **compatibility(), 'repository': repository(), 'number': source['number'],
+        'recipe_sha256': digest(Path(__file__).with_name('recipe.yaml').read_bytes()),
         'session_id': session_id, 'head_sha': source['head_sha'],
         'base_sha': source['base_sha'], 'merge_base_sha': source['merge_base_sha'],
         'input_fingerprint': source['input_fingerprint'],
@@ -209,6 +225,8 @@ def snapshot(root):
     write_json(checkpoint / 'manifest.json', manifest)
     write_json(checkpoint / 'result.json', result)
     shutil.copyfile(root / 'discussion.json', checkpoint / 'discussion.json')
+    if {item.name for item in checkpoint.iterdir()} != PAYLOAD_FILES:
+        raise ReviewError('unexpected_checkpoint_files')
     for name in PAYLOAD_FILES - {'sessions.db'}:
         maximum = 8_000_000 if name == 'discussion.json' else 1_000_000
         if (checkpoint / name).stat().st_size > maximum:

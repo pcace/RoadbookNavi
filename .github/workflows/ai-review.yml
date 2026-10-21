@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, reopened, ready_for_review, synchronize, edited, closed]
   issue_comment:
-    types: [created, edited, deleted]
+    types: [created, edited]
   workflow_run:
     workflows: [AI Review Discussion Event]
     types: [completed]
@@ -30,7 +30,7 @@ jobs:
       (github.event_name == 'pull_request_target' &&
        github.event.pull_request.head.repo.full_name == github.repository) ||
       (github.event_name == 'issue_comment' && github.event.issue.pull_request &&
-       github.event.sender.type != 'Bot') ||
+       github.event.sender.type != 'Bot' && startsWith(github.event.comment.body, '/review')) ||
       (github.event_name == 'workflow_run' &&
        github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.actor.type != 'Bot') ||
@@ -125,7 +125,11 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ${{ steps.capture.outputs.session_artifact }}
-          path: ${{ runner.temp }}/ai-review/checkpoint/
+          path: |
+            ${{ runner.temp }}/ai-review/checkpoint/sessions.db
+            ${{ runner.temp }}/ai-review/checkpoint/manifest.json
+            ${{ runner.temp }}/ai-review/checkpoint/discussion.json
+            ${{ runner.temp }}/ai-review/checkpoint/result.json
           retention-days: 90
           if-no-files-found: error
       - name: Transfer only the validated review to the writer job
@@ -164,7 +168,7 @@ jobs:
         with:
           name: ${{ needs.review.outputs.result_artifact }}
           path: ${{ runner.temp }}/ai-review
-      - name: Publish or update PR comment
+      - name: Update review summary and answer explicit review commands
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ needs.prepare.outputs.pr_number }}
