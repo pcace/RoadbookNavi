@@ -3,7 +3,8 @@
 This is the Buildplace AI PR review flow adapted for RoadbookNavi, extended with
 one persistent Goose session per PR. It investigates code without running project
 scripts or tests, updates one English review comment, and never approves or merges.
-Explicit `/review` comments additionally receive a separate, linked response.
+Human comments receive separate, linked responses without a `/review` prefix.
+Every successfully reviewed push also posts a new visible review update.
 
 ## Enable the test environment
 
@@ -44,7 +45,7 @@ or fixtures intended for model review.
 ## Triggers and access
 
 - Opened/reopened/ready PRs, pushes (`synchronize`) and edited PR metadata.
-- Human PR/inline comments or submitted/edited reviews **starting with `/review`**.
+- Human PR/inline comments and submitted/edited reviews, without a required prefix.
 - `/review` or `/review focus on error handling` (up to 1,000 focus characters).
 - Manual workflow dispatch on the default branch with a PR number.
 - Merge closure for memory cleanup, including merges performed by bots.
@@ -54,18 +55,16 @@ Fork, draft, closed and bot-triggered reviews are skipped. Own bot comments do n
 trigger a model call. Closing without merging retains the session until expiry;
 reopening can continue it.
 
-Initial PR reviews and push reviews remain automatic. Ordinary human comments do
-not start a review and do not receive unsolicited replies; they are still included
-as evidence in the next investigation. Use `/review it should stay there` to ask
-the agent to address an objection or explanation, not only a question. Bare
-`/review` requests a new review with a short direct response. The command must be
-at the start of the comment; `/reviewer` is not a command.
+Initial reviews, push reviews and replies to nonempty human comments are automatic.
+Statements such as `it should stay there` receive a direct response, not only
+questions. `/review` is still an optional explicit re-review/focus command; it is
+not required for an answer. Empty review bodies do not create response targets.
 
 Inline review events use `ai-review-discussion.yml`, a minimal listener with no
 secrets or write permissions. A successful listener run wakes the privileged
 default-branch worker through `workflow_run`. The worker verifies listener path,
 event, actor and same-repository PR association, then checks for an unanswered
-`/review` command; ambiguous/missing associations
+human message; ambiguous/missing associations
 are skipped. The listener never checks out or executes PR code.
 
 ## Session lifecycle
@@ -97,12 +96,14 @@ without following PR-controlled symlinks on the host.
 Human comments, reviews and thread comments are fully paginated. The saved
 discussion snapshot identifies new/edited/deleted messages and changed thread
 states. Full current discussion remains available. A fresh session can read the
-last published own AI review and prior command responses for context; a resumed
+last published own AI review and prior comment responses for context; a resumed
 session already contains its earlier answers. GraphQL's `github-actions` and
 REST's `github-actions[bot]` are recognized only with a Bot author type.
 
-If both code/metadata and human discussion are unchanged, automatic events skip
-the model call. Explicit `/review` and manual dispatch always request a new review.
+If code/metadata and human discussion are unchanged and no response is pending,
+redundant non-push events skip the model call. Push events always investigate and
+publish an update, even if another queued event already captured the same head.
+Explicit `/review` and manual dispatch can also request another review.
 
 ### Successful checkpoints
 
@@ -177,12 +178,12 @@ Goose has 15 minutes and 40 turns per execution. The model job has 30 minutes.
 The final answer must be a newly accepted `recipe__final_output` from after the
 unique current-run prompt, followed by a matching structured assistant answer.
 An old successful answer in a resumed history cannot validate a failed new run.
-The final output contains `review` and `responses`. Every outstanding `/review`
+The final output contains `review` and `responses`. Every outstanding human
 comment in `reply-targets.json` requires exactly one nonempty response for its
 comment ID, including statements/disagreements. Missing, duplicate or unexpected
 responses fail the run instead of silently publishing a review without an answer.
 This validates coverage and structure, not the semantic quality of the answer.
-There can be at most 100 pending commands, with 20–6,000 characters per response.
+There can be at most 100 pending comments, with 20–6,000 characters per response.
 Markdown must have Findings and Checked and limits sections and fit 50,000
 characters; the raw CLI JSON is limited to 64 MB and the final comment to 60,000
 characters. The recipe asks for at most eight high-confidence P1/P2 findings, but
@@ -192,12 +193,16 @@ Before publication, the publisher rechecks that the PR is open, non-draft and st
 on the reviewed head. Late results are not presented as a review of a newer commit.
 The saved checkpoint still records the exact actually reviewed commit so the next
 run can continue from it. The publisher updates the review summary, then posts
-separate PR timeline responses linking to each command (also for inline/review
-commands). It rechecks live command bodies and skips edited/deleted commands.
-Stable per-command/body markers prevent duplicate replies on retries, including
-partial publication failures; ordinary comments are never response targets. An
-unchanged checkpoint cannot suppress a still-unanswered command after a failed
-publication. An empty review does not establish correctness.
+separate PR timeline responses linking to each human comment (also inline/review
+comments). It rechecks live bodies and skips edited/deleted comments. Stable
+per-comment/body markers prevent duplicate replies on retries, including partial
+publication failures. A separate push comment contains the reviewed commit and
+full review result so a push is visible without inspecting edits to the summary.
+Its marker is stable across retries of the same workflow run, but distinct for
+later push events, including force-pushes back to an earlier commit. Stale results
+are still skipped when a newer PR head exists. An unchanged checkpoint cannot
+suppress a push or a still-unanswered comment after failed publication. An empty
+review does not establish correctness.
 
 ## Costs and diagnostics
 
@@ -227,15 +232,15 @@ unprivileged `pull_request` workflow. Tests cover completion boundaries, discuss
 pagination/deltas, event trust, checkpoint integrity and history/todo preservation,
 per-run usage, force-push comparisons and merge-cleanup scope. Regression tests
 also zip the entire real WAL-backup directory and restore it, cover legacy WAL
-exports, GraphQL Bot identities, `/review` gating, required statement responses,
-and separate/idempotent publication with live edited/deleted-command checks.
+exports, GraphQL Bot identities, automatic comment triggers, required statement
+responses, visible/idempotent push updates, and edited/deleted-comment checks.
 
 Actionlint 1.7.12 does not yet recognize GitHub's documented `concurrency.queue`.
 When using that version, ignore only its `unexpected key "queue" for "concurrency"`
 diagnostic; do not suppress other workflow validation errors.
 
 For a real end-to-end test after activation: open a small internal PR, request a
-review, add `/review` followed by a question or objection, push a fix and verify
+review, add an ordinary question or objection without a prefix, push a fix and verify
 that the next run continues the same
 session. Then merge and verify all PR memory artifacts are removed. A container
 smoke test should precede changes to the pinned Goose image.
@@ -252,6 +257,6 @@ skills. New source headers follow RoadbookNavi's GPL-3.0-only project policy.
 - `prepare.sh` / `review.py`: routing, PR evidence, diffs, current-run completion and rendering.
 - `run.sh`: fixed free-model checks and isolated fresh/resumed Goose process.
 - `session.py`: checkpoint restore, consistent backup, usage and merge cleanup.
-- `publish.sh` / `review.py publish`: update the summary and publish explicit-command responses after live checks.
+- `publish.sh` / `review.py publish`: update the summary and publish comment/push responses after live checks.
 - `recipe.yaml`: first-review and follow-up investigation instructions.
 - `test_review.py` / `test_followups.py`: focused offline regression tests.

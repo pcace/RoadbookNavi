@@ -14,8 +14,7 @@ jobs:
   signal:
     if: >-
       github.event.sender.type != 'Bot' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      startsWith(github.event.comment.body || github.event.review.body, '/review')
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
