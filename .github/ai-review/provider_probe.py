@@ -4,6 +4,7 @@
 import json
 import os
 import re
+import sys
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -20,8 +21,13 @@ def probe():
                           'Content-Type': 'application/json'})
     try:
         with urlopen(request, timeout=45) as response:
-            json.load(response)
-        report = {'http_status': 200, 'category': 'provider_available', 'requested_model': MODEL}
+            value = json.load(response)
+        if isinstance(value, dict) and value.get('error'):
+            report = {'http_status': 200, 'category': category(value), 'requested_model': MODEL}
+        elif isinstance(value, dict) and isinstance(value.get('choices'), list) and value['choices']:
+            report = {'http_status': 200, 'category': 'provider_available', 'requested_model': MODEL}
+        else:
+            report = {'http_status': 200, 'category': 'invalid_provider_response', 'requested_model': MODEL}
     except HTTPError as error:
         try:
             value = json.loads(error.read(1_000_000))
@@ -32,10 +38,14 @@ def probe():
             value = error.headers.get(header, '')
             if re.fullmatch(r'[0-9]{1,16}', value):
                 report[header.lower()] = value
-    except URLError:
+    except (URLError, TimeoutError, OSError):
         report = {'category': 'network_or_tls_error', 'requested_model': MODEL}
-    print(json.dumps(report))
+    except (ValueError, UnicodeDecodeError):
+        report = {'category': 'invalid_provider_response', 'requested_model': MODEL}
+    return report
 
 
 if __name__ == '__main__':
-    probe()
+    report = probe()
+    print(json.dumps(report))
+    sys.exit(0 if report['category'] == 'provider_available' else 1)

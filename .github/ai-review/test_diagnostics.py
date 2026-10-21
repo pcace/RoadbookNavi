@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Offline regression tests for private provider failures and visible notices."""
 
+import io
 import json
 import os
 import sys
 import unittest
+from urllib.error import HTTPError, URLError
 from unittest.mock import patch
 
 import common
 import diagnostics
 import review
+import provider_probe
 import test_review as fixtures
 
 
@@ -108,3 +111,48 @@ class DiagnosticsTests(unittest.TestCase):
         with patch.dict(os.environ, {'HEAD_SHA': 'a' * 40}), \
                 self.assertRaisesRegex(common.ReviewError, 'failure_report_invalid'):
             review.publish_failure(self.root)
+
+    def test_probe_keeps_fixed_free_request_and_never_returns_content(self):
+        with patch.dict(os.environ, {'OPENROUTER_API_KEY': 'PRIVATE_TEST_TOKEN'}), \
+                patch.object(provider_probe, 'urlopen') as urlopen:
+            urlopen.return_value.__enter__.return_value = io.StringIO('{"choices":["PRIVATE_ANSWER"]}')
+            result = provider_probe.probe()
+        request = urlopen.call_args.args[0]
+        payload = json.loads(request.data)
+        self.assertEqual(request.full_url, 'https://openrouter.ai/api/v1/chat/completions')
+        self.assertEqual(payload['model'], common.MODEL)
+        self.assertEqual(payload['provider']['max_price'], {'prompt': 0, 'completion': 0})
+        self.assertEqual(result['category'], 'provider_available')
+        self.assertNotIn('PRIVATE', json.dumps(result))
+
+    def test_probe_reports_daily_quota_and_only_numeric_headers(self):
+        error = HTTPError('https://openrouter.ai/api/v1/chat/completions', 429, 'PRIVATE',
+                          {'X-RateLimit-Remaining': '0', 'X-RateLimit-Reset': '1792627200000',
+                           'Retry-After': 'PRIVATE_PROVIDER_DATA'},
+                          io.BytesIO(b'{"error":{"message":"free-models-per-day PRIVATE_TOKEN"}}'))
+        with patch.dict(os.environ, {'OPENROUTER_API_KEY': 'PRIVATE_TEST_TOKEN'}), \
+                patch.object(provider_probe, 'urlopen', side_effect=error):
+            report = provider_probe.probe()
+        self.assertEqual(report['category'], 'free_daily_quota_exhausted')
+        self.assertEqual(report['http_status'], 429)
+        self.assertEqual(report['x-ratelimit-remaining'], '0')
+        self.assertNotIn('retry-after', report)
+        self.assertNotIn('PRIVATE', json.dumps(report))
+
+    def test_probe_handles_network_and_malformed_provider_errors_safely(self):
+        for error in (URLError('PRIVATE_NETWORK_DETAILS'), TimeoutError('PRIVATE'),
+                      HTTPError('https://openrouter.ai', 503, 'PRIVATE', {}, io.BytesIO(b'PRIVATE'))):
+            with patch.dict(os.environ, {'OPENROUTER_API_KEY': 'PRIVATE_TEST_TOKEN'}), \
+                    patch.object(provider_probe, 'urlopen', side_effect=error):
+                report = provider_probe.probe()
+            self.assertNotIn('PRIVATE', json.dumps(report))
+            self.assertIn(report['category'], ('network_or_tls_error', 'provider_unavailable'))
+
+    def test_probe_rejects_embedded_errors_and_invalid_success_payloads(self):
+        for payload in ('[]', '{}', 'PRIVATE', '{"error":{"message":"free-models-per-day PRIVATE"}}'):
+            with patch.dict(os.environ, {'OPENROUTER_API_KEY': 'PRIVATE_TEST_TOKEN'}), \
+                    patch.object(provider_probe, 'urlopen') as urlopen:
+                urlopen.return_value.__enter__.return_value = io.StringIO(payload)
+                report = provider_probe.probe()
+            self.assertNotEqual(report['category'], 'provider_available')
+            self.assertNotIn('PRIVATE', json.dumps(report))

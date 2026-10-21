@@ -166,8 +166,9 @@ the fallback for inactive/abandoned PRs.
 
 ## Isolation, limits and publication
 
-Preparation and analysis have read permissions; only the separate publisher can
-write PR comments. Only the separate cleanup job can delete Actions artifacts.
+Preparation and analysis have read permissions; only the separate publishers for
+successful reviews and failure notices can write PR comments. Only the separate
+cleanup job can delete Actions artifacts.
 The model container receives no GitHub token or Docker socket, drops capabilities,
 runs as the runner UID/GID, and has a read-only root and repository. It can write
 temporary files and its session state. Network access is available for OpenRouter.
@@ -213,10 +214,52 @@ compaction requests. It never re-sums the old conversation as a new run. Missing
 cost data is shown as unavailable; a positive recorded cost fails this free-model
 test configuration. There is no extra OpenRouter generation-cost API lookup.
 
-Numeric diagnostics have seven-day retention; the separate publication result has
+Numeric diagnostics and fixed failure categories have seven-day retention; the separate publication result has
 one-day retention; successful full sessions have 90-day retention. Raw provider
 errors and conversation logs are not printed/uploaded as diagnostic artifacts.
 The session database itself deliberately contains the review conversation.
+
+### Free allowance failures
+
+The public model-catalog check verifies pricing and tool support, **not** the
+account's remaining free allowance. A review can make many inference requests
+(tool turns, compaction), so one review is not one request against the daily cap.
+OpenRouter documents the current limits in its
+[rate-limit reference](https://openrouter.ai/docs/api-reference/limits).
+
+On a nonzero Goose exit, the host reduces a bounded local stderr sample to a
+fixed category such as `free_daily_quota_exhausted`, `provider_rate_limited`,
+authentication/network failure or timeout. It never uploads or prints stderr.
+An unknown failure stays generic instead of exposing provider payloads or code.
+The review remains failed: no stale final answer is accepted and no failed
+session replaces a successful checkpoint.
+
+A separate least-privilege writer downloads only that run's safe diagnostics and
+posts a failure notice with its workflow link. It rechecks the open PR and exact
+head, deduplicates retries by run ID, and leaves the last successful summary and
+per-comment response markers untouched. Pending human comments remain unanswered
+until a later successful review. If the worker fails before producing diagnostics,
+the Actions failure/log remains the source of truth.
+
+For exhausted daily free allowance, wait until the next UTC day and request
+`/review` again. The workflow does not loop on a daily quota error, automatically
+switch models, add credits, or attempt paid inference. **AI Review Provider Probe**
+is an optional owner-only manual workflow on the default branch: it sends one
+fixed, content-free prompt to the same zero-price-capped model and logs only
+allowlisted status/category/numeric reset headers. A failed probe reports failure,
+not a successful review. It never accesses PR sessions or GitHub write credentials.
+
+On 2026-10-21, test PR #26 reproduced failures on both its initial review and an
+ordinary follow-up comment. The isolated provider probe returned HTTP 429,
+`free_daily_quota_exhausted`, remaining `0`, and reset `1792627200000`
+(2026-10-22 00:00 UTC). This established an external allowance failure rather than
+a comment-trigger or session-restoration defect. See the
+[provider evidence](https://github.com/pcace/RoadbookNavi/actions/runs/39677498286).
+The pinned Goose runtime reproduced the same category and the separate writer
+successfully posted its safe notice in the
+[live failure-path test](https://github.com/pcace/RoadbookNavi/actions/runs/39677936280).
+The temporary push-triggered diagnostic bootstrap was removed afterwards; normal
+workers still execute only merged default-branch automation.
 
 ## Local and CI verification
 
@@ -234,6 +277,8 @@ per-run usage, force-push comparisons and merge-cleanup scope. Regression tests
 also zip the entire real WAL-backup directory and restore it, cover legacy WAL
 exports, GraphQL Bot identities, automatic comment triggers, required statement
 responses, visible/idempotent push updates, and edited/deleted-comment checks.
+They also cover private error classification, failure notice deduplication,
+closed/new-head publication guards, and preservation of successful review state.
 
 Actionlint 1.7.12 does not yet recognize GitHub's documented `concurrency.queue`.
 When using that version, ignore only its `unexpected key "queue" for "concurrency"`

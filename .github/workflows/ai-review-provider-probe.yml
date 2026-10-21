@@ -1,12 +1,6 @@
 name: AI Review Provider Probe
 
 on:
-  push:
-    branches: [codex/review-resume-diagnostics]
-    paths:
-      - .github/workflows/ai-review-provider-probe.yml
-      - .github/ai-review/provider_probe.py
-      - .github/ai-review/diagnostics.py
   workflow_dispatch:
 
 permissions:
@@ -14,11 +8,10 @@ permissions:
 
 jobs:
   probe:
-    # Temporary bootstrap on the explicitly authorized owner-controlled branch.
-    # Only owner-controlled diagnostic code; no session data or raw error logging.
+    # Manual, owner-only diagnostic. Never execute PR code with this secret.
     if: >-
       github.repository == 'pcace/RoadbookNavi' && github.actor == 'pcace' &&
-      github.ref == 'refs/heads/codex/review-resume-diagnostics'
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -29,58 +22,3 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python3 -B .github/ai-review/provider_probe.py
-      - name: Reproduce with the pinned Goose runtime and safe production diagnostics
-        id: goose
-        env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          mkdir -p "$RUNNER_TEMP/ai-review"
-          exit_code=0
-          timeout 90s docker run --rm --cap-drop=ALL --security-opt=no-new-privileges \
-            --read-only --tmpfs /tmp:rw,nosuid,size=1g \
-            --user "$(id -u):$(id -g)" \
-            --env HOME=/tmp/goose-home --env XDG_CONFIG_HOME=/tmp/goose-config \
-            --env XDG_DATA_HOME=/tmp/goose-data --env XDG_STATE_HOME=/tmp/goose-state \
-            --env OPENROUTER_API_KEY --env GOOSE_PROVIDER=openrouter \
-            --env GOOSE_MODEL=nvidia/nemotron-3-ultra-550b-a55b:free \
-            --env GOOSE_DISABLE_KEYRING=1 --env GOOSE_DISABLE_SESSION_NAMING=1 \
-            --env GOOSE_TELEMETRY_ENABLED=false \
-            --env 'OPENROUTER_PARAMETERS={"provider":{"max_price":{"prompt":0,"completion":0}},"max_tokens":12000}' \
-            --entrypoint /bin/sh \
-            ghcr.io/aaif-goose/goose@sha256:05b591fbd34f4da2469a946f23ab9c86e2307023f6ebed4787f7035fa933185e \
-            -c 'mkdir -p "$HOME" "$XDG_CONFIG_HOME" && exec goose run --provider openrouter --model "$GOOSE_MODEL" --max-turns 1 --quiet --output-format json --text "Reply OK."' \
-            > "$RUNNER_TEMP/goose-review.json" 2> "$RUNNER_TEMP/goose-review.stderr" || exit_code=$?
-          if [ "$exit_code" != 0 ]; then
-            echo "failed=true" >> "$GITHUB_OUTPUT"
-            python3 -B .github/ai-review/review.py finish "$exit_code" 0 || true
-          fi
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: steps.goose.outputs.failed == 'true'
-        with:
-          name: provider-probe-diagnostics
-          path: ${{ runner.temp }}/ai-review/diagnostics.json
-          retention-days: 1
-    outputs:
-      failed: ${{ steps.goose.outputs.failed }}
-
-  notify_failure:
-    needs: probe
-    if: needs.probe.outputs.failed == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: provider-probe-diagnostics
-          path: ${{ runner.temp }}/ai-review
-      - name: Verify the real safe failure notice on the authorized test PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: '26'
-          HEAD_SHA: ${{ github.sha }}
-        run: python3 -B .github/ai-review/review.py publish-failure
