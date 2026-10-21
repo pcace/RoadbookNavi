@@ -23,14 +23,15 @@ ANSWER = ('### Findings\nNo verified findings. The existing behavior is preserve
           '### Checked and limits\nChecked the changed function and its caller; no tests were run.')
 
 
-def completed(nonce='current', answer=ANSWER):
+def completed(nonce='current', answer=ANSWER, responses=None):
+    result = {'review': answer, 'responses': responses or []}
     return {'metadata': {'status': 'completed'}, 'messages': [
         {'role': 'user', 'content': [{'type': 'text', 'text': f'Review execution: {nonce}\nTask.'}]},
         {'role': 'assistant', 'content': [{'type': 'toolRequest', 'id': nonce, 'toolCall': {
-            'value': {'name': 'recipe__final_output', 'arguments': {'review': answer}}}}]},
+            'value': {'name': 'recipe__final_output', 'arguments': result}}}]},
         {'role': 'user', 'content': [{'type': 'toolResponse', 'id': nonce,
                                      'toolResult': {'status': 'success', 'value': {'isError': False}}}]},
-        {'role': 'assistant', 'content': [{'type': 'text', 'text': json.dumps({'review': answer})}]},
+        {'role': 'assistant', 'content': [{'type': 'text', 'text': json.dumps(result)}]},
     ]}
 
 
@@ -91,7 +92,7 @@ class ReviewTests(unittest.TestCase):
     def test_only_a_fresh_accepted_final_output_counts(self):
         value = completed('old')
         value['messages'] += completed()['messages']
-        self.assertEqual(review.final_answer(value, 'current'), ANSWER)
+        self.assertEqual(review.final_answer(value, 'current'), (ANSWER, []))
         value['messages'] = completed('old')['messages'] + completed()['messages'][:1]
         with self.assertRaisesRegex(common.ReviewError, 'final_answer_missing'):
             review.final_answer(value, 'current')

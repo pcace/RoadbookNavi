@@ -14,8 +14,8 @@ import uuid
 from urllib.request import urlopen
 
 from common import (
-    DISCUSSION_WORKFLOW_PATH, MARKER, MODEL, ReviewError, api, artifact_name,
-    directory, fail, fingerprint, output, pr_number, pull_request, read_json,
+    DISCUSSION_WORKFLOW_PATH, MARKER, MODEL, REPLY_PREFIX, ReviewError, api, artifact_name,
+    directory, fail, fingerprint, output, pages, pr_number, pull_request, read_json,
     repository, reviewable, same_repository, write_json,
 )
 from session import usage_since
@@ -24,6 +24,10 @@ SHA = re.compile(r'[0-9a-f]{40}')
 COMMENT = 'id url body createdAt updatedAt author { login __typename }'
 REVIEW = 'id url body submittedAt state commit { oid } author { login __typename }'
 INLINE = COMMENT + ' commit { oid } originalCommit { oid }'
+
+
+def review_command(body):
+    return isinstance(body, str) and bool(re.match(r'^/review(?:\s|$)', body))
 
 
 def event_number_actor(event):
@@ -45,7 +49,9 @@ def event_number_actor(event):
             return None, None
         return (event.get('inputs') or {}).get('pr_number'), event.get('sender') or {}
     if kind == 'issue_comment':
-        if not (event.get('issue') or {}).get('pull_request'):
+        if (not (event.get('issue') or {}).get('pull_request')
+                or event.get('action') not in {'created', 'edited'}
+                or not review_command((event.get('comment') or {}).get('body'))):
             return None, None
         return event['issue']['number'], event.get('sender') or {}
     if kind == 'pull_request_target':
@@ -136,6 +142,11 @@ def human(comment, allow_empty=False):
             and MARKER not in body and (allow_empty or bool(body.strip())))
 
 
+def own_bot(author):
+    return (author.get('__typename', author.get('type')) == 'Bot'
+            and author.get('login') in {'github-actions', 'github-actions[bot]'})
+
+
 def context(number):
     comments = list(connection_pages(number, 'comments', COMMENT))
     reviews = list(connection_pages(number, 'reviews', REVIEW))
@@ -147,15 +158,36 @@ def context(number):
         if comments_in_thread:
             threads.append({**thread, 'comments': {'nodes': comments_in_thread}})
     own = [item for item in comments
-           if (item.get('author') or {}).get('login') == 'github-actions[bot]'
+           if own_bot(item.get('author') or {})
            and (item.get('body') or '').startswith(MARKER)]
+    replies = [item for item in comments if own_bot(item.get('author') or {})
+               and re.match(re.escape(REPLY_PREFIX) + r'[0-9a-f]{64} -->', item.get('body') or '')]
     return {
         'captured_at': datetime.now(timezone.utc).isoformat(), 'truncated': False,
         'comments': [item for item in comments if human(item)],
         'reviews': [item for item in reviews if human(item, allow_empty=True)],
         'threads': threads,
         'previous_ai_review': max(own, key=lambda item: item.get('updatedAt', ''), default=None),
+        'previous_ai_responses': replies,
     }
+
+
+def reply_targets(discussion):
+    answered = {match.group(1) for item in discussion.get('previous_ai_responses', [])
+                if (match := re.match(re.escape(REPLY_PREFIX) + r'([0-9a-f]{64}) -->', item.get('body') or ''))}
+    messages = discussion.get('comments', []) + discussion.get('reviews', [])
+    messages += [item for thread in discussion.get('threads', []) for item in thread['comments']['nodes']]
+    targets = {}
+    for message in messages:
+        if not review_command(message.get('body')):
+            continue
+        key = fingerprint({'id': message['id'], 'body': message['body']})
+        if key not in answered:
+            targets[message['id']] = {'comment_id': message['id'], 'url': message['url'],
+                                      'body': message['body'], 'version_key': key}
+    if len(targets) > 100:
+        raise ReviewError('too_many_pending_review_commands')
+    return list(targets.values())
 
 
 def discussion_evidence(discussion):
@@ -180,14 +212,22 @@ def capture(root):
         return
     event = read_json(os.environ['GITHUB_EVENT_PATH'])
     body = (event.get('comment') or {}).get('body', '')
-    command = bool(re.match(r'^/review(?:\s|$)', body)) and event.get('action') != 'deleted'
+    command = review_command(body) and event.get('action') != 'deleted'
     focus = re.sub(r'^/review\s*', '', body)[:1000] if command else ''
     discussion = context(number)
+    targets = reply_targets(discussion)
+    # workflow_run carries no original inline comment body. The listener only
+    # signals commands; verify there is still an unanswered command on the PR.
+    if os.environ['GITHUB_EVENT_NAME'] in {'issue_comment', 'workflow_run'} and not targets:
+        print('No unanswered /review command remains; skipping model call.')
+        return
     write_json(root / 'discussion.json', discussion)
+    write_json(root / 'reply-targets.json', targets)
     source = {
         'number': number, 'head_sha': pr['head']['sha'], 'base_sha': pr['base']['sha'],
         'title': pr['title'], 'description': pr.get('body') or '', 'focus': focus,
         'force_review': command or os.environ['GITHUB_EVENT_NAME'] == 'workflow_dispatch',
+        'reply_targets': targets,
         'run_nonce': f'{os.environ["GITHUB_RUN_ID"]}-{os.environ["GITHUB_RUN_ATTEMPT"]}-{uuid.uuid4().hex}',
     }
     source['input_fingerprint'] = fingerprint({
@@ -218,7 +258,7 @@ def collect(root):
     output('should_run', False)
     source = read_json(root / 'input.json')
     previous = read_json(root / 'resume.json')
-    if (previous['resumed'] and not source['force_review']
+    if (previous['resumed'] and not source['force_review'] and not source.get('reply_targets')
             and previous.get('input_fingerprint') == source['input_fingerprint']):
         print('No new code or human discussion since the saved review; skipping model call.')
         return
@@ -283,7 +323,7 @@ def current_messages(value, nonce):
     return messages[starts[0]:]
 
 
-def final_answer(value, nonce):
+def final_answer(value, nonce, targets=()):
     if value.get('metadata', {}).get('status') != 'completed':
         raise ReviewError('goose_incomplete')
     messages = current_messages(value, nonce)
@@ -306,14 +346,30 @@ def final_answer(value, nonce):
             if block.get('type') == 'toolRequest':
                 tool = block.get('toolCall', {}).get('value', {})
                 if tool.get('name') == 'recipe__final_output':
-                    calls[block.get('id')] = tool.get('arguments', {}).get('review')
+                    calls[block.get('id')] = tool.get('arguments', {})
             if block.get('type') == 'toolResponse':
                 result = block.get('toolResult', {})
                 if result.get('status') == 'success' and not result.get('value', {}).get('isError', False):
                     accepted.add(block.get('id'))
-    if not any(calls[key] == answer for key in calls.keys() & accepted):
+    if not any(calls[key] == decoded for key in calls.keys() & accepted):
         raise ReviewError('new_final_output_missing')
-    return answer
+    replies = decoded.get('responses')
+    expected = {item['comment_id']: item for item in targets}
+    if (set(decoded) != {'review', 'responses'} or not isinstance(replies, list)
+            or len(replies) != len(expected)):
+        raise ReviewError('command_response_missing')
+    seen, validated = set(), []
+    for reply in replies:
+        if (not isinstance(reply, dict) or set(reply) != {'comment_id', 'response'}
+                or not isinstance(reply['comment_id'], str) or reply['comment_id'] not in expected
+                or reply['comment_id'] in seen or not isinstance(reply['response'], str)
+                or not 20 <= len(reply['response'].strip()) <= 6000):
+            raise ReviewError('command_response_invalid')
+        seen.add(reply['comment_id'])
+        target = expected[reply['comment_id']]
+        validated.append({key: target[key] for key in ('comment_id', 'url', 'version_key')}
+                         | {'response': reply['response'].strip()})
+    return answer, validated
 
 
 def finish(root):
@@ -330,7 +386,7 @@ def finish(root):
         value = read_json(path)
         source = read_json(root / 'input.json')
         baseline = read_json(root / 'resume.json')
-        answer = final_answer(value, source['run_nonce'])
+        answer, responses = final_answer(value, source['run_nonce'], source.get('reply_targets', []))
         usage = usage_since(root, baseline)
         for key in ('cost_usd',):
             if key in usage and not math.isfinite(usage[key]):
@@ -340,10 +396,11 @@ def finish(root):
         report['assistant_messages'] = sum(message.get('role') == 'assistant' for message in messages)
         report['resumed'] = baseline['resumed']
         result = {key: source[key] for key in ('number', 'head_sha', 'base_sha', 'changed_files', 'run_nonce')}
-        result.update(model=MODEL, review=answer, resumed=baseline['resumed'],
+        result.update(model=MODEL, review=answer, responses=responses, resumed=baseline['resumed'],
                       previous_head=baseline.get('head_sha'), duration_seconds=seconds, **usage)
         write_json(root / 'result.json', result)
         report['status'] = 'complete'
+        report['response_count'] = len(responses)
         print('Validated a fresh Goose final answer and current-run usage.')
     except Exception as error:
         report.update(status='failed', failure=str(error) if isinstance(error, ReviewError) else 'automation_failed')
@@ -384,10 +441,45 @@ def render(root):
     (root / 'comment.md').write_text(body, encoding='utf-8')
 
 
+def publish(root):
+    result = read_json(root / 'result.json')
+    number = pr_number(os.environ['PR_NUMBER'])
+    if result['number'] != number or result['head_sha'] != os.environ['HEAD_SHA']:
+        raise ReviewError('publication_identity_mismatch')
+    pr = pull_request(number)
+    if not reviewable(pr) or pr['head']['sha'] != result['head_sha']:
+        print('Skipped publication: PR closed, draft, fork, or newer commit exists.')
+        return
+    # Re-read live command bodies as well as existing replies. Do not answer a
+    # command that was edited/deleted while Goose worked, or publish duplicates.
+    live = {item['comment_id']: item for item in reply_targets(context(number))}
+    comments = [item for item in pages(f'repos/{repository()}/issues/{number}/comments')
+                if own_bot(item.get('user') or {})]
+    existing = next((item for item in comments if (item.get('body') or '').startswith(MARKER)), None)
+    render(root)
+    body = (root / 'comment.md').read_text(encoding='utf-8')
+    endpoint = (f'repos/{repository()}/issues/comments/{existing["id"]}' if existing
+                else f'repos/{repository()}/issues/{number}/comments')
+    api(endpoint, method='PATCH' if existing else 'POST', payload={'body': body})
+    for reply in result.get('responses', []):
+        target = live.get(reply['comment_id'])
+        if not target or target['version_key'] != reply['version_key']:
+            continue
+        marker = REPLY_PREFIX + reply['version_key'] + ' -->'
+        if any((item.get('body') or '').startswith(marker) for item in comments):
+            continue
+        body = '\n\n'.join([marker, '### AI review response',
+                            f'[In response to your /review comment]({target["url"]})', reply['response']])
+        api(f'repos/{repository()}/issues/{number}/comments', method='POST',
+            payload={'body': body.replace('@', '@\u200b')})
+        comments.append({'body': body})
+    print('Published review summary and outstanding command responses.')
+
+
 if __name__ == '__main__':
     try:
         {'prepare': prepare, 'capture': capture, 'collect': collect, 'finish': finish,
-         'check-model': check_model, 'render': render}[sys.argv[1]](directory())
+         'check-model': check_model, 'render': render, 'publish': publish}[sys.argv[1]](directory())
     except Exception as error:
         fail(error)
         sys.exit(1)

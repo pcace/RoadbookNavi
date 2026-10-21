@@ -3,12 +3,14 @@
 This is the Buildplace AI PR review flow adapted for RoadbookNavi, extended with
 one persistent Goose session per PR. It investigates code without running project
 scripts or tests, updates one English review comment, and never approves or merges.
+Explicit `/review` comments additionally receive a separate, linked response.
 
 ## Enable the test environment
 
 1. Add the repository Actions secret **`OPENROUTER_API_KEY`**.
 2. Commit these files when ready and put them on the repository's **default branch**.
    Merely adding the files to an unmerged PR does not activate the privileged worker.
+   RoadbookNavi's default branch is `dev`.
 3. Allow the pinned checkout/artifact Actions and the token permissions below.
 4. Ensure repository/organization artifact retention permits the configured 90 days.
 5. Open a non-draft PR from this repository, comment `/review` on an existing one,
@@ -42,8 +44,7 @@ or fixtures intended for model review.
 ## Triggers and access
 
 - Opened/reopened/ready PRs, pushes (`synchronize`) and edited PR metadata.
-- Human PR comments, including edits and deletions.
-- Human inline comments and submitted/edited/dismissed reviews.
+- Human PR/inline comments or submitted/edited reviews **starting with `/review`**.
 - `/review` or `/review focus on error handling` (up to 1,000 focus characters).
 - Manual workflow dispatch on the default branch with a PR number.
 - Merge closure for memory cleanup, including merges performed by bots.
@@ -53,10 +54,18 @@ Fork, draft, closed and bot-triggered reviews are skipped. Own bot comments do n
 trigger a model call. Closing without merging retains the session until expiry;
 reopening can continue it.
 
+Initial PR reviews and push reviews remain automatic. Ordinary human comments do
+not start a review and do not receive unsolicited replies; they are still included
+as evidence in the next investigation. Use `/review it should stay there` to ask
+the agent to address an objection or explanation, not only a question. Bare
+`/review` requests a new review with a short direct response. The command must be
+at the start of the comment; `/reviewer` is not a command.
+
 Inline review events use `ai-review-discussion.yml`, a minimal listener with no
 secrets or write permissions. A successful listener run wakes the privileged
 default-branch worker through `workflow_run`. The worker verifies listener path,
-event, actor and same-repository PR association; ambiguous/missing associations
+event, actor and same-repository PR association, then checks for an unanswered
+`/review` command; ambiguous/missing associations
 are skipped. The listener never checks out or executes PR code.
 
 ## Session lifecycle
@@ -88,8 +97,9 @@ without following PR-controlled symlinks on the host.
 Human comments, reviews and thread comments are fully paginated. The saved
 discussion snapshot identifies new/edited/deleted messages and changed thread
 states. Full current discussion remains available. A fresh session can read the
-last published own AI review for context; a resumed session already contains its
-earlier answers.
+last published own AI review and prior command responses for context; a resumed
+session already contains its earlier answers. GraphQL's `github-actions` and
+REST's `github-actions[bot]` are recognized only with a Bot author type.
 
 If both code/metadata and human discussion are unchanged, automatic events skip
 the model call. Explicit `/review` and manual dispatch always request a new review.
@@ -114,14 +124,21 @@ It contains exactly:
 Restoration checks artifact provenance against this worker's workflow identity,
 the PR, archive members, checksums and runtime compatibility. It tries older valid
 checkpoints if a newer one is corrupt or incompatible. If none is usable, the run
-starts fresh and says so. Image, requested model or recipe changes invalidate old
-checkpoints intentionally. Saved runtime recipe/model/prompt overrides are cleared
+starts fresh and says so. Image, requested model or session-schema changes invalidate old
+checkpoints intentionally. The recipe hash is retained for auditing, but prompt
+updates do not discard compatible history. Incompatible extension/storage changes
+must bump the session schema. Saved runtime recipe/model/prompt overrides are cleared
 while preserving conversation and extension data; the current trusted recipe and
 explicit model flags configure the resumed process.
 
 Only the session database is persisted, not Goose's home/configuration, API keys,
 Docker credentials or raw stderr. Backups are made after Goose exits using the
-SQLite backup API. Host restore/snapshot size limits are enforced independently
+SQLite backup API. All connections are closed and the exported database is sealed
+in DELETE journal mode, so its directory and upload allowlist contain exactly the
+four documented files, without WAL/SHM sidecars. Legacy exports with an empty WAL
+and a bounded SHM file can be recovered after the same provenance/checksum checks;
+nonempty WALs are rejected rather than silently losing transactions. Checkpoints
+are ordered by creation time, not artifact IDs. Host restore/snapshot size limits are enforced independently
 from the CLI output and final comment limits.
 
 Goose can compact long history as needed. A saved session is not an unlimited
@@ -160,6 +177,12 @@ Goose has 15 minutes and 40 turns per execution. The model job has 30 minutes.
 The final answer must be a newly accepted `recipe__final_output` from after the
 unique current-run prompt, followed by a matching structured assistant answer.
 An old successful answer in a resumed history cannot validate a failed new run.
+The final output contains `review` and `responses`. Every outstanding `/review`
+comment in `reply-targets.json` requires exactly one nonempty response for its
+comment ID, including statements/disagreements. Missing, duplicate or unexpected
+responses fail the run instead of silently publishing a review without an answer.
+This validates coverage and structure, not the semantic quality of the answer.
+There can be at most 100 pending commands, with 20–6,000 characters per response.
 Markdown must have Findings and Checked and limits sections and fit 50,000
 characters; the raw CLI JSON is limited to 64 MB and the final comment to 60,000
 characters. The recipe asks for at most eight high-confidence P1/P2 findings, but
@@ -168,7 +191,13 @@ host validation does not semantically validate each reported path/line/finding.
 Before publication, the publisher rechecks that the PR is open, non-draft and still
 on the reviewed head. Late results are not presented as a review of a newer commit.
 The saved checkpoint still records the exact actually reviewed commit so the next
-run can continue from it. An empty review does not establish correctness.
+run can continue from it. The publisher updates the review summary, then posts
+separate PR timeline responses linking to each command (also for inline/review
+commands). It rechecks live command bodies and skips edited/deleted commands.
+Stable per-command/body markers prevent duplicate replies on retries, including
+partial publication failures; ordinary comments are never response targets. An
+unchanged checkpoint cannot suppress a still-unanswered command after a failed
+publication. An empty review does not establish correctness.
 
 ## Costs and diagnostics
 
@@ -196,14 +225,18 @@ for script in .github/ai-review/*.sh; do bash -n "$script"; done
 `ai-review-checks.yml` runs these on changes to the review automation using an
 unprivileged `pull_request` workflow. Tests cover completion boundaries, discussion
 pagination/deltas, event trust, checkpoint integrity and history/todo preservation,
-per-run usage, force-push comparisons and merge-cleanup scope.
+per-run usage, force-push comparisons and merge-cleanup scope. Regression tests
+also zip the entire real WAL-backup directory and restore it, cover legacy WAL
+exports, GraphQL Bot identities, `/review` gating, required statement responses,
+and separate/idempotent publication with live edited/deleted-command checks.
 
 Actionlint 1.7.12 does not yet recognize GitHub's documented `concurrency.queue`.
 When using that version, ignore only its `unexpected key "queue" for "concurrency"`
 diagnostic; do not suppress other workflow validation errors.
 
 For a real end-to-end test after activation: open a small internal PR, request a
-review, add a question, push a fix and verify that the next run continues the same
+review, add `/review` followed by a question or objection, push a fix and verify
+that the next run continues the same
 session. Then merge and verify all PR memory artifacts are removed. A container
 smoke test should precede changes to the pinned Goose image.
 
@@ -219,6 +252,6 @@ skills. New source headers follow RoadbookNavi's GPL-3.0-only project policy.
 - `prepare.sh` / `review.py`: routing, PR evidence, diffs, current-run completion and rendering.
 - `run.sh`: fixed free-model checks and isolated fresh/resumed Goose process.
 - `session.py`: checkpoint restore, consistent backup, usage and merge cleanup.
-- `publish.sh`: update the single review comment after a live head check.
+- `publish.sh` / `review.py publish`: update the summary and publish explicit-command responses after live checks.
 - `recipe.yaml`: first-review and follow-up investigation instructions.
-- `test_review.py`: focused offline regression tests.
+- `test_review.py` / `test_followups.py`: focused offline regression tests.
