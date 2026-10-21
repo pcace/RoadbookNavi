@@ -245,6 +245,10 @@ that the next run continues the same
 session. Then merge and verify all PR memory artifacts are removed. A container
 smoke test should precede changes to the pinned Goose image.
 
+Wait for the initial review to finish before posting the follow-up comment, so
+the test exercises restoration of a completed checkpoint rather than overlapping
+review events.
+
 ## Files and origin
 
 The investigation style, isolated container pattern, SHA-pinned Actions, immutable
