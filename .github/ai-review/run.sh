@@ -50,7 +50,7 @@ timeout --signal=TERM --kill-after=30s 15m docker run --rm --pull=missing \
   --volume "$automation_directory/recipe.yaml:/recipe.yaml:ro" \
   --entrypoint /bin/sh \
   "$GOOSE_IMAGE" -c \
-  'mkdir -p "$HOME" "$XDG_CONFIG_HOME" && run_nonce="$1" && shift && exec goose run --provider openrouter --model "$GOOSE_MODEL" --max-turns 40 --quiet --output-format json --recipe /recipe.yaml --params "architecture=$(cat /review-input/architecture.md)" --params "run=$run_nonce" "$@"' \
+  'mkdir -p "$HOME" "$XDG_CONFIG_HOME" && run_nonce="$1" && shift && exec goose run --provider openrouter --model "$GOOSE_MODEL" --max-turns 40 --quiet --output-format json --recipe /recipe.yaml --params "architecture=$(cat /review-input/architecture.md)" --params "task=$(cat /review-input/task-summary.txt)" --params "run=$run_nonce" "$@"' \
   sh "$run_nonce" "${session_arguments[@]}" \
   > "$RUNNER_TEMP/goose-review.json" 2> "$RUNNER_TEMP/goose-review.stderr" || exit_code=$?
 python3 "$automation_directory/review.py" finish "$exit_code" "$((SECONDS - started))"

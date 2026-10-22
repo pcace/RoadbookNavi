@@ -179,7 +179,8 @@ Goose has 15 minutes and 40 turns per execution. The model job has 30 minutes.
 The final answer must be a newly accepted `recipe__final_output` from after the
 unique current-run prompt, followed by a matching structured assistant answer.
 An old successful answer in a resumed history cannot validate a failed new run.
-The final output contains `review` and `responses`. Every outstanding human
+The final output contains `review`, `responses` and `reviewed_head_sha`. The head
+must match this execution's captured commit. Every outstanding human
 comment in `reply-targets.json` requires exactly one nonempty response for its
 comment ID, including statements/disagreements. Missing, duplicate or unexpected
 responses fail the run instead of silently publishing a review without an answer.
@@ -204,6 +205,24 @@ later push events, including force-pushes back to an earlier commit. Stale resul
 are still skipped when a newer PR head exists. An unchanged checkpoint cannot
 suppress a push or a still-unanswered comment after failed publication. An empty
 review does not establish correctness.
+
+### Fresh evidence on continuation
+
+Each execution gets a read-only `task-RUN_NONCE` evidence directory. The new prompt
+includes the exact current head/base, labels the previous head as historical, and
+gives one mandatory shell command that reads the current context plus an 8 KB diff
+preview. Normal continuations preview the head-to-head diff; first reviews, missing
+old objects, base changes and rewritten history preview the full current PR diff.
+The complete diffs, discussion and reply targets remain available in that directory.
+
+Before accepting output, the host verifies a successful matching shell call and
+its exact current context/preview output after the unique run boundary and before
+the final-output call. Old reads, old paths, failed/truncated bootstrap reads, or
+a different `reviewed_head_sha` fail visibly and cannot replace the checkpoint.
+The reviewer must still paginate relevant remaining hunks and reread affected code.
+This guard proves fresh evidence delivery, not semantic understanding or a complete
+investigation. Saved history and todos remain available, but do not establish the
+current code state. Compatible older checkpoints still resume with the new recipe.
 
 ## Costs and diagnostics
 
