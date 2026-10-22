@@ -243,31 +243,7 @@ the Actions failure/log remains the source of truth.
 
 For exhausted daily free allowance, wait until the next UTC day and request
 `/review` again. The workflow does not loop on a daily quota error, automatically
-switch models, add credits, or attempt paid inference. **AI Review Provider Probe**
-is an optional owner-only manual workflow on the default branch: it sends one
-fixed, content-free prompt to the same zero-price-capped model and logs only
-allowlisted status/category/numeric reset headers. A failed probe reports failure,
-not a successful review. It never accesses PR sessions or GitHub write credentials.
-
-On 2026-10-21, test PR #26 reproduced failures on both its initial review and an
-ordinary follow-up comment. The isolated provider probe returned HTTP 429,
-`free_daily_quota_exhausted`, remaining `0`, and reset `1792627200000`
-(2026-10-22 00:00 UTC). This established an external allowance failure rather than
-a comment-trigger or session-restoration defect. See the
-[provider evidence](https://github.com/pcace/RoadbookNavi/actions/runs/39677498286).
-The pinned Goose runtime reproduced the same category and the separate writer
-successfully posted its safe notice in the
-[live failure-path test](https://github.com/pcace/RoadbookNavi/actions/runs/39677936280).
-The temporary push-triggered diagnostic bootstrap was removed afterwards; normal
-workers still execute only merged default-branch automation.
-
-On 2026-10-22, after free inference became available again, a
-[successful initial review](https://github.com/pcace/RoadbookNavi/actions/runs/39726650734)
-saved its full session. A
-[manual continuation](https://github.com/pcace/RoadbookNavi/actions/runs/39728171224)
-restored that checkpoint with every earlier message unchanged, and an
-[ordinary comment without `/review`](https://github.com/pcace/RoadbookNavi/actions/runs/39728338841)
-successfully triggered a linked response using the continued session.
+switch models, add credits, or attempt paid inference.
 
 ## Local and CI verification
 
