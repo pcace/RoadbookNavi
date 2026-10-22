@@ -261,6 +261,14 @@ successfully posted its safe notice in the
 The temporary push-triggered diagnostic bootstrap was removed afterwards; normal
 workers still execute only merged default-branch automation.
 
+On 2026-10-22, after free inference became available again, a
+[successful initial review](https://github.com/pcace/RoadbookNavi/actions/runs/39726650734)
+saved its full session. A
+[manual continuation](https://github.com/pcace/RoadbookNavi/actions/runs/39728171224)
+restored that checkpoint with every earlier message unchanged, and an
+[ordinary comment without `/review`](https://github.com/pcace/RoadbookNavi/actions/runs/39728338841)
+successfully triggered a linked response using the continued session.
+
 ## Local and CI verification
 
 No dependencies, model calls, secrets or Docker are needed for the offline tests:
