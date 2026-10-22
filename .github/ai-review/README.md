@@ -166,8 +166,9 @@ the fallback for inactive/abandoned PRs.
 
 ## Isolation, limits and publication
 
-Preparation and analysis have read permissions; only the separate publisher can
-write PR comments. Only the separate cleanup job can delete Actions artifacts.
+Preparation and analysis have read permissions; only the separate publishers for
+successful reviews and failure notices can write PR comments. Only the separate
+cleanup job can delete Actions artifacts.
 The model container receives no GitHub token or Docker socket, drops capabilities,
 runs as the runner UID/GID, and has a read-only root and repository. It can write
 temporary files and its session state. Network access is available for OpenRouter.
@@ -213,10 +214,36 @@ compaction requests. It never re-sums the old conversation as a new run. Missing
 cost data is shown as unavailable; a positive recorded cost fails this free-model
 test configuration. There is no extra OpenRouter generation-cost API lookup.
 
-Numeric diagnostics have seven-day retention; the separate publication result has
+Numeric diagnostics and fixed failure categories have seven-day retention; the separate publication result has
 one-day retention; successful full sessions have 90-day retention. Raw provider
 errors and conversation logs are not printed/uploaded as diagnostic artifacts.
 The session database itself deliberately contains the review conversation.
+
+### Free allowance failures
+
+The public model-catalog check verifies pricing and tool support, **not** the
+account's remaining free allowance. A review can make many inference requests
+(tool turns, compaction), so one review is not one request against the daily cap.
+OpenRouter documents the current limits in its
+[rate-limit reference](https://openrouter.ai/docs/api-reference/limits).
+
+On a nonzero Goose exit, the host reduces a bounded local stderr sample to a
+fixed category such as `free_daily_quota_exhausted`, `provider_rate_limited`,
+authentication/network failure or timeout. It never uploads or prints stderr.
+An unknown failure stays generic instead of exposing provider payloads or code.
+The review remains failed: no stale final answer is accepted and no failed
+session replaces a successful checkpoint.
+
+A separate least-privilege writer downloads only that run's safe diagnostics and
+posts a failure notice with its workflow link. It rechecks the open PR and exact
+head, deduplicates retries by run ID, and leaves the last successful summary and
+per-comment response markers untouched. Pending human comments remain unanswered
+until a later successful review. If the worker fails before producing diagnostics,
+the Actions failure/log remains the source of truth.
+
+For exhausted daily free allowance, wait until the next UTC day and request
+`/review` again. The workflow does not loop on a daily quota error, automatically
+switch models, add credits, or attempt paid inference.
 
 ## Local and CI verification
 
@@ -234,6 +261,8 @@ per-run usage, force-push comparisons and merge-cleanup scope. Regression tests
 also zip the entire real WAL-backup directory and restore it, cover legacy WAL
 exports, GraphQL Bot identities, automatic comment triggers, required statement
 responses, visible/idempotent push updates, and edited/deleted-comment checks.
+They also cover private error classification, failure notice deduplication,
+closed/new-head publication guards, and preservation of successful review state.
 
 Actionlint 1.7.12 does not yet recognize GitHub's documented `concurrency.queue`.
 When using that version, ignore only its `unexpected key "queue" for "concurrency"`
@@ -244,6 +273,10 @@ review, add an ordinary question or objection without a prefix, push a fix and v
 that the next run continues the same
 session. Then merge and verify all PR memory artifacts are removed. A container
 smoke test should precede changes to the pinned Goose image.
+
+Wait for the initial review to finish before posting the follow-up comment, so
+the test exercises restoration of a completed checkpoint rather than overlapping
+review events.
 
 ## Files and origin
 
