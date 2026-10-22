@@ -2,6 +2,7 @@
 """Regression tests for stale-head continuations and fresh evidence delivery."""
 
 import os
+from pathlib import Path
 import sys
 import unittest
 from unittest.mock import patch
@@ -52,6 +53,10 @@ class FreshnessTests(unittest.TestCase):
         self.assertIn('CURRENT HEAD: ' + 'a' * 40, prompt)
         self.assertIn('PREVIOUS HEAD (historical): ' + 'c' * 40, prompt)
         self.assertIn('/review-input/task-current/', prompt)
+
+    def test_multiline_task_parameter_stays_inside_yaml_prompt(self):
+        recipe = Path(__file__).with_name('recipe.yaml').read_text()
+        self.assertIn('  {{ task | indent(2) }}\n', recipe)
 
     def test_context_is_immutable_when_root_evidence_changes(self):
         (self.root / 'since-last-review.diff').write_text('changed after snapshot')

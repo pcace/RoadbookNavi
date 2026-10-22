@@ -85,7 +85,7 @@ prompt: |
   Review execution: {{ run }}
 
   Current execution identity and required fresh evidence read:
-  {{ task }}
+  {{ task | indent(2) }}
 
   Run the exact mandatory shell command above before investigating. Its current
   context and diff preview must be delivered by a successful tool call in THIS
