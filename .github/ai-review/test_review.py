@@ -23,8 +23,8 @@ ANSWER = ('### Findings\nNo verified findings. The existing behavior is preserve
           '### Checked and limits\nChecked the changed function and its caller; no tests were run.')
 
 
-def completed(nonce='current', answer=ANSWER, responses=None):
-    result = {'review': answer, 'responses': responses or []}
+def completed(nonce='current', answer=ANSWER, responses=None, head_sha='a' * 40):
+    result = {'review': answer, 'responses': responses or [], 'reviewed_head_sha': head_sha}
     return {'metadata': {'status': 'completed'}, 'messages': [
         {'role': 'user', 'content': [{'type': 'text', 'text': f'Review execution: {nonce}\nTask.'}]},
         {'role': 'assistant', 'content': [{'type': 'toolRequest', 'id': nonce, 'toolCall': {
@@ -385,7 +385,8 @@ class GitDiffTests(unittest.TestCase):
             data = root / 'review'
             data.mkdir()
             common.write_json(data / 'input.json', {'number': 7, 'head_sha': head, 'base_sha': base,
-                'title': 'Fix', 'description': '', 'focus': '', 'force_review': False, 'input_fingerprint': 'new'})
+                'title': 'Fix', 'description': '', 'focus': '', 'force_review': False,
+                'input_fingerprint': 'new', 'run_nonce': 'current'})
             common.write_json(data / 'resume.json', {'resumed': True, 'reason': 'restored',
                 'head_sha': previous, 'base_sha': base, 'input_fingerprint': 'old'})
             for name in ('discussion.json', 'previous-discussion.json'):
