@@ -16,3 +16,5 @@ follow-up commits to observe review discussions and tracking of findings.
 
 - Route dates use the UTC calendar date of a valid ISO timestamp ending in Z,
   independent of the device timezone.
+
+The helpers remain independent of application runtime and persistent storage.
