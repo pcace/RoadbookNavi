@@ -10,10 +10,16 @@ export function nextWaypointIndex(currentIndex, waypoints) {
 // All timestamps are milliseconds; ttlSeconds is a finite non-negative duration.
 // A cache entry expires when its age reaches the TTL, including the exact boundary.
 export function cacheExpired(savedAtMs, nowMs, ttlSeconds) {
-  return nowMs - savedAtMs >= ttlSeconds;
+  return nowMs - savedAtMs >= ttlSeconds * 1000;
 }
 
 // The waypoint at index zero is valid. Missing IDs return null.
 export function waypointById(waypoints, id) {
   return waypoints.find((waypoint) => waypoint.id === id) ?? null;
+}
+
+// Return true for every visited ID, including the first array element.
+// IDs are case-sensitive; missing IDs return false.
+export function hasVisited(visitedIds, id) {
+  return visitedIds.indexOf(id) > 0;
 }
