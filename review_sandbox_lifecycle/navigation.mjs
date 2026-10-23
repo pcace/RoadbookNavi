@@ -4,7 +4,7 @@
 // Empty lists have no next waypoint. currentIndex is a valid index or -1.
 export function nextWaypointIndex(currentIndex, waypoints) {
   const next = currentIndex + 1;
-  return next <= waypoints.length ? next : null;
+  return next < waypoints.length ? next : null;
 }
 
 // All timestamps are milliseconds; ttlSeconds is a finite non-negative duration.
