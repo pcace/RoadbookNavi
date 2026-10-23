@@ -5,6 +5,8 @@ from pathlib import Path
 import re
 
 FAILURES = {
+    'current_context_read_missing': 'The reviewer did not read the required current-run context and diff preview. No review was accepted. Try /review again.',
+    'reviewed_head_mismatch': 'The reviewer returned a different commit than the current task. No review was accepted. Try /review again.',
     'free_daily_quota_exhausted': 'OpenRouter has exhausted the daily allowance for free models. Wait for the next UTC day, then comment /review.',
     'provider_rate_limited': 'The free model is temporarily rate-limited. Try /review again later.',
     'authentication_failed': 'OpenRouter rejected authentication. Check the OPENROUTER_API_KEY repository secret.',

@@ -184,7 +184,8 @@ class FollowupTests(unittest.TestCase):
         (self.root / 'inline.diff').write_text('')
         with patch.dict(os.environ, {'RUNNER_TEMP': str(self.root)}), \
                 patch.object(sys, 'argv', ['review.py', 'finish', '0', '1']), \
-                patch.object(review, 'usage_since', return_value={'cost_usd': 0}):
+                patch.object(review, 'usage_since', return_value={'cost_usd': 0}), \
+                patch.object(review, 'verify_task_read'):
             review.finish(self.root)
         self.assertEqual(common.read_json(self.root / 'result.json')['push_update_key'], key)
 
@@ -252,7 +253,7 @@ class FollowupTests(unittest.TestCase):
     def assert_unchanged_input_runs(self, targets, push_key=None):
         source = {'number': 7, 'head_sha': 'a' * 40, 'base_sha': 'b' * 40, 'title': 'Fix',
                   'description': '', 'focus': '', 'force_review': False, 'input_fingerprint': 'same',
-                  'reply_targets': targets, 'push_update_key': push_key}
+                  'reply_targets': targets, 'push_update_key': push_key, 'run_nonce': 'current'}
         common.write_json(self.root / 'input.json', source)
         common.write_json(self.root / 'resume.json', {'resumed': True, 'reason': 'restored',
                           'head_sha': 'a' * 40, 'input_fingerprint': 'same'})
