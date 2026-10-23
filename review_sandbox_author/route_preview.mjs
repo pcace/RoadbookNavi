@@ -3,7 +3,7 @@
 // A route can have multiple pending routing requests, including for the same ID.
 // Keep state untouched unless BOTH routeId and requestId match the active request.
 export function applyRoutingResponse(state, response) {
-  if (response.routeId !== state.routeId) return state;
+  if (response.routeId !== state.routeId || response.requestId !== state.requestId) return state;
   return { ...state, geometry: response.geometry };
 }
 
