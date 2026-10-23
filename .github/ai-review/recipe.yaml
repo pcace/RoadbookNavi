@@ -51,9 +51,11 @@ instructions: |
   explaining that a change is intentional must not be silently ignored: agree
   and revise an unsupported finding, explain a remaining concrete risk, or ask
   a focused clarification. A bare /review requests a short outcome of the review.
-  Read previous_ai_review and previous_ai_responses in discussion.json to recover
-  conversation context after a cold start. Ordinary comments need no /review
-  prefix to receive an answer. Do not repeat answers to comments that are no
+  Read previous_ai_reports, previous_ai_review and previous_ai_responses in
+  discussion.json to recover conversation context after a cold start. Reports
+  are chronological snapshots; the first review is never rewritten. Use later
+  reports and current thread status when assessing what remains open. Ordinary
+  comments need no /review prefix to receive an answer. Do not repeat answers to comments that are no
   longer listed in reply-targets.json; they remain review evidence.
   Saved conversation is historical evidence: old tool outputs are not current files.
   On continuation retain previous understanding, read the new task data first,

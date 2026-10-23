@@ -167,9 +167,9 @@ def context(number):
             if all_thread_comments[0] not in comments_in_thread:
                 comments_in_thread.insert(0, all_thread_comments[0])
             threads.append({**thread, 'comments': {'nodes': comments_in_thread}})
-    own = [item for item in comments
+    own = [item for item in comments + reviews
            if own_bot(item.get('author') or {})
-           and (item.get('body') or '').startswith(MARKER)]
+           and (item.get('body') or '').startswith((MARKER, PUSH_PREFIX))]
     all_comments = comments + [c for t in threads for c in t['comments']['nodes']]
     replies = [item for item in all_comments if own_bot(item.get('author') or {})
                and re.match(re.escape(REPLY_PREFIX) + r'[0-9a-f]{64} -->', item.get('body') or '')]
@@ -178,7 +178,9 @@ def context(number):
         'comments': [item for item in comments if human(item)],
         'reviews': [item for item in reviews if human(item, allow_empty=True)],
         'threads': threads,
-        'previous_ai_review': max(own, key=lambda item: item.get('updatedAt', ''), default=None),
+        'previous_ai_review': max(own, key=lambda item: item.get('submittedAt') or item.get('updatedAt')
+                                  or item.get('createdAt', ''), default=None),
+        'previous_ai_reports': own,
         'previous_ai_responses': replies,
     }
 
@@ -464,8 +466,11 @@ def render(root):
                              len(result.get('findings', [])))
     fallback = '\n'.join(f'- **[{f["priority"]}] {f["path"]}:{f["line"]}** — {f["body"]}'
                          for f in result.get('findings', []) if not f.get('inline', True))
+    after_push = bool(result.get('push_update_key'))
+    outcome = (status or result['review']) if after_push else result['review']
     body = '\n\n'.join([
-        MARKER, '## AI PR Review', result['review'], fallback, status,
+        MARKER, '### AI review after push' if after_push else '## AI PR Review',
+        outcome, fallback, '' if after_push else status,
         f'Commit: `{result["head_sha"]}` · Model: `{result["model"]}`',
         f'{mode}. {result["changed_files"]} changed file paths. No tests were run; this is not a merge approval.',
         f'[Workflow log]({run}) · Run again: `/review`',
@@ -496,13 +501,24 @@ def publish(root):
                 if own_bot(item.get('user') or {})]
     comments.extend({'body': c.get('body') or ''} for t in discussion.get('threads', [])
                     for c in t['comments']['nodes'] if own_bot(c.get('author') or {}))
-    existing = next((item for item in comments if (item.get('body') or '').startswith(MARKER)), None)
+    reports = comments + discussion.get('previous_ai_reports', [])
+    existing = any((item.get('body') or '').startswith((MARKER, PUSH_PREFIX)) for item in reports)
     render(root)  # Validate summary size before any write to GitHub.
     new_inline = inline.new_comments(result.get('findings', []), discussion, result['head_sha'])
-    if new_inline:
-        api(f'repos/{repository()}/pulls/{number}/reviews', method='POST',
-            payload={'commit_id': result['head_sha'], 'event': 'COMMENT',
-                     'body': 'AI review findings; discussion and status are in the PR summary.', 'comments': new_inline})
+    marker = (PUSH_PREFIX + push_key + ' -->' if push_key else
+              '<!-- roadbooknavi-ai-pr-run:' + os.environ['GITHUB_RUN_ID'] + ' -->')
+    body = (root / 'comment.md').read_text(encoding='utf-8')
+    body = marker + '\n\n' + body if push_key else body.replace(MARKER, MARKER + '\n' + marker, 1)
+    already_published = any(marker in (item.get('body') or '') for item in reports)
+    # One chronological report per review run. Inline findings belong to that
+    # GitHub review; a conversation-only follow-up needs just its thread replies.
+    if not already_published:
+        if new_inline:
+            api(f'repos/{repository()}/pulls/{number}/reviews', method='POST',
+                payload={'commit_id': result['head_sha'], 'event': 'COMMENT',
+                         'body': body, 'comments': new_inline})
+        elif not existing or push_key or not result.get('responses'):
+            api(f'repos/{repository()}/issues/{number}/comments', method='POST', payload={'body': body})
     current_findings = {item['comment_id']: item for item in inline.finding_targets(discussion)}
     for update in result.get('finding_updates', []):
         old = current_findings.get(update['comment_id'])
@@ -510,21 +526,6 @@ def publish(root):
             body = inline.STATUS + update['status'] + ' -->\n\n' + update['response']
             api(f'repos/{repository()}/pulls/{number}/comments/{inline.reply_id(old["url"])}/replies',
                 method='POST', payload={'body': body.replace('@', '@\u200b')})
-    body = (root / 'comment.md').read_text(encoding='utf-8')
-    endpoint = (f'repos/{repository()}/issues/comments/{existing["id"]}' if existing
-                else f'repos/{repository()}/issues/{number}/comments')
-    api(endpoint, method='PATCH' if existing else 'POST', payload={'body': body})
-    if push_key:
-        marker = PUSH_PREFIX + push_key + ' -->'
-        if not any((item.get('body') or '').startswith(marker) for item in comments):
-            run = f'{os.environ["GITHUB_SERVER_URL"]}/{repository()}/actions/runs/{os.environ["GITHUB_RUN_ID"]}'
-            body = '\n\n'.join([marker, '### AI review after push',
-                                f'Reviewed commit: `{result["head_sha"]}`',
-                                inline.progress(result.get('finding_updates', []), result.get('finding_targets', []),
-                                                len(result.get('findings', []))) or result['review'],
-                                f'[Workflow log]({run})'])
-            api(f'repos/{repository()}/issues/{number}/comments', method='POST',
-                payload={'body': body.replace('@', '@\u200b')})
     for reply in result.get('responses', []):
         target = live.get(reply['comment_id'])
         if not target or target['version_key'] != reply['version_key']:
@@ -538,7 +539,7 @@ def publish(root):
                     if target.get('reply_to') else f'repos/{repository()}/issues/{number}/comments')
         api(endpoint, method='POST', payload={'body': body.replace('@', '@\u200b')})
         comments.append({'body': body})
-    print('Published review summary, push update and outstanding comment responses.')
+    print('Published new review results and outstanding thread responses; existing reviews were preserved.')
 
 
 def publish_failure(root):

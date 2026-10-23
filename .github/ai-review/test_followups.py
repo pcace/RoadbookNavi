@@ -290,15 +290,15 @@ class FollowupTests(unittest.TestCase):
             review.publish(self.root)
             return api.call_args_list
 
-    def test_publisher_updates_summary_and_posts_a_separate_linked_response(self):
+    def test_publisher_preserves_summary_and_posts_a_separate_linked_response(self):
         self.publication()
         calls = self.publish_with({'comments': [self.command()]}, [
             {'id': 1, 'body': common.MARKER + '\nOld summary',
              'user': {'login': 'github-actions[bot]', 'type': 'Bot'}},
         ])
-        self.assertEqual([call.kwargs['method'] for call in calls], ['PATCH', 'POST'])
-        self.assertIn('#issuecomment-123', calls[1].kwargs['payload']['body'])
-        self.assertIn('I withdraw this finding', calls[1].kwargs['payload']['body'])
+        self.assertEqual([call.kwargs['method'] for call in calls], ['POST'])
+        self.assertIn('#issuecomment-123', calls[0].kwargs['payload']['body'])
+        self.assertIn('I withdraw this finding', calls[0].kwargs['payload']['body'])
 
     def test_publisher_does_not_duplicate_replies_on_retry(self):
         result = self.publication()
@@ -323,8 +323,8 @@ class FollowupTests(unittest.TestCase):
     def test_push_posts_visible_review_even_without_any_pending_comments(self):
         summary = self.push_publication()
         calls = self.publish_with({}, [summary])
-        self.assertEqual([call.kwargs['method'] for call in calls], ['PATCH', 'POST'])
-        body = calls[1].kwargs['payload']['body']
+        self.assertEqual([call.kwargs['method'] for call in calls], ['POST'])
+        body = calls[0].kwargs['payload']['body']
         self.assertIn(common.PUSH_PREFIX, body)
         self.assertIn('AI review after push', body)
         self.assertIn(fixtures.ANSWER, body)
@@ -334,9 +334,9 @@ class FollowupTests(unittest.TestCase):
         summary = self.push_publication()
         existing = {'id': 2, 'body': common.PUSH_PREFIX + 'c' * 64 + ' -->\nOld update',
                     'user': {'login': 'github-actions[bot]', 'type': 'Bot'}}
-        self.assertEqual(len(self.publish_with({}, [summary, existing])), 1)
+        self.assertEqual(len(self.publish_with({}, [summary, existing])), 0)
         self.push_publication('d' * 64)
-        self.assertEqual(len(self.publish_with({}, [summary, existing])), 2)
+        self.assertEqual(len(self.publish_with({}, [summary, existing])), 1)
 
     def test_invalid_push_marker_fails_before_any_publication(self):
         summary = self.push_publication('invalid')
@@ -348,6 +348,49 @@ class FollowupTests(unittest.TestCase):
         result['push_update_key'] = 'c' * 64
         common.write_json(self.root / 'result.json', result)
         calls = self.publish_with({'comments': [self.command()]}, [])
-        self.assertEqual(len(calls), 3)  # Summary, push result, human response.
-        self.assertIn(common.PUSH_PREFIX, calls[1].kwargs['payload']['body'])
-        self.assertIn(common.REPLY_PREFIX, calls[2].kwargs['payload']['body'])
+        self.assertEqual(len(calls), 2)  # One push report, then the human response.
+        self.assertIn(common.PUSH_PREFIX, calls[0].kwargs['payload']['body'])
+        self.assertIn(common.REPLY_PREFIX, calls[1].kwargs['payload']['body'])
+
+    def test_push_report_includes_cost_and_runtime(self):
+        summary = self.push_publication()
+        result = common.read_json(self.root / 'result.json')
+        result.update(duration_seconds=125, cost_usd=0)
+        common.write_json(self.root / 'result.json', result)
+        calls = self.publish_with({}, [summary])
+        self.assertEqual(len(calls), 1)
+        self.assertIn('2m 05s', calls[0].kwargs['payload']['body'])
+        self.assertIn('$0.0000 USD', calls[0].kwargs['payload']['body'])
+
+    def test_context_recovers_latest_report_from_reviews_and_push_comments(self):
+        bot = {'login': 'github-actions', '__typename': 'Bot'}
+        comments = [
+            {'id': 'first', 'author': bot, 'body': common.MARKER + '\nFirst', 'updatedAt': '1'},
+            {'id': 'push', 'author': bot, 'body': common.PUSH_PREFIX + 'c' * 64 + ' -->\nPush', 'updatedAt': '2'},
+            {'id': 'fake', 'author': {'login': 'pcace', '__typename': 'User'},
+             'body': common.MARKER + '\nFake', 'updatedAt': '9'},
+        ]
+        reviews = [{'id': 'latest', 'author': bot, 'body': common.MARKER + '\nInline review', 'submittedAt': '3'}]
+        def connection(_number, field, _fragment):
+            return iter({'comments': comments, 'reviews': reviews}.get(field, []))
+        with patch.object(review, 'connection_pages', side_effect=connection):
+            discussion = review.context(7)
+        self.assertEqual(discussion['previous_ai_review']['id'], 'latest')
+        self.assertEqual({item['id'] for item in discussion['previous_ai_reports']}, {'first', 'push', 'latest'})
+        self.assertEqual(review.reply_targets(discussion), [])
+
+    def test_manual_review_retry_preserves_original_report(self):
+        self.publication()
+        calls = self.publish_with({}, [])
+        report = {'body': calls[0].kwargs['payload']['body'],
+                  'user': {'login': 'github-actions[bot]', 'type': 'Bot'}}
+        self.assertEqual(self.publish_with({}, [report]), [])
+
+    def test_conversation_after_inline_review_posts_only_the_answer(self):
+        self.publication()
+        discussion = {'comments': [self.command()],
+                      'previous_ai_reports': [{'body': common.MARKER + '\nFirst inline review'}]}
+        calls = self.publish_with(discussion, [])
+        self.assertEqual(len(calls), 1)
+        self.assertIn(common.REPLY_PREFIX, calls[0].kwargs['payload']['body'])
+        self.assertEqual(calls[0].kwargs['method'], 'POST')
