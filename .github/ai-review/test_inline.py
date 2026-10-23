@@ -68,6 +68,9 @@ class InlineTests(unittest.TestCase):
         calls = self.publish_with({}, [])
         self.assertEqual(calls[0].args[0], 'repos/pcace/RoadbookNavi/pulls/7/reviews')
         payload = calls[0].kwargs['payload']
+        self.assertEqual(len(calls), 1)  # Summary is the actual review body.
+        self.assertIn(test_followups.fixtures.ANSWER, payload['body'])
+        self.assertNotIn('discussion and status are in the PR summary', payload['body'])
         self.assertEqual(payload['event'], 'COMMENT')
         self.assertEqual(payload['commit_id'], 'a' * 40)
         self.assertEqual(payload['comments'][0]['side'], 'RIGHT')
@@ -83,10 +86,10 @@ class InlineTests(unittest.TestCase):
                                         'response': 'The new identity check prevents stale requests overwriting the route.'}])
         common.write_json(self.root / 'result.json', result)
         calls = self.publish_with(discussion, [])
-        self.assertTrue(calls[0].args[0].endswith('/comments/42/replies'))
-        self.assertIn(inline.STATUS + 'fixed', calls[0].kwargs['payload']['body'])
-        self.assertIn('**Fixed:**', calls[-1].kwargs['payload']['body'])
-        self.assertIn('New findings:** none', calls[-1].kwargs['payload']['body'])
+        self.assertTrue(calls[1].args[0].endswith('/comments/42/replies'))
+        self.assertIn(inline.STATUS + 'fixed', calls[1].kwargs['payload']['body'])
+        self.assertIn('**Fixed:**', calls[0].kwargs['payload']['body'])
+        self.assertIn('New findings:** none', calls[0].kwargs['payload']['body'])
         self.assertFalse(any(call.args[0].endswith('/comments/42/replies')
                              for call in self.publish_with({'threads': [thread('fixed')]}, [])))
 
@@ -106,6 +109,40 @@ class InlineTests(unittest.TestCase):
                                             'body': calls[-1].kwargs['payload']['body']})
         discussion['previous_ai_responses'] = [source['comments']['nodes'][-1]]
         self.assertEqual(review.reply_targets(discussion), [])
+
+    def test_push_with_new_findings_posts_one_review_and_retry_posts_nothing(self):
+        result = self.publication()
+        result.update(responses=[], findings=[finding()], push_update_key='c' * 64)
+        common.write_json(self.root / 'result.json', result)
+        calls = self.publish_with({}, [])
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(calls[0].args[0].endswith('/reviews'))
+        body = calls[0].kwargs['payload']['body']
+        posted = thread()
+        posted['comments']['nodes'][0]['body'] = calls[0].kwargs['payload']['comments'][0]['body']
+        discussion = {'threads': [posted], 'previous_ai_reports': [{'body': body}]}
+        self.assertEqual(self.publish_with(discussion, []), [])
+
+    def test_unchanged_fixed_findings_do_not_repeat_after_documentation_push(self):
+        discussion = {'threads': [thread('fixed')]}
+        targets = inline.finding_targets(discussion)
+        updates = [{'comment_id': 'PRRC_root', 'status': 'fixed',
+                    'response': 'Long explanation that was already posted in the thread.'}]
+        text = inline.progress(updates, targets, 0)
+        self.assertIn('Still open:** none', text)
+        self.assertIn('New findings:** none', text)
+        self.assertNotIn('**Fixed:**', text)
+        self.assertNotIn('Long explanation', text)
+        self.assertNotIn('discussion_r42', text)
+
+    def test_progress_links_open_findings_without_repeating_thread_explanations(self):
+        targets = inline.finding_targets({'threads': [thread()]})
+        updates = [{'comment_id': 'PRRC_root', 'status': 'open',
+                    'response': 'Long explanation that belongs only in the thread.'}]
+        text = inline.progress(updates, targets, 0)
+        self.assertIn('src/route.ts:3', text)
+        self.assertIn('discussion_r42', text)
+        self.assertNotIn('Long explanation', text)
 
 
 if __name__ == '__main__':

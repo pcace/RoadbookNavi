@@ -113,13 +113,17 @@ def new_comments(findings, discussion, head):
 def progress(updates, targets, new_count):
     if not targets:
         return ''
-    names = {'fixed': 'Fixed', 'open': 'Still open', 'retracted': 'Withdrawn', 'unknown': 'Not verified'}
-    rows = ['### Since the last review']
-    for state, label in names.items():
-        items = [item for item in updates if item['status'] == state]
+    indexed = {item['comment_id']: item for item in targets}
+    def links(items):
+        return '; '.join(f'[{indexed[item["comment_id"]]["path"]}:{indexed[item["comment_id"]]["line"]}]'
+                         f'({indexed[item["comment_id"]]["url"]})' for item in items)
+    rows = ['### Review status']
+    opened = [item for item in updates if item['status'] == 'open']
+    rows.append('- **Still open:** ' + (links(opened) if opened else 'none.'))
+    for state, label in (('fixed', 'Fixed'), ('retracted', 'Withdrawn'), ('unknown', 'Not verified')):
+        items = [item for item in updates if item['status'] == state
+                 and (state == 'unknown' or indexed[item['comment_id']]['status'] != state)]
         if items:
-            indexed = {item['comment_id']: item for item in targets}
-            rows.append(f'- **{label}:** ' + '; '.join(
-                f'[Finding]({indexed[item["comment_id"]]["url"]}) — {item["response"]}' for item in items))
+            rows.append(f'- **{label}:** ' + links(items))
     rows.append(f'- **New findings:** {new_count}.' if new_count else '- **New findings:** none.')
     return '\n'.join(rows)
