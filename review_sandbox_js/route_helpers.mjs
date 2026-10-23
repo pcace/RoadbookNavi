@@ -13,12 +13,9 @@ export function travelMinutes(distanceKm, speedKph) {
  * Route IDs are unique strings. Other routes retain their current values.
  */
 export function renameRoute(routes, routeId, label) {
-  const next = [...routes];
-  const route = next.find(item => item.id === routeId);
-  if (route) {
-    route.label = label;
-  }
-  return next;
+  return routes.map(route =>
+    route.id === routeId ? { ...route, label } : route
+  );
 }
 
 /**
