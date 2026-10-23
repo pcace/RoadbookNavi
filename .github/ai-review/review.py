@@ -466,9 +466,17 @@ def render(root):
     fallback = '\n'.join(f'- **[{f["priority"]}] {f["path"]}:{f["line"]}** — {f["body"]}'
                          for f in result.get('findings', []) if not f.get('inline', True))
     after_push = bool(result.get('push_update_key'))
+    count = len(result.get('findings', []))
+    noun = 'finding' if count == 1 else 'findings'
+    overview = (f'{count} new {noun}; see the code comments and details below.'
+                if count else 'No new verified findings.')
+    # Findings and their status have structured, validated fields. Render them
+    # once rather than trusting the model to avoid duplicating them in prose.
+    details = re.sub(r'\A### Findings\n.*?(?=^### |\Z)', '', result['review'],
+                     flags=re.DOTALL | re.MULTILINE).strip()
     body = '\n\n'.join([
         MARKER, '### AI review after push' if after_push else '## AI PR Review',
-        result['review'], fallback, status,
+        '### Findings\n' + overview, fallback, status, details,
         f'Commit: `{result["head_sha"]}` · Model: `{result["model"]}`',
         'Code inspection only; no tests were run. This is not a merge approval.',
         f'[Workflow log]({run}) · Run again: `/review`',
@@ -521,7 +529,7 @@ def publish(root):
     for update in result.get('finding_updates', []):
         old = current_findings.get(update['comment_id'])
         if old and old['status'] != update['status']:
-            body = inline.STATUS + update['status'] + ' -->\n\n' + update['response']
+            body = inline.STATUS + update['status'] + ' -->\n\n**' + update['status'].capitalize() + '**\n\n' + update['response']
             api(f'repos/{repository()}/pulls/{number}/comments/{inline.reply_id(old["url"])}/replies',
                 method='POST', payload={'body': body.replace('@', '@\u200b')})
     for reply in result.get('responses', []):
@@ -531,8 +539,9 @@ def publish(root):
         marker = REPLY_PREFIX + reply['version_key'] + ' -->'
         if any((item.get('body') or '').startswith(marker) for item in comments):
             continue
-        body = '\n\n'.join([marker, '### AI review response',
-                            f'[In response to your comment]({target["url"]})', reply['response']])
+        parts = [marker, reply['response']] if target.get('reply_to') else [
+            marker, f'[In response to your comment]({target["url"]})', reply['response']]
+        body = '\n\n'.join(parts)
         endpoint = (f'repos/{repository()}/pulls/{number}/comments/{target["reply_to"]}/replies'
                     if target.get('reply_to') else f'repos/{repository()}/issues/{number}/comments')
         api(endpoint, method='POST', payload={'body': body.replace('@', '@\u200b')})

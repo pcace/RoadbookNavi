@@ -69,7 +69,8 @@ class InlineTests(unittest.TestCase):
         self.assertEqual(calls[0].args[0], 'repos/pcace/RoadbookNavi/pulls/7/reviews')
         payload = calls[0].kwargs['payload']
         self.assertEqual(len(calls), 1)  # Summary is the actual review body.
-        self.assertIn(test_followups.fixtures.ANSWER, payload['body'])
+        self.assertIn('1 new finding', payload['body'])
+        self.assertIn('### Checked and limits', payload['body'])
         self.assertNotIn('discussion and status are in the PR summary', payload['body'])
         self.assertEqual(payload['event'], 'COMMENT')
         self.assertEqual(payload['commit_id'], 'a' * 40)
@@ -105,6 +106,8 @@ class InlineTests(unittest.TestCase):
         common.write_json(self.root / 'result.json', result)
         calls = self.publish_with(discussion, [])
         self.assertTrue(calls[-1].args[0].endswith('/comments/42/replies'))
+        self.assertNotIn('AI review response', calls[-1].kwargs['payload']['body'])
+        self.assertNotIn('In response to your comment', calls[-1].kwargs['payload']['body'])
         source['comments']['nodes'].append({'id': 'PRRC_answer', 'author': source['comments']['nodes'][0]['author'],
                                             'body': calls[-1].kwargs['payload']['body']})
         discussion['previous_ai_responses'] = [source['comments']['nodes'][-1]]
