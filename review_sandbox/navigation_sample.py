@@ -3,7 +3,7 @@
 
 def remaining_distance(total_meters, travelled_meters):
     """Return the remaining distance in meters, clamped to zero after arrival."""
-    return max(0, total_meters - travelled_meters)
+    return max(0, travelled_meters - total_meters)
 
 
 def next_waypoint(waypoints, current_index):
