@@ -181,6 +181,7 @@ class FollowupTests(unittest.TestCase):
                           'reply_targets': [], 'push_update_key': key})
         common.write_json(self.root / 'resume.json', {'resumed': True})
         common.write_json(self.root / 'goose-review.json', fixtures.completed())
+        (self.root / 'inline.diff').write_text('')
         with patch.dict(os.environ, {'RUNNER_TEMP': str(self.root)}), \
                 patch.object(sys, 'argv', ['review.py', 'finish', '0', '1']), \
                 patch.object(review, 'usage_since', return_value={'cost_usd': 0}):
@@ -200,7 +201,7 @@ class FollowupTests(unittest.TestCase):
 
     def test_ordinary_inline_and_review_comments_are_also_reply_targets(self):
         discussion = {'comments': [], 'reviews': [self.command('check this', 'review')],
-                      'threads': [{'comments': {'nodes': [self.command('why?', 'inline')]}}]}
+                      'threads': [{'comments': {'nodes': [self.command('why?', 'inline') | {'url': 'https://github.com/pcace/RoadbookNavi/pull/7#discussion_r123'}]}}]}
         self.assertEqual({item['comment_id'] for item in review.reply_targets(discussion)}, {'review', 'inline'})
 
     def test_ordinary_statement_cannot_finish_without_a_response(self):
@@ -208,7 +209,7 @@ class FollowupTests(unittest.TestCase):
         with self.assertRaisesRegex(common.ReviewError, 'comment_response_missing'):
             review.final_answer(fixtures.completed(), 'current', targets)
         response = {'comment_id': 'IC_test', 'response': 'Understood. This is intentional, so I withdraw the unsupported cleanup finding.'}
-        answer, replies = review.final_answer(fixtures.completed(responses=[response]), 'current', targets)
+        answer, replies, _, _ = review.final_answer(fixtures.completed(responses=[response]), 'current', targets)
         self.assertEqual(answer, fixtures.ANSWER)
         self.assertEqual(replies[0]['version_key'], targets[0]['version_key'])
 
