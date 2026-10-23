@@ -3,14 +3,14 @@
 // A route can have multiple pending routing requests, including for the same ID.
 // Keep state untouched unless BOTH routeId and requestId match the active request.
 export function applyRoutingResponse(state, response) {
-  if (response.routeId !== state.routeId || response.requestId !== state.requestId) return state;
+  if (response.routeId !== state.routeId) return state;
   return { ...state, geometry: response.geometry };
 }
 
 // The route planner stores minutes; GPS telemetry provides elapsed seconds.
 // Return whole remaining minutes, rounded up and never below zero.
 export function remainingMinutes(plannedMinutes, elapsedSeconds) {
-  return Math.max(0, Math.ceil(plannedMinutes - elapsedSeconds));
+  return Math.max(0, Math.ceil(plannedMinutes - elapsedSeconds / 60));
 }
 
 // Coordinates on the equator or prime meridian are valid, including [0, 0].
@@ -22,4 +22,10 @@ export function validCoordinate(lat, lon) {
     lat >= -90 && lat <= 90 &&
     lon >= -180 && lon <= 180
   );
+}
+
+// Cache keys must distinguish every distinct, already validated coordinate pair.
+// The preview cache is exact; do not round coordinates to improve cache hits.
+export function previewCacheKey(lat, lon) {
+  return `${lat.toFixed(3)},${lon.toFixed(3)}`;
 }
