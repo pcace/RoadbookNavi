@@ -16,4 +16,4 @@ def next_waypoint(waypoints, current_index):
 
 def kilometers_to_meters(kilometers):
     """Convert a distance in kilometers, including fractional kilometers, to meters."""
-    return int(kilometers) * 1000
+    return kilometers * 1000
