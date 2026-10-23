@@ -21,5 +21,5 @@ export function waypointById(waypoints, id) {
 // Return true for every visited ID, including the first array element.
 // IDs are case-sensitive; missing IDs return false.
 export function hasVisited(visitedIds, id) {
-  return visitedIds.indexOf(id) > 0;
+  return visitedIds.includes(id);
 }
