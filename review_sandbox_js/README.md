@@ -13,3 +13,6 @@ Contracts:
 All inputs satisfy the contracts documented on each function. Do not infer
 additional validation requirements. The exercise will include questions and
 follow-up commits to observe review discussions and tracking of findings.
+
+- Route dates use the UTC calendar date of a valid ISO timestamp ending in Z,
+  independent of the device timezone.
