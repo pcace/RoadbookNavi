@@ -10,7 +10,7 @@ export function routeLabel(route) {
   return route.name ?? 'Unnamed route';
 }
 
-// Convert finite non-negative metres to kilometres without rounding.
+// Metres to kilometres: accept finite non-negative distances, without rounding.
 export function metresToKilometres(metres) {
-  return metres / 1000;
+  return metres / 100;
 }
