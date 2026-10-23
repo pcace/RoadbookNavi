@@ -461,18 +461,16 @@ def render(root):
     seconds = result['duration_seconds']
     cost = result.get('cost_usd')
     cost_text = f'${cost:.4f} USD (according to Goose, this run)' if cost is not None else 'unavailable'
-    mode = 'Continued saved PR session' if result['resumed'] else 'Started new PR session'
     status = inline.progress(result.get('finding_updates', []), result.get('finding_targets', []),
                              len(result.get('findings', [])))
     fallback = '\n'.join(f'- **[{f["priority"]}] {f["path"]}:{f["line"]}** — {f["body"]}'
                          for f in result.get('findings', []) if not f.get('inline', True))
     after_push = bool(result.get('push_update_key'))
-    outcome = (status or result['review']) if after_push else result['review']
     body = '\n\n'.join([
         MARKER, '### AI review after push' if after_push else '## AI PR Review',
-        outcome, fallback, '' if after_push else status,
+        result['review'], fallback, status,
         f'Commit: `{result["head_sha"]}` · Model: `{result["model"]}`',
-        f'{mode}. {result["changed_files"]} changed file paths. No tests were run; this is not a merge approval.',
+        'Code inspection only; no tests were run. This is not a merge approval.',
         f'[Workflow log]({run}) · Run again: `/review`',
         f'Review runtime: {seconds // 60}m {seconds % 60:02d}s · Model cost: {cost_text}',
     ]).replace('@', '@\u200b')

@@ -394,3 +394,17 @@ class FollowupTests(unittest.TestCase):
         self.assertEqual(len(calls), 1)
         self.assertIn(common.REPLY_PREFIX, calls[0].kwargs['payload']['body'])
         self.assertEqual(calls[0].kwargs['method'], 'POST')
+
+    def test_push_report_keeps_specific_information_gaps_visible(self):
+        summary = self.push_publication()
+        result = common.read_json(self.root / 'result.json')
+        result.update(review=fixtures.ANSWER + '\n### Missing information\n- Cache precision is unspecified; coordinate collisions cannot be assessed.',
+                      finding_targets=[{'comment_id': 'root', 'status': 'open', 'path': 'route.mjs',
+                                        'line': 4, 'url': 'https://github.com/pcace/RoadbookNavi/pull/7#discussion_r42'}],
+                      finding_updates=[{'comment_id': 'root', 'status': 'fixed', 'response': 'The identity check now includes the current request.'}])
+        common.write_json(self.root / 'result.json', result)
+        body = self.publish_with({}, [summary])[0].kwargs['payload']['body']
+        self.assertIn('### Missing information', body)
+        self.assertIn('### Checked and limits', body)
+        self.assertIn('Cache precision', body)
+        self.assertIn('**Fixed:**', body)

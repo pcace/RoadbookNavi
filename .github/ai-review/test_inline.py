@@ -123,6 +123,27 @@ class InlineTests(unittest.TestCase):
         discussion = {'threads': [posted], 'previous_ai_reports': [{'body': body}]}
         self.assertEqual(self.publish_with(discussion, []), [])
 
+    def test_unchanged_fixed_findings_do_not_repeat_after_documentation_push(self):
+        discussion = {'threads': [thread('fixed')]}
+        targets = inline.finding_targets(discussion)
+        updates = [{'comment_id': 'PRRC_root', 'status': 'fixed',
+                    'response': 'Long explanation that was already posted in the thread.'}]
+        text = inline.progress(updates, targets, 0)
+        self.assertIn('Still open:** none', text)
+        self.assertIn('New findings:** none', text)
+        self.assertNotIn('**Fixed:**', text)
+        self.assertNotIn('Long explanation', text)
+        self.assertNotIn('discussion_r42', text)
+
+    def test_progress_links_open_findings_without_repeating_thread_explanations(self):
+        targets = inline.finding_targets({'threads': [thread()]})
+        updates = [{'comment_id': 'PRRC_root', 'status': 'open',
+                    'response': 'Long explanation that belongs only in the thread.'}]
+        text = inline.progress(updates, targets, 0)
+        self.assertIn('src/route.ts:3', text)
+        self.assertIn('discussion_r42', text)
+        self.assertNotIn('Long explanation', text)
+
 
 if __name__ == '__main__':
     unittest.main()
