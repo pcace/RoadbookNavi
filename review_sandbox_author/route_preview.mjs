@@ -3,7 +3,7 @@
 // A route can have multiple pending routing requests, including for the same ID.
 // Keep state untouched unless BOTH routeId and requestId match the active request.
 export function applyRoutingResponse(state, response) {
-  if (response.routeId !== state.routeId) return state;
+  if (response.routeId !== state.routeId || response.requestId !== state.requestId) return state;
   return { ...state, geometry: response.geometry };
 }
 
@@ -27,5 +27,5 @@ export function validCoordinate(lat, lon) {
 // Cache keys must distinguish every distinct, already validated coordinate pair.
 // The preview cache is exact; do not round coordinates to improve cache hits.
 export function previewCacheKey(lat, lon) {
-  return `${lat.toFixed(3)},${lon.toFixed(3)}`;
+  return JSON.stringify([lat, lon]);
 }
