@@ -83,8 +83,13 @@ def verify_task_read(root, messages, source):
                 result = block.get('toolResult') or {}
                 value = result.get('value') or {}
                 output = value.get('structuredContent') or {}
+                # The pinned Goose shell trims trailing whitespace in stdout.
+                # Match that transport behavior while retaining the exact command,
+                # current-run identity and all non-trailing evidence bytes.
+                stdout = output.get('stdout')
                 if (result.get('status') == 'success' and not value.get('isError', False)
-                        and output.get('exit_code') == 0 and output.get('stdout') == expected):
+                        and output.get('exit_code') == 0 and isinstance(stdout, str)
+                        and stdout.rstrip() == expected.rstrip()):
                     read = True
     if not read:
         raise ReviewError('current_context_read_missing')

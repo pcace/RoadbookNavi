@@ -57,6 +57,29 @@ class FreshnessTests(unittest.TestCase):
     def test_fresh_context_and_diff_preview_are_accepted(self):
         self.verify(self.completed())
 
+    def test_native_goose_stdout_trimming_is_accepted(self):
+        for suffix in ('\n', '\n\n', ' \t\n', ''):
+            task = freshness.task_directory(self.root, self.source)
+            (task / 'since-last-review.diff').write_text('+current code' + suffix)
+            value = self.completed()
+            result = value['messages'][2]['content'][0]['toolResult']['value']['structuredContent']
+            result['stdout'] = result['stdout'].rstrip()
+            self.verify(value)
+
+    def test_normalization_does_not_accept_changed_or_missing_evidence(self):
+        for change in ('head', 'internal-whitespace', 'truncated', 'extra-text'):
+            value = self.completed()
+            result = value['messages'][2]['content'][0]['toolResult']['value']['structuredContent']
+            text = result['stdout'].rstrip()
+            result['stdout'] = {
+                'head': text.replace('a' * 40, 'c' * 40),
+                'internal-whitespace': text.replace('  "head_sha"', ' "head_sha"'),
+                'truncated': text[:-1],
+                'extra-text': text + 'unexpected',
+            }[change]
+            with self.subTest(change=change), self.assertRaisesRegex(common.ReviewError, 'current_context_read_missing'):
+                self.verify(value)
+
     def test_current_head_and_previous_head_are_distinct_in_new_prompt(self):
         prompt = (self.root / 'task-summary.txt').read_text()
         self.assertIn('CURRENT HEAD: ' + 'a' * 40, prompt)
