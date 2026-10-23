@@ -327,7 +327,7 @@ class FollowupTests(unittest.TestCase):
         body = calls[0].kwargs['payload']['body']
         self.assertIn(common.PUSH_PREFIX, body)
         self.assertIn('AI review after push', body)
-        self.assertIn(fixtures.ANSWER, body)
+        self.assertIn('### Checked and limits', body)
         self.assertIn('a' * 40, body)
 
     def test_same_push_retry_does_not_duplicate_visible_update(self):
@@ -408,3 +408,17 @@ class FollowupTests(unittest.TestCase):
         self.assertIn('### Checked and limits', body)
         self.assertIn('Cache precision', body)
         self.assertIn('**Fixed:**', body)
+
+    def test_renderer_owns_findings_and_preserves_actionable_sections(self):
+        self.push_publication()
+        result = common.read_json(self.root / 'result.json')
+        result['review'] = ('### Findings\nLong duplicate descriptions of previous bugs and their fixes.\n'
+                            '### Suggestions\n- Prefer the existing cache helper.\n'
+                            '### Missing information\n- Cache precision is unspecified.\n'
+                            '### Checked and limits\n- Read the preview caller.')
+        common.write_json(self.root / 'result.json', result)
+        body = self.publish_with({}, [])[0].kwargs['payload']['body']
+        self.assertNotIn('Long duplicate', body)
+        self.assertIn('No new verified findings.', body)
+        for section in ('Suggestions', 'Missing information', 'Checked and limits'):
+            self.assertIn('### ' + section, body)

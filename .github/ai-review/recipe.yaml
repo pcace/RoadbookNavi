@@ -157,6 +157,9 @@ prompt: |
   different lifecycle or supported variant that invalidates the suspicion. Separate
   regressions and an unfixed advertised case from unrelated pre-existing debt.
   Verify a proposed fix against the same flow; it must preserve supported cases.
+  For a suggested condition, distinguish a success branch from an early return
+  and check both matching and mismatching inputs. If exact replacement code is
+  not verified, describe the required behavior instead of giving a guessed snippet.
   Recommend a test only with a specific action/input and expected observable result.
   Stop pursuing suspicions once evidence defeats them.
   Do not classify debug logging, stylistic disagreement or cleanup alone as a
