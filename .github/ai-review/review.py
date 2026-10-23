@@ -19,6 +19,7 @@ from common import (
     repository, reviewable, same_repository, write_json,
 )
 from session import usage_since
+import inline
 from diagnostics import FAILURES, process_failure
 from freshness import freeze_task, verify_task_read
 
@@ -156,13 +157,21 @@ def context(number):
     fragment = ('''id isResolved isOutdated path line originalLine diffSide
         comments(first:100) { pageInfo { hasNextPage endCursor } nodes { ''' + INLINE + ' } }')
     for thread in connection_pages(number, 'reviewThreads', fragment):
-        comments_in_thread = [item for item in thread_comments(thread) if human(item)]
+        all_thread_comments = thread_comments(thread)
+        comments_in_thread = [item for item in all_thread_comments if human(item) or (
+            own_bot(item.get('author') or {}) and
+            (inline.own_finding(item) or (item.get('body') or '').startswith((inline.STATUS, REPLY_PREFIX))))]
         if comments_in_thread:
+            # GitHub replies must target the original root, even when that root
+            # belongs to another reviewer rather than a human.
+            if all_thread_comments[0] not in comments_in_thread:
+                comments_in_thread.insert(0, all_thread_comments[0])
             threads.append({**thread, 'comments': {'nodes': comments_in_thread}})
     own = [item for item in comments
            if own_bot(item.get('author') or {})
            and (item.get('body') or '').startswith(MARKER)]
-    replies = [item for item in comments if own_bot(item.get('author') or {})
+    all_comments = comments + [c for t in threads for c in t['comments']['nodes']]
+    replies = [item for item in all_comments if own_bot(item.get('author') or {})
                and re.match(re.escape(REPLY_PREFIX) + r'[0-9a-f]{64} -->', item.get('body') or '')]
     return {
         'captured_at': datetime.now(timezone.utc).isoformat(), 'truncated': False,
@@ -179,14 +188,19 @@ def reply_targets(discussion):
                 if (match := re.match(re.escape(REPLY_PREFIX) + r'([0-9a-f]{64}) -->', item.get('body') or ''))}
     messages = discussion.get('comments', []) + discussion.get('reviews', [])
     messages += [item for thread in discussion.get('threads', []) for item in thread['comments']['nodes']]
+    roots = {c['id']: inline.reply_id(thread['comments']['nodes'][0]['url'])
+             for thread in discussion.get('threads', []) if thread['comments']['nodes']
+             for c in thread['comments']['nodes']}
     targets = {}
     for message in messages:
-        if not (message.get('body') or '').strip():
+        if not human(message) or not (message.get('body') or '').strip():
             continue
         key = fingerprint({'id': message['id'], 'body': message['body']})
         if key not in answered:
             targets[message['id']] = {'comment_id': message['id'], 'url': message['url'],
                                       'body': message['body'], 'version_key': key}
+            if re.search(r'#discussion_r[1-9][0-9]*$', message['url']):
+                targets[message['id']]['reply_to'] = roots.get(message['id'], inline.reply_id(message['url']))
     if len(targets) > 100:
         raise ReviewError('too_many_pending_comments')
     return list(targets.values())
@@ -225,11 +239,12 @@ def capture(root):
         return
     write_json(root / 'discussion.json', discussion)
     write_json(root / 'reply-targets.json', targets)
+    write_json(root / 'finding-targets.json', inline.finding_targets(discussion))
     source = {
         'number': number, 'head_sha': pr['head']['sha'], 'base_sha': pr['base']['sha'],
         'title': pr['title'], 'description': pr.get('body') or '', 'focus': focus,
         'force_review': command or os.environ['GITHUB_EVENT_NAME'] == 'workflow_dispatch',
-        'reply_targets': targets,
+        'reply_targets': targets, 'finding_targets': inline.finding_targets(discussion),
         # Stable across reruns of one push event, but different for later pushes
         # (including a force-push back to an already reviewed commit).
         'push_update_key': fingerprint({'number': number, 'run_id': os.environ['GITHUB_RUN_ID']})
@@ -278,6 +293,7 @@ def collect(root):
     source['merge_base_sha'] = git(checkout, 'merge-base', source['base_sha'], source['head_sha']).strip()
     paths = list(filter(None, git(checkout, *args, '--name-only', '-z', revision).split('\0')))
     (root / 'pr.diff').write_text(git(checkout, *args, revision), encoding='utf-8')
+    (root / 'inline.diff').write_text(git(checkout, '-c', 'core.quotePath=false', *args, '--unified=0', revision), encoding='utf-8')
     source['changed_files'] = len(paths)
     commits = [dict(zip(('sha', 'authored_at', 'subject'), line.split('\t', 2)))
                for line in git(checkout, 'log', '--reverse', '--format=%H%x09%aI%x09%s',
@@ -362,7 +378,7 @@ def final_answer(value, nonce, targets=(), head_sha=None):
         raise ReviewError('new_final_output_missing')
     replies = decoded.get('responses')
     expected = {item['comment_id']: item for item in targets}
-    if (set(decoded) != {'review', 'responses', 'reviewed_head_sha'} or not isinstance(replies, list)
+    if (set(decoded) != {'review', 'responses', 'findings', 'finding_updates', 'reviewed_head_sha'} or not isinstance(replies, list)
             or len(replies) != len(expected)):
         raise ReviewError('comment_response_missing')
     if (not isinstance(decoded['reviewed_head_sha'], str) or not SHA.fullmatch(decoded['reviewed_head_sha'])
@@ -379,7 +395,7 @@ def final_answer(value, nonce, targets=(), head_sha=None):
         target = expected[reply['comment_id']]
         validated.append({key: target[key] for key in ('comment_id', 'url', 'version_key')}
                          | {'response': reply['response'].strip()})
-    return answer, validated
+    return answer, validated, decoded['findings'], decoded['finding_updates']
 
 
 def finish(root):
@@ -396,8 +412,10 @@ def finish(root):
         value = read_json(path)
         source = read_json(root / 'input.json')
         baseline = read_json(root / 'resume.json')
-        answer, responses = final_answer(value, source['run_nonce'], source.get('reply_targets', []), source['head_sha'])
+        answer, responses, findings, updates = final_answer(value, source['run_nonce'], source.get('reply_targets', []), source['head_sha'])
         verify_task_read(root, current_messages(value, source['run_nonce']), source)
+        findings, updates = inline.validate(findings, updates, source.get('finding_targets', []),
+                                            (root / 'inline.diff').read_text(encoding='utf-8'))
         usage = usage_since(root, baseline)
         for key in ('cost_usd',):
             if key in usage and not math.isfinite(usage[key]):
@@ -407,7 +425,8 @@ def finish(root):
         report['assistant_messages'] = sum(message.get('role') == 'assistant' for message in messages)
         report['resumed'] = baseline['resumed']
         result = {key: source[key] for key in ('number', 'head_sha', 'base_sha', 'changed_files', 'run_nonce')}
-        result.update(model=MODEL, review=answer, responses=responses,
+        result.update(model=MODEL, review=answer, responses=responses, findings=findings,
+                      finding_updates=updates, finding_targets=source.get('finding_targets', []),
                       push_update_key=source.get('push_update_key'), resumed=baseline['resumed'],
                       previous_head=baseline.get('head_sha'), duration_seconds=seconds, **usage)
         write_json(root / 'result.json', result)
@@ -441,8 +460,12 @@ def render(root):
     cost = result.get('cost_usd')
     cost_text = f'${cost:.4f} USD (according to Goose, this run)' if cost is not None else 'unavailable'
     mode = 'Continued saved PR session' if result['resumed'] else 'Started new PR session'
+    status = inline.progress(result.get('finding_updates', []), result.get('finding_targets', []),
+                             len(result.get('findings', [])))
+    fallback = '\n'.join(f'- **[{f["priority"]}] {f["path"]}:{f["line"]}** — {f["body"]}'
+                         for f in result.get('findings', []) if not f.get('inline', True))
     body = '\n\n'.join([
-        MARKER, '## AI PR Review', result['review'],
+        MARKER, '## AI PR Review', result['review'], fallback, status,
         f'Commit: `{result["head_sha"]}` · Model: `{result["model"]}`',
         f'{mode}. {result["changed_files"]} changed file paths. No tests were run; this is not a merge approval.',
         f'[Workflow log]({run}) · Run again: `/review`',
@@ -467,11 +490,26 @@ def publish(root):
         return
     # Re-read live comment bodies and existing replies. Do not answer a message
     # that was edited/deleted while Goose worked, or publish duplicates.
-    live = {item['comment_id']: item for item in reply_targets(context(number))}
+    discussion = context(number)
+    live = {item['comment_id']: item for item in reply_targets(discussion)}
     comments = [item for item in pages(f'repos/{repository()}/issues/{number}/comments')
                 if own_bot(item.get('user') or {})]
+    comments.extend({'body': c.get('body') or ''} for t in discussion.get('threads', [])
+                    for c in t['comments']['nodes'] if own_bot(c.get('author') or {}))
     existing = next((item for item in comments if (item.get('body') or '').startswith(MARKER)), None)
-    render(root)
+    render(root)  # Validate summary size before any write to GitHub.
+    new_inline = inline.new_comments(result.get('findings', []), discussion, result['head_sha'])
+    if new_inline:
+        api(f'repos/{repository()}/pulls/{number}/reviews', method='POST',
+            payload={'commit_id': result['head_sha'], 'event': 'COMMENT',
+                     'body': 'AI review findings; discussion and status are in the PR summary.', 'comments': new_inline})
+    current_findings = {item['comment_id']: item for item in inline.finding_targets(discussion)}
+    for update in result.get('finding_updates', []):
+        old = current_findings.get(update['comment_id'])
+        if old and old['status'] != update['status']:
+            body = inline.STATUS + update['status'] + ' -->\n\n' + update['response']
+            api(f'repos/{repository()}/pulls/{number}/comments/{inline.reply_id(old["url"])}/replies',
+                method='POST', payload={'body': body.replace('@', '@\u200b')})
     body = (root / 'comment.md').read_text(encoding='utf-8')
     endpoint = (f'repos/{repository()}/issues/comments/{existing["id"]}' if existing
                 else f'repos/{repository()}/issues/{number}/comments')
@@ -481,7 +519,9 @@ def publish(root):
         if not any((item.get('body') or '').startswith(marker) for item in comments):
             run = f'{os.environ["GITHUB_SERVER_URL"]}/{repository()}/actions/runs/{os.environ["GITHUB_RUN_ID"]}'
             body = '\n\n'.join([marker, '### AI review after push',
-                                f'Reviewed commit: `{result["head_sha"]}`', result['review'],
+                                f'Reviewed commit: `{result["head_sha"]}`',
+                                inline.progress(result.get('finding_updates', []), result.get('finding_targets', []),
+                                                len(result.get('findings', []))) or result['review'],
                                 f'[Workflow log]({run})'])
             api(f'repos/{repository()}/issues/{number}/comments', method='POST',
                 payload={'body': body.replace('@', '@\u200b')})
@@ -494,8 +534,9 @@ def publish(root):
             continue
         body = '\n\n'.join([marker, '### AI review response',
                             f'[In response to your comment]({target["url"]})', reply['response']])
-        api(f'repos/{repository()}/issues/{number}/comments', method='POST',
-            payload={'body': body.replace('@', '@\u200b')})
+        endpoint = (f'repos/{repository()}/pulls/{number}/comments/{target["reply_to"]}/replies'
+                    if target.get('reply_to') else f'repos/{repository()}/issues/{number}/comments')
+        api(endpoint, method='POST', payload={'body': body.replace('@', '@\u200b')})
         comments.append({'body': body})
     print('Published review summary, push update and outstanding comment responses.')
 

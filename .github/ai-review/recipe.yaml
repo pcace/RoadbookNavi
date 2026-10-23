@@ -1,4 +1,4 @@
-version: '1.3.1'
+version: '1.4.0'
 title: RoadbookNavi PR Review
 description: Reduce first-pass review work by checking behavior, integration and avoidable complexity.
 
@@ -38,6 +38,13 @@ instructions: |
   discussion-changes.json identifies new, edited or removed discussion
   and changed threads. The full current discussion and PR diff remain available.
   reply-targets.json lists unanswered human comments and reviews.
+  finding-targets.json lists this reviewer's existing inline findings,
+  including current thread status and links. Reassess EACH against current code and
+  return one finding_updates entry: open, fixed, retracted, or unknown. Fixed needs
+  evidence of a code correction; retracted means the earlier finding was mistaken
+  or disproven by supported intent. Use unknown if you cannot verify it. Do not
+  silently drop findings or equate a resolved GitHub thread with a verified fix.
+  Do not report an existing finding again as a new finding, even if lines moved.
   Read it at the start, even when this is a fresh session. Every listed comment
   needs exactly one structured response identified by its comment_id. A comment
   can be a statement or disagreement, not just a question. For example, an author
@@ -178,6 +185,15 @@ prompt: |
     loss. Zero findings is valid: say "No verified findings." without adding a
     summary or approval. Do not report unrelated pre-existing debt. Describe each
     bug in one short paragraph; do not add separate root-cause essays.
+    Return NEW concrete bugs in the separate findings array with path, new-side line,
+    priority (P1/P2) and body (trigger, consequence, evidence, short fix direction).
+    Choose a changed line in pr.diff. The host posts each as its own inline thread,
+    falling back to the summary if that line cannot be used. Do not duplicate the
+    full finding text in review: keep its Findings section a short overview or say
+    "No new verified findings." Existing findings belong only in finding_updates.
+    The host renders fixed/still-open/withdrawn/unknown progress from that array;
+    do not duplicate that status list in review. Never claim all issues are fixed
+    when earlier findings or their current code cannot be verified.
   - Suggestions: Optional, at most 1 non-blocking simplification/maintainability
     improvements with code locations and a clear payoff. Do not repeat finding fixes,
     invent missing APIs or nitpick style/naming.
@@ -211,14 +227,14 @@ prompt: |
   addresses that comment's question, objection or intent against current code.
   Explain agreement, disagreement or uncertainty; do not simply repeat the whole
   review. The host adds the source-comment link and posts a separate visible PR
-  response, so do not duplicate these answers as a Responses section in review.
+  response (in the same thread for inline comments), so do not duplicate these answers as a Responses section in review.
 
 # Goose's built-in final-output tool prevents a progress-only message ending the run.
-# Keep the report as Markdown; no separate finding-by-finding data structure.
+# Markdown summary plus small inline-finding and conversation arrays.
 response:
   json_schema:
     type: object
-    required: [review, responses, reviewed_head_sha]
+    required: [review, responses, findings, finding_updates, reviewed_head_sha]
     additionalProperties: false
     properties:
       reviewed_head_sha:
@@ -242,6 +258,45 @@ response:
           properties:
             comment_id:
               type: string
+            response:
+              type: string
+              minLength: 20
+              maxLength: 6000
+      findings:
+        type: array
+        maxItems: 8
+        description: New verified bugs only; existing findings must use finding_updates.
+        items:
+          type: object
+          additionalProperties: false
+          required: [path, line, priority, body]
+          properties:
+            path:
+              type: string
+            line:
+              type: integer
+              minimum: 1
+            priority:
+              type: string
+              enum: [P1, P2]
+            body:
+              type: string
+              minLength: 20
+              maxLength: 6000
+      finding_updates:
+        type: array
+        maxItems: 100
+        description: Exactly one reassessment per comment_id in finding-targets.json.
+        items:
+          type: object
+          additionalProperties: false
+          required: [comment_id, status, response]
+          properties:
+            comment_id:
+              type: string
+            status:
+              type: string
+              enum: [open, fixed, retracted, unknown]
             response:
               type: string
               minLength: 20

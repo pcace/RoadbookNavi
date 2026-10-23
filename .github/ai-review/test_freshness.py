@@ -24,6 +24,7 @@ class FreshnessTests(unittest.TestCase):
                          'previous_head': 'c' * 40, 'base_changed': False, 'history_rewritten': False}
         for name in freshness.TASK_FILES:
             (self.root / name).write_text('+new code\n' if name.endswith('.diff') else '{}\n')
+        (self.root / 'inline.diff').write_text('')
         freshness.freeze_task(self.root, self.source, self.followup)
         common.write_json(self.root / 'input.json', self.source)
         common.write_json(self.root / 'resume.json', {'resumed': True})
@@ -44,6 +45,14 @@ class FreshnessTests(unittest.TestCase):
 
     def verify(self, value):
         freshness.verify_task_read(self.root, review.current_messages(value, 'current'), self.source)
+
+    def test_finding_targets_are_frozen_alongside_reply_targets(self):
+        source = dict(self.source, run_nonce='with-findings', finding_targets=[{'comment_id': 'PRRC_root'}])
+        freshness.freeze_task(self.root, source, self.followup)
+        task = freshness.task_directory(self.root, source)
+        self.assertEqual(common.read_json(task / 'finding-targets.json'), source['finding_targets'])
+        source['finding_targets'].clear()
+        self.assertEqual(common.read_json(task / 'finding-targets.json'), [{'comment_id': 'PRRC_root'}])
 
     def test_fresh_context_and_diff_preview_are_accepted(self):
         self.verify(self.completed())

@@ -33,6 +33,7 @@ def freeze_task(root, source, followup):
     for name in TASK_FILES:
         shutil.copyfile(root / name, task / name)
     write_json(task / 'reply-targets.json', source.get('reply_targets', []))
+    write_json(task / 'finding-targets.json', source.get('finding_targets', []))
     incremental = (followup['incremental_diff_available'] and not followup['base_changed']
                    and not followup['history_rewritten'])
     source['task_diff'] = 'since-last-review.diff' if incremental else 'pr.diff'

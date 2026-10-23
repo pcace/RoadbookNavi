@@ -179,7 +179,12 @@ Goose has 15 minutes and 40 turns per execution. The model job has 30 minutes.
 The final answer must be a newly accepted `recipe__final_output` from after the
 unique current-run prompt, followed by a matching structured assistant answer.
 An old successful answer in a resumed history cannot validate a failed new run.
-The final output contains `review`, `responses` and `reviewed_head_sha`. The head
+The final output contains `review`, `responses`, `findings`, `finding_updates` and
+`reviewed_head_sha`. New findings are posted inline after diff-position validation;
+non-placeable lines remain in the summary. Existing findings are reassessed as
+open, fixed, withdrawn or unverified, with status changes explained in their threads.
+Human inline comments receive replies in the same thread. Threads are not
+automatically resolved. The head
 must match this execution's captured commit. Every outstanding human
 comment in `reply-targets.json` requires exactly one nonempty response for its
 comment ID, including statements/disagreements. Missing, duplicate or unexpected
