@@ -115,7 +115,10 @@ def progress(updates, targets, new_count):
         return ''
     indexed = {item['comment_id']: item for item in targets}
     def links(items):
-        return '; '.join(f'[{indexed[item["comment_id"]]["path"]}:{indexed[item["comment_id"]]["line"]}]'
+        def location(target):
+            line = target.get('line')
+            return target['path'] + (f':{line}' if line is not None else '')
+        return '; '.join(f'[{location(indexed[item["comment_id"]])}]'
                          f'({indexed[item["comment_id"]]["url"]})' for item in items)
     rows = ['### Review status']
     opened = [item for item in updates if item['status'] == 'open']

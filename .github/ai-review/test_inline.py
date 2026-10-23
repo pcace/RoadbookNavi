@@ -147,6 +147,17 @@ class InlineTests(unittest.TestCase):
         self.assertIn('discussion_r42', text)
         self.assertNotIn('Long explanation', text)
 
+    def test_outdated_finding_links_do_not_show_missing_line_numbers(self):
+        source = thread()
+        source['line'] = None
+        targets = inline.finding_targets({'threads': [source]})
+        for status in ('open', 'fixed'):
+            with self.subTest(status=status):
+                text = inline.progress([{'comment_id': 'PRRC_root', 'status': status,
+                                         'response': 'Current status verified against the changed implementation.'}], targets, 0)
+                self.assertIn('[src/route.ts](https://github.com/', text)
+                self.assertNotIn(':None', text)
+
 
 if __name__ == '__main__':
     unittest.main()
