@@ -132,17 +132,23 @@ async function guard(
     ) {
       throw new Error('Expected one completed, non-blocking review summary.');
     }
+    if (
+      output.items.filter(item => item.type === 'reply_to_review_thread')
+        .length > 20
+    )
+      throw new Error('At most 20 thread replies may be published.');
     output.items = output.items.filter(item => {
-      if (item.type !== 'reply_to_pull_request_review_comment') return true;
+      if (item.type !== 'reply_to_review_thread') return true;
       const target = state.inline.find(
-        comment => comment.id === Number(item.comment_id)
+        comment => comment.node_id === item.comment_id
       );
       if (!target) throw new Error('Reply target is not a comment on this PR.');
-      item.comment_id = target.in_reply_to_id || target.id;
+      // Only the publisher sees the REST ID; the model uses GitHub node IDs.
+      item.comment_id = String(target.in_reply_to_id || target.id);
       return !state.inline.some(
         comment =>
           isReviewer(comment) &&
-          comment.in_reply_to_id === item.comment_id &&
+          comment.in_reply_to_id === Number(item.comment_id) &&
           comment.body?.includes(marker(expected.fingerprint))
       );
     });
@@ -159,6 +165,7 @@ async function reviewThreads(
 ) {
   const blocked = new Set(blockedUsers.toLowerCase().split(/[,\s]+/));
   const comments = [];
+  const nodes = new Map();
   let filtered = 0;
   for (let page = 1; ; page++) {
     const response = await request(
@@ -174,6 +181,7 @@ async function reviewThreads(
       throw new Error(`Review thread read failed: HTTP ${response.status}`);
     const batch = await response.json();
     for (const item of batch) {
+      nodes.set(item.id, item.node_id);
       const login = item.user?.login || '';
       if (
         blocked.has(login.toLowerCase()) ||
@@ -185,6 +193,8 @@ async function reviewThreads(
         filtered++;
         continue;
       }
+      if (typeof item.node_id !== 'string' || !item.node_id)
+        throw new Error('Review comment is missing its GitHub node ID.');
       const { id, in_reply_to_id, body, path, line, original_line, html_url } =
         item;
       comments.push({
@@ -198,7 +208,15 @@ async function reviewThreads(
         html_url,
       });
     }
-    if (batch.length < 100) return { comments, filtered };
+    if (batch.length < 100)
+      return {
+        comments: comments.map(({ id, in_reply_to_id, ...comment }) => ({
+          ...comment,
+          id: nodes.get(id),
+          in_reply_to_id: nodes.get(in_reply_to_id),
+        })),
+        filtered,
+      };
   }
 }
 

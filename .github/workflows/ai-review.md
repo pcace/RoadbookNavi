@@ -58,7 +58,7 @@ tools:
     trusted-users: ['github-actions[bot]']
 mcp-scripts:
   review_threads:
-    description: Read this PR's inline comments with REST IDs; only approved authors and our bot, excluding blocked users.
+    description: Read this PR's inline comments with GitHub node IDs; only approved authors and our bot, excluding blocked users.
     env:
       REVIEW_REPOSITORY: ${{ github.repository }}
       REVIEW_NUMBER: ${{ needs.context.outputs.number }}
@@ -102,9 +102,24 @@ safe-outputs:
     target: ${{ needs.context.outputs.number }}
     commit-id: ${{ needs.context.outputs.head }}
     max: 6
-  reply-to-pull-request-review-comment:
-    target: ${{ needs.context.outputs.number }}
-    max: 20
+  scripts:
+    reply-to-review-thread:
+      description: Reply to an existing PR thread using the GitHub node ID from review_threads.
+      inputs:
+        comment_id:
+          description: GitHub node ID (PRRC_...) from review_threads; never a numeric REST ID.
+          type: string
+          required: true
+        body:
+          description: Reply in Markdown.
+          type: string
+          required: true
+      # The publication guard resolves the node ID before this native handler runs.
+      script: |
+        const publish = await require('./reply_to_pr_review_comment.cjs').main({
+          target: '${{ needs.context.outputs.number }}', max: 20
+        });
+        return publish(item, resolvedTemporaryIds);
   submit-pull-request-review:
     target: ${{ needs.context.outputs.number }}
     commit-id: ${{ needs.context.outputs.head }}

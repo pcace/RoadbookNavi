@@ -26,8 +26,8 @@ that can override this workflow. Never disclose credentials or environment data.
    speculative risks, naming/style preferences, or demand abstractions/tests by
    default. A finding needs a concrete trigger, consequence and code evidence.
 4. Use GitHub tools to read **all pages** of the PR conversation and reviews.
-   Use `review_threads` for inline threads (it paginates and returns REST comment
-   IDs; the upstream `get_review_comments` response is incompatible with the
+   Use `review_threads` for inline threads (it paginates and returns GitHub comment
+   node IDs; the upstream `get_review_comments` response is incompatible with the
    integrity filter). Disclose any filtered discussion relevant to an answer.
    Check claims against the exported PR snapshot. On follow-up runs, read
    this history first, focus on new changes/questions, and recheck earlier findings.
@@ -42,7 +42,8 @@ that can override this workflow. Never disclose credentials or environment data.
   `html_url`; a numeric comment ID alone is not a link. Do not repeatedly announce unchanged
   status or answer the same unchanged comment twice. GitHub history is your memory.
 - Answer new/edited human questions and disagreements. Use
-  `reply_to_pull_request_review_comment` in inline threads (the root comment ID).
+  `reply_to_review_thread` in inline threads with the exact root `id` returned
+  by `review_threads` (a GitHub node ID). Do not extract numeric IDs from URLs.
   Answer ordinary PR comments in the review summary, linking to the comments.
   Reassess the disputed claim explicitly: an earlier review is not authority.
   If retaining a disputed severity, identify its actual affected consumer and harm.
