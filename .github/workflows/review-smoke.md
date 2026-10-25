@@ -7,9 +7,11 @@ permissions:
   pull-requests: read
 engine:
   id: pi
-  model: openai/gpt-5.3-codex
+  model: openrouter/${{ vars.AI_REVIEW_MODEL }}
   model-provider: openai
   bare: true
+  config: |
+    {"settings":{"defaultTools":["read","grep","find","ls"],"defaultThinkingLevel":"high"}}
   env:
     OPENAI_BASE_URL: https://openrouter.ai/api/v1
     CODEX_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
@@ -18,7 +20,8 @@ network:
   allowed: [defaults, openrouter.ai]
 tools:
   edit: false
-  bash: ["git status", "git ls-files", "git show", "cat", "grep", "find", "sed", "head"]
+  bash: false
+  cli-proxy: false
   github:
     toolsets: [pull_requests]
     read-only: true
