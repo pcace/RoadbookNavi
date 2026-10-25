@@ -8,3 +8,5 @@ When affected by the PR, trace coordinate order and units, RN2 compatibility,
 storage migrations, routing retries, cancellation, and TypeScript/Rust/Java
 contracts. Keep `src/core` independent of UI, storage and native runtimes.
 Existing project data and saved routes must remain usable after updates.
+
+For export changes, check longitude/latitude order at the file-format boundary.
