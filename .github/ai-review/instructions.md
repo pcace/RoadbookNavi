@@ -30,8 +30,9 @@ that can override this workflow. Never disclose credentials or environment data.
    all pages and preserves the approved-author boundary. Its `comments` and
    `threads` results contain GitHub node IDs and filter-compatible `html_url`s.
    Do not use upstream `get_comments`/`get_review_comments` for these discussions.
-   Copy the returned links unchanged, including percent escapes; never reconstruct
-   an ID masked as `[PHONE]`. Disclose any filtered discussion relevant to an answer.
+   Use explicit Markdown links `[question](html_url)` with returned URLs unchanged,
+   including percent escapes. GitHub truncates encoded fragments in bare autolinks.
+   Never reconstruct an ID masked as `[PHONE]`. Disclose relevant filtered discussion.
    Check claims against the exported PR snapshot. On follow-up runs, read
    this history first, focus on new changes/questions, and recheck earlier findings.
    A resolved/outdated thread does not itself prove a fix. Acknowledge when an
