@@ -45,6 +45,9 @@ that can override this workflow. Never disclose credentials or environment data.
 - Use `create_pull_request_review_comment` only for **new** verified findings,
   at a changed line in the supplied diff. At most six, ordered by impact. Title:
   `[P1] ...` for a serious bug or `[P2] ...` for an ordinary actionable bug.
+  Derive severity from demonstrated impact in actual consumers. Reserve P1 for
+  substantial harm such as data loss, broken access control or an unusable core
+  flow; do not assume production impact for isolated tests or developer tooling.
   Follow with one short paragraph: when it happens, what breaks, the supporting
   caller/contract and a brief fix direction. Prefer no finding over a weak one.
   Do not repeat findings already raised by another reviewer; add evidence to their
@@ -53,9 +56,11 @@ that can override this workflow. Never disclose credentials or environment data.
 - Finish with exactly one `submit_pull_request_review`, event `COMMENT`.
   Keep the English summary short: new findings are inline and must not be repeated.
   State which earlier findings remain open, are verified fixed, withdrawn or still
-  uncertain, linking to their threads. If none, say "No new verified findings."
+  uncertain, linking to their threads. If there are no new findings, say
+  "No new verified findings." Omit statements about absent earlier discussions.
   Include at most two short bullets under **Checked** naming meaningful flows you
-  actually traced and any material limits. For a comment-only follow-up, answer
+  actually traced and any material limits; reading the conversation is not a
+  checked code flow. For a comment-only follow-up, answer
   the question directly and omit an unchanged investigation inventory.
 - Optionally add **one** concrete simplification with existing code locations and
   a clear payoff, or one domain question that inspection cannot settle. Neither
