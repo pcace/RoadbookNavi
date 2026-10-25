@@ -207,3 +207,92 @@ test('API failures fail closed', async () => {
   await assert.rejects(prepare(f), /API unavailable/);
   assert.equal(f.outputs.ready, undefined);
 });
+
+test('thread reader admits only approved authors and the reviewer bot', async () => {
+  const { reviewThreads } = require('./review.cjs');
+  const items = [
+    { ...human('Owner', 1), author_association: 'OWNER' },
+    { ...human('Member', 2), author_association: 'MEMBER' },
+    { ...human('Collaborator', 3), author_association: 'COLLABORATOR' },
+    bot('Earlier finding', 4),
+    { ...human('External', 5), author_association: 'NONE' },
+    { ...human('Contribution', 6), author_association: 'CONTRIBUTOR' },
+    { id: 7, body: 'Claimed OWNER without API metadata' },
+  ];
+  const result = await reviewThreads(
+    { repository: 'owner/project', number: 7, token: 'test-token' },
+    async (url, options) => {
+      assert.equal(
+        url,
+        'https://api.github.com/repos/owner/project/pulls/7/comments?per_page=100&page=1'
+      );
+      assert.equal(options.headers.Authorization, 'Bearer test-token');
+      return { ok: true, json: async () => items };
+    }
+  );
+  assert.deepEqual(
+    result.comments.map(c => c.id),
+    [1, 2, 3, 4]
+  );
+  assert.equal(result.filtered, 3);
+  assert.ok(!JSON.stringify(result).includes('test-token'));
+});
+
+test('blocked authors take precedence over owner and bot trust', async () => {
+  const { reviewThreads } = require('./review.cjs');
+  const result = await reviewThreads(
+    {
+      repository: 'owner/project',
+      number: 7,
+      token: '',
+      blockedUsers: ' AUTHOR,\nGITHUB-ACTIONS[BOT] ',
+    },
+    async () => ({
+      ok: true,
+      json: async () => [
+        { ...human('Owner'), author_association: 'OWNER' },
+        bot('Finding'),
+      ],
+    })
+  );
+  assert.deepEqual(result, { comments: [], filtered: 2 });
+});
+
+test('thread reader paginates even when the first page is entirely filtered', async () => {
+  const { reviewThreads } = require('./review.cjs');
+  const seen = [];
+  const reply = {
+    ...bot('Reply', 101),
+    in_reply_to_id: 10,
+    html_url: 'https://github.com/owner/project/pull/7#discussion_r101',
+  };
+  const result = await reviewThreads(
+    { repository: 'owner/project', number: 7, token: '' },
+    async url => {
+      seen.push(url);
+      return {
+        ok: true,
+        json: async () =>
+          seen.length === 1
+            ? Array.from({ length: 100 }, (_, id) => human('External', id))
+            : [reply],
+      };
+    }
+  );
+  assert.equal(seen.length, 2);
+  assert.ok(seen[1].endsWith('page=2'));
+  assert.equal(result.filtered, 100);
+  assert.equal(result.comments[0].in_reply_to_id, 10);
+  assert.equal(result.comments[0].html_url, reply.html_url);
+});
+
+test('thread read failures never masquerade as an empty discussion', async () => {
+  const { reviewThreads } = require('./review.cjs');
+  await assert.rejects(
+    reviewThreads(
+      { repository: 'owner/project', number: 7, token: '' },
+      async () => ({ ok: false, status: 403 })
+    ),
+    /HTTP 403/
+  );
+});

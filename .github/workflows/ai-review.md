@@ -52,6 +52,22 @@ tools:
     min-integrity: approved
     # Our own findings and replies must remain readable on later review passes.
     trusted-users: ["github-actions[bot]"]
+mcp-scripts:
+  review_threads:
+    description: Read this PR's inline comments with REST IDs; only approved authors and our bot, excluding blocked users.
+    env:
+      REVIEW_REPOSITORY: ${{ github.repository }}
+      REVIEW_NUMBER: ${{ needs.context.outputs.number }}
+      REVIEW_AUTOMATION: ${{ github.workspace }}/.github/ai-review/review.cjs
+      REVIEW_BLOCKED_USERS: ${{ vars.GH_AW_GITHUB_BLOCKED_USERS || '' }}
+      GH_TOKEN: ${{ github.token }}
+    script: |
+      return await require(process.env.REVIEW_AUTOMATION).reviewThreads({
+        repository: process.env.REVIEW_REPOSITORY,
+        number: process.env.REVIEW_NUMBER,
+        token: process.env.GH_TOKEN,
+        blockedUsers: process.env.REVIEW_BLOCKED_USERS
+      });
 checkout:
   ref: ${{ needs.context.outputs.head }}
   fetch-depth: 0

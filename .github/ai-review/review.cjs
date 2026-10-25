@@ -150,4 +150,64 @@ async function guard(
   writeFileSync(file, JSON.stringify(output));
 }
 
-module.exports = { capture, eligible, completed, prepare, guard, marker };
+// The upstream MCP thread response drops author association, so its approved
+// filter rejects the entire collection. Read REST metadata and enforce the same
+// approved-author boundary here; unknown and blocked authors stay excluded.
+async function reviewThreads(
+  { repository, number, token, blockedUsers = '' },
+  request = fetch
+) {
+  const blocked = new Set(blockedUsers.toLowerCase().split(/[,\s]+/));
+  const comments = [];
+  let filtered = 0;
+  for (let page = 1; ; page++) {
+    const response = await request(
+      `https://api.github.com/repos/${repository}/pulls/${number}/comments?per_page=100&page=${page}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+        },
+      }
+    );
+    if (!response.ok)
+      throw new Error(`Review thread read failed: HTTP ${response.status}`);
+    const batch = await response.json();
+    for (const item of batch) {
+      const login = item.user?.login || '';
+      if (
+        blocked.has(login.toLowerCase()) ||
+        (!['OWNER', 'MEMBER', 'COLLABORATOR'].includes(
+          item.author_association
+        ) &&
+          !isReviewer(item))
+      ) {
+        filtered++;
+        continue;
+      }
+      const { id, in_reply_to_id, body, path, line, original_line, html_url } =
+        item;
+      comments.push({
+        id,
+        in_reply_to_id,
+        author: login,
+        body,
+        path,
+        line,
+        original_line,
+        html_url,
+      });
+    }
+    if (batch.length < 100) return { comments, filtered };
+  }
+}
+
+module.exports = {
+  capture,
+  eligible,
+  completed,
+  prepare,
+  guard,
+  marker,
+  reviewThreads,
+};
