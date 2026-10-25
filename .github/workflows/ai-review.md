@@ -30,7 +30,7 @@ concurrency:
   job-discriminator: ${{ github.run_id }}
 engine:
   id: pi
-  model: openrouter/openai/gpt-5.3-codex
+  model: openrouter/${{ vars.AI_REVIEW_TEST_MODEL }}
   model-provider: openai
   bare: true
   env:
@@ -129,7 +129,7 @@ safe-outputs:
   threat-detection:
     engine:
       id: codex
-      model: openai/gpt-5.3-codex
+      model: ${{ vars.AI_REVIEW_TEST_MODEL }}
       env:
         OPENAI_BASE_URL: https://openrouter.ai/api/v1
         OPENAI_API_KEY: ${{ secrets.OPENROUTER_FILTERED_TEST_KEY }}
