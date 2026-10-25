@@ -39,6 +39,10 @@ engine:
     CODEX_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
   config: |
     {"settings":{"defaultTools":["read","grep","find","ls"],"defaultThinkingLevel":"high"}}
+# Estimated USD / million tokens for models absent from the framework catalog.
+# This keeps budgeting active for new/free providers; it is not their bill.
+models:
+  default-ai-credits-pricing: { input: 3, output: 15 }
 network:
   allowed: [defaults, openrouter.ai]
 tools:
@@ -51,7 +55,7 @@ tools:
     allowed-repos: ${{ github.repository }}
     min-integrity: approved
     # Our own findings and replies must remain readable on later review passes.
-    trusted-users: ["github-actions[bot]"]
+    trusted-users: ['github-actions[bot]']
 mcp-scripts:
   review_threads:
     description: Read this PR's inline comments with REST IDs; only approved authors and our bot, excluding blocked users.

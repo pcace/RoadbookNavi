@@ -19,7 +19,8 @@ branch are admitted. Drafts, forks and already-reviewed states are skipped.
 
 Copy this directory, `ai-review.md`, `ai-review-checks.yml`, and optionally adapt
 `review-context.md`. Set secret `OPENROUTER_API_KEY` and variable `AI_REVIEW_MODEL`
-(e.g. `openai/gpt-5.3-codex`). Install the pinned compiler and compile:
+(e.g. `openai/gpt-5.3-codex` or `nvidia/nemotron-3-ultra-550b-a55b:free`).
+The model must support tools; its endpoint must be available. Install and compile:
 
 ```sh
 gh extension install github/gh-aw --pin v0.93.4
@@ -48,4 +49,6 @@ Results are checked against the current commits and human discussion before
 publication and always attributed to the captured commit. A subsequent push can
 still race the final GitHub API call; GitHub then marks that review outdated.
 The configurable inference budgets are estimates, not a provider billing cap.
+Unknown models use fallback accounting rates of $3 input / $15 output per million
+tokens; free models remain free. Adjust these estimates in `ai-review.md` if needed.
 Inspect failures and tool traces in Actions artifacts; no failure issues are spammed.
