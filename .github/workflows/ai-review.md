@@ -30,13 +30,13 @@ concurrency:
   job-discriminator: ${{ github.run_id }}
 engine:
   id: pi
-  model: openrouter/${{ vars.AI_REVIEW_MODEL }}
+  model: openrouter/openai/gpt-5.3-codex
   model-provider: openai
   bare: true
   env:
     OPENAI_BASE_URL: https://openrouter.ai/api/v1
-    OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-    CODEX_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+    OPENAI_API_KEY: ${{ secrets.OPENROUTER_FILTERED_TEST_KEY }}
+    CODEX_API_KEY: ${{ secrets.OPENROUTER_FILTERED_TEST_KEY }}
   config: |
     {"settings":{"defaultTools":["read","grep","find","ls"],"defaultThinkingLevel":"high"}}
 # Estimated USD / million tokens for models absent from the framework catalog.
@@ -129,11 +129,11 @@ safe-outputs:
   threat-detection:
     engine:
       id: codex
-      model: ${{ vars.AI_REVIEW_MODEL }}
+      model: openai/gpt-5.3-codex
       env:
         OPENAI_BASE_URL: https://openrouter.ai/api/v1
-        OPENAI_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        CODEX_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.OPENROUTER_FILTERED_TEST_KEY }}
+        CODEX_API_KEY: ${{ secrets.OPENROUTER_FILTERED_TEST_KEY }}
     max-ai-credits: 50
     continue-on-error: false
     report-as-issue: false
