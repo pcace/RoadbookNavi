@@ -43,7 +43,10 @@ GitHub reads are scoped to this repository. The approved-content filter also
 allows `github-actions[bot]` so earlier reviews remain visible; unapproved external
 authors can be filtered. A small REST reader handles inline threads because the
 upstream MCP thread format loses author metadata. It enforces the same author
-boundary and blocked-user list. GitHub history is the memory: no database or sessions.
+boundary and blocked-user list. The model addresses comments by GitHub node ID;
+the publication guard resolves REST IDs before delegating to the native reply
+handler. This avoids phone-filter collisions with numeric IDs in tool arguments.
+GitHub history is the memory: no database or sessions.
 
 Results are checked against the current commits and human discussion before
 publication and always attributed to the captured commit. A subsequent push can

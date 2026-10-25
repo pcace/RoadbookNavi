@@ -60,11 +60,13 @@ function fixture() {
 }
 const human = (body, id = 1) => ({
   id,
+  node_id: `PRRC_fixture_${id}`,
   body,
   user: { type: 'User', login: 'author' },
 });
 const bot = (body, id = 2) => ({
   id,
+  node_id: `PRRC_fixture_${id}`,
   body,
   user: { type: 'Bot', login: 'github-actions[bot]' },
 });
@@ -170,11 +172,11 @@ test('replies are scoped to this PR and retry-safe after partial publication', a
   });
   await prepare(f);
   const reply = {
-    type: 'reply_to_pull_request_review_comment',
-    comment_id: 11,
+    type: 'reply_to_review_thread',
+    comment_id: 'PRRC_fixture_11',
     body: 'Evidence',
   };
-  assert.equal((await publish(f, [reply, summary()]))[0].comment_id, 10);
+  assert.equal((await publish(f, [reply, summary()]))[0].comment_id, '10');
   f.lists.inline.push({
     ...bot(marker(f.outputs.fingerprint), 12),
     in_reply_to_id: 10,
@@ -232,7 +234,7 @@ test('thread reader admits only approved authors and the reviewer bot', async ()
   );
   assert.deepEqual(
     result.comments.map(c => c.id),
-    [1, 2, 3, 4]
+    ['PRRC_fixture_1', 'PRRC_fixture_2', 'PRRC_fixture_3', 'PRRC_fixture_4']
   );
   assert.equal(result.filtered, 3);
   assert.ok(!JSON.stringify(result).includes('test-token'));
@@ -282,7 +284,7 @@ test('thread reader paginates even when the first page is entirely filtered', as
   assert.equal(seen.length, 2);
   assert.ok(seen[1].endsWith('page=2'));
   assert.equal(result.filtered, 100);
-  assert.equal(result.comments[0].in_reply_to_id, 10);
+  assert.equal(result.comments[0].in_reply_to_id, 'PRRC_fixture_10');
   assert.equal(result.comments[0].html_url, reply.html_url);
 });
 
@@ -294,5 +296,69 @@ test('thread read failures never masquerade as an empty discussion', async () =>
       async () => ({ ok: false, status: 403 })
     ),
     /HTTP 403/
+  );
+});
+
+test('node IDs avoid numeric tool arguments without changing comment content', async () => {
+  const { reviewThreads } = require('./review.cjs');
+  const node = 'PRRC_kwDOUwIRns8AAAABBIPx4A';
+  const body = 'Contact fixture: alex@example.com or 2025550147.';
+  const result = await reviewThreads(
+    { repository: 'owner/project', number: 7, token: '' },
+    async () => ({
+      ok: true,
+      json: async () => [
+        {
+          ...bot(body, 4370723296),
+          node_id: node,
+        },
+      ],
+    })
+  );
+  assert.equal(result.comments[0].id, node);
+  assert.equal(result.comments[0].body, body);
+  assert.ok(!JSON.stringify(result).includes('4370723296'));
+  const f = fixture();
+  f.lists.inline.push({ ...bot(body, 4370723296), node_id: node });
+  await prepare(f);
+  const reply = {
+    type: 'reply_to_review_thread',
+    comment_id: node,
+    body: 'Reply',
+  };
+  assert.equal(
+    (await publish(f, [reply, summary()]))[0].comment_id,
+    '4370723296'
+  );
+  for (const id of [4370723296, '4370723296', '[PHONE]', 'PRRC_other_pr'])
+    await assert.rejects(
+      publish(f, [{ ...reply, comment_id: id }, summary()]),
+      /not a comment on this PR/
+    );
+});
+
+test('node-ID adapter retains the twenty-reply limit', async () => {
+  const f = fixture();
+  f.lists.inline.push(human('Finding', 10));
+  await prepare(f);
+  const replies = Array.from({ length: 21 }, () => ({
+    type: 'reply_to_review_thread',
+    comment_id: 'PRRC_fixture_10',
+    body: 'Reply',
+  }));
+  await assert.rejects(publish(f, [...replies, summary()]), /At most 20/);
+});
+
+test('missing node metadata fails instead of falling back to a numeric ID', async () => {
+  const { reviewThreads } = require('./review.cjs');
+  await assert.rejects(
+    reviewThreads(
+      { repository: 'owner/project', number: 7, token: '' },
+      async () => ({
+        ok: true,
+        json: async () => [{ ...bot('Finding'), node_id: null }],
+      })
+    ),
+    /missing its GitHub node ID/
   );
 });
