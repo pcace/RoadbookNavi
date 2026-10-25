@@ -48,6 +48,10 @@ tools:
   github:
     toolsets: [pull_requests]
     read-only: true
+    allowed-repos: ${{ github.repository }}
+    min-integrity: approved
+    # Our own findings and replies must remain readable on later review passes.
+    trusted-users: ["github-actions[bot]"]
 checkout:
   ref: ${{ needs.context.outputs.head }}
   fetch-depth: 0
