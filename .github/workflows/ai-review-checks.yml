@@ -32,3 +32,6 @@ jobs:
         run: |
           gh aw compile ai-review --no-check-update --no-logo
           git diff --exit-code -- .github/workflows/ai-review.lock.yml .github/aw/actions-lock.json
+      - uses: github/gh-aw-actions/setup@40fb427c047bb9f77324054adeb574e04c9481aa
+      - name: Test the compiled adapter through native ingestion and publication
+        run: node .github/ai-review/framework.test.cjs
