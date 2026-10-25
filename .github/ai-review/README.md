@@ -38,7 +38,9 @@ execute project code or edit files. Its provider credential stays in the inferen
 proxy. GitHub writes use the built-in safe-output handlers in a separate job.
 Review instructions and executable guards are loaded from the PR base revision;
 workflow configuration changes need the same care as other CI changes.
-GitHub review history is the memory: there is no database or session migration.
+GitHub reads are scoped to this repository. The approved-content filter also
+allows `github-actions[bot]` so earlier reviews remain visible; unapproved external
+authors can be filtered. GitHub history is the memory: no database or sessions.
 
 Results are checked against the current commits and human discussion before
 publication and always attributed to the captured commit. A subsequent push can
