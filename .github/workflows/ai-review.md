@@ -48,6 +48,26 @@ tools:
   github:
     toolsets: [pull_requests]
     read-only: true
+    allowed-repos: ${{ github.repository }}
+    min-integrity: approved
+    # Our own findings and replies must remain readable on later review passes.
+    trusted-users: ["github-actions[bot]"]
+mcp-scripts:
+  review_threads:
+    description: Read this PR's inline comments with REST IDs; only approved authors and our bot, excluding blocked users.
+    env:
+      REVIEW_REPOSITORY: ${{ github.repository }}
+      REVIEW_NUMBER: ${{ needs.context.outputs.number }}
+      REVIEW_AUTOMATION: ${{ github.workspace }}/.github/ai-review/review.cjs
+      REVIEW_BLOCKED_USERS: ${{ vars.GH_AW_GITHUB_BLOCKED_USERS || '' }}
+      GH_TOKEN: ${{ github.token }}
+    script: |
+      return await require(process.env.REVIEW_AUTOMATION).reviewThreads({
+        repository: process.env.REVIEW_REPOSITORY,
+        number: process.env.REVIEW_NUMBER,
+        token: process.env.GH_TOKEN,
+        blockedUsers: process.env.REVIEW_BLOCKED_USERS
+      });
 checkout:
   ref: ${{ needs.context.outputs.head }}
   fetch-depth: 0
@@ -60,11 +80,16 @@ steps:
       cp /usr/bin/fdfind /tmp/gh-aw/pi-agent-dir/bin/fd
       cp /usr/bin/rg /tmp/gh-aw/pi-agent-dir/bin/rg
 pre-agent-steps:
-  - name: Prepare complete diff of the captured commits
+  - name: Export the exact review snapshot and complete diff
     env:
       REVIEW_HEAD: ${{ needs.context.outputs.head }}
       REVIEW_BASE: ${{ needs.context.outputs.base }}
-    run: git diff --no-ext-diff --no-textconv "$REVIEW_BASE...$REVIEW_HEAD" > /tmp/gh-aw/pr.diff
+    # gh-aw restores .github/.pi from the base for trusted automation. Review a
+    # separate Git export so those protected files still show their PR contents.
+    run: |
+      mkdir -p /tmp/gh-aw/repository
+      git archive "$REVIEW_HEAD" | tar -x -C /tmp/gh-aw/repository
+      git diff --no-ext-diff --no-textconv "$REVIEW_BASE...$REVIEW_HEAD" > /tmp/gh-aw/pr.diff
 imports:
   - ../ai-review/instructions.md
 safe-outputs:
@@ -146,5 +171,5 @@ max-tool-calls: 150
 ---
 
 Review PR **#${{ needs.context.outputs.number }}** in **${{ github.repository }}**.
-The checkout is commit `${{ needs.context.outputs.head }}`; its base is
-`${{ needs.context.outputs.base }}`. Investigate this snapshot, not a moving branch.
+Read code under **`/tmp/gh-aw/repository`**. This exported tree is commit `${{ needs.context.outputs.head }}`; its base is
+`${{ needs.context.outputs.base }}`. Investigate this snapshot, not the automation workspace or a moving branch.
