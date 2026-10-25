@@ -75,10 +75,14 @@ const summary = () => ({
   event: 'COMMENT',
   body: 'No new verified findings.',
 });
-async function publish(f, items = [summary()]) {
+const batch = (...replies) => ({
+  type: 'reply_to_review_threads',
+  replies: JSON.stringify(replies),
+});
+async function publish(f, items = [summary()], errors = []) {
   const dir = mkdtempSync(join(tmpdir(), 'review-test-'));
   const file = join(dir, 'output.json');
-  writeFileSync(file, JSON.stringify({ items }));
+  writeFileSync(file, JSON.stringify({ items, errors }));
   try {
     await guard(f, f.outputs, file);
     return JSON.parse(readFileSync(file)).items;
@@ -172,18 +176,21 @@ test('replies are scoped to this PR and retry-safe after partial publication', a
   });
   await prepare(f);
   const reply = {
-    type: 'reply_to_review_thread',
     comment_id: 'PRRC_fixture_11',
     body: 'Evidence',
   };
-  assert.equal((await publish(f, [reply, summary()]))[0].comment_id, '10');
+  assert.equal(
+    JSON.parse((await publish(f, [batch(reply), summary()]))[0].replies)[0]
+      .comment_id,
+    '10'
+  );
   f.lists.inline.push({
     ...bot(marker(f.outputs.fingerprint), 12),
     in_reply_to_id: 10,
   });
-  assert.deepEqual(await publish(f, [reply, summary()]), [summary()]);
+  assert.deepEqual(await publish(f, [batch(reply), summary()]), [summary()]);
   await assert.rejects(
-    publish(f, [{ ...reply, comment_id: 999 }, summary()]),
+    publish(f, [batch({ ...reply, comment_id: 999 }), summary()]),
     /not a comment on this PR/
   );
 });
@@ -322,17 +329,17 @@ test('node IDs avoid numeric tool arguments without changing comment content', a
   f.lists.inline.push({ ...bot(body, 4370723296), node_id: node });
   await prepare(f);
   const reply = {
-    type: 'reply_to_review_thread',
     comment_id: node,
     body: 'Reply',
   };
   assert.equal(
-    (await publish(f, [reply, summary()]))[0].comment_id,
+    JSON.parse((await publish(f, [batch(reply), summary()]))[0].replies)[0]
+      .comment_id,
     '4370723296'
   );
   for (const id of [4370723296, '4370723296', '[PHONE]', 'PRRC_other_pr'])
     await assert.rejects(
-      publish(f, [{ ...reply, comment_id: id }, summary()]),
+      publish(f, [batch({ ...reply, comment_id: id }), summary()]),
       /not a comment on this PR/
     );
 });
@@ -342,11 +349,13 @@ test('node-ID adapter retains the twenty-reply limit', async () => {
   f.lists.inline.push(human('Finding', 10));
   await prepare(f);
   const replies = Array.from({ length: 21 }, () => ({
-    type: 'reply_to_review_thread',
     comment_id: 'PRRC_fixture_10',
     body: 'Reply',
   }));
-  await assert.rejects(publish(f, [...replies, summary()]), /At most 20/);
+  await assert.rejects(
+    publish(f, [batch(...replies), summary()]),
+    /at most 20/
+  );
 });
 
 test('missing node metadata fails instead of falling back to a numeric ID', async () => {
@@ -360,5 +369,46 @@ test('missing node metadata fails instead of falling back to a numeric ID', asyn
       })
     ),
     /missing its GitHub node ID/
+  );
+});
+
+test('one reply batch retains both threads and retries only unpublished replies', async () => {
+  const f = fixture();
+  f.lists.inline.push(human('First', 10), human('Second', 20));
+  await prepare(f);
+  const replies = batch(
+    { comment_id: 'PRRC_fixture_10', body: 'First answer' },
+    { comment_id: 'PRRC_fixture_20', body: 'Second answer' }
+  );
+  const first = await publish(f, [replies, summary()]);
+  assert.deepEqual(
+    JSON.parse(first[0].replies).map(r => r.comment_id),
+    ['10', '20']
+  );
+  f.lists.inline.push({
+    ...bot(marker(f.outputs.fingerprint), 30),
+    in_reply_to_id: 10,
+  });
+  const retry = await publish(f, [replies, summary()]);
+  assert.deepEqual(JSON.parse(retry[0].replies), [
+    { comment_id: '20', body: 'Second answer' },
+  ]);
+});
+
+test('discarded or malformed outputs cannot publish a completion marker', async () => {
+  const f = fixture();
+  f.lists.inline.push(human('First', 10));
+  await prepare(f);
+  await assert.rejects(
+    publish(f, [summary()], ['Too many items']),
+    /Incomplete agent output/
+  );
+  for (const replies of ['{', '{}', '[null]'])
+    await assert.rejects(
+      publish(f, [{ type: 'reply_to_review_threads', replies }, summary()])
+    );
+  await assert.rejects(
+    publish(f, [batch({ comment_id: 'PRRC_fixture_10', body: '' }), summary()]),
+    /non-empty text/
   );
 });

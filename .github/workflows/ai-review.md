@@ -103,23 +103,24 @@ safe-outputs:
     commit-id: ${{ needs.context.outputs.head }}
     max: 6
   scripts:
-    reply-to-review-thread:
-      description: Reply to an existing PR thread using the GitHub node ID from review_threads.
+    reply-to-review-threads:
+      description: Submit all thread replies together, once per review (at most 20).
       inputs:
-        comment_id:
-          description: GitHub node ID (PRRC_...) from review_threads; never a numeric REST ID.
+        replies:
+          description: 'JSON array of {"comment_id":"GitHub node ID from review_threads","body":"Markdown reply"}. Include all replies in one call; never numeric IDs.'
           type: string
           required: true
-        body:
-          description: Reply in Markdown.
-          type: string
-          required: true
-      # The publication guard resolves the node ID before this native handler runs.
+      # Custom scripts accept one output per run; keep all replies in that batch.
+      # The publication guard resolves node IDs before the native handler runs.
       script: |
         const publish = await require('./reply_to_pr_review_comment.cjs').main({
           target: '${{ needs.context.outputs.number }}', max: 20
         });
-        return publish(item, resolvedTemporaryIds);
+        for (const reply of JSON.parse(item.replies)) {
+          const result = await publish(reply, resolvedTemporaryIds);
+          if (!result.success) return result;
+        }
+        return { success: true };
   submit-pull-request-review:
     target: ${{ needs.context.outputs.number }}
     commit-id: ${{ needs.context.outputs.head }}

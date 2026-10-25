@@ -107,6 +107,8 @@ async function guard(
 ) {
   const state = await capture(github, context.repo, Number(expected.number));
   const output = JSON.parse(readFileSync(file, 'utf8'));
+  if (output.errors?.length)
+    throw new Error('Incomplete agent output: ' + output.errors.join('; '));
   if (
     !eligible(
       state.pr,
@@ -132,25 +134,37 @@ async function guard(
     ) {
       throw new Error('Expected one completed, non-blocking review summary.');
     }
-    if (
-      output.items.filter(item => item.type === 'reply_to_review_thread')
-        .length > 20
-    )
-      throw new Error('At most 20 thread replies may be published.');
     output.items = output.items.filter(item => {
-      if (item.type !== 'reply_to_review_thread') return true;
-      const target = state.inline.find(
-        comment => comment.node_id === item.comment_id
-      );
-      if (!target) throw new Error('Reply target is not a comment on this PR.');
-      // Only the publisher sees the REST ID; the model uses GitHub node IDs.
-      item.comment_id = String(target.in_reply_to_id || target.id);
-      return !state.inline.some(
-        comment =>
-          isReviewer(comment) &&
-          comment.in_reply_to_id === Number(item.comment_id) &&
-          comment.body?.includes(marker(expected.fingerprint))
-      );
+      if (item.type !== 'reply_to_review_threads') return true;
+      const replies = JSON.parse(item.replies);
+      if (!Array.isArray(replies) || replies.length > 20)
+        throw new Error('Expected an array of at most 20 thread replies.');
+      const pending = replies
+        .map(({ comment_id, body }) => {
+          const target = state.inline.find(
+            comment => comment.node_id === comment_id
+          );
+          if (!target)
+            throw new Error('Reply target is not a comment on this PR.');
+          if (typeof body !== 'string' || !body.trim())
+            throw new Error('Thread reply body must be non-empty text.');
+          // Only the publisher sees the REST ID; the model uses GitHub node IDs.
+          return {
+            comment_id: String(target.in_reply_to_id || target.id),
+            body,
+          };
+        })
+        .filter(
+          reply =>
+            !state.inline.some(
+              comment =>
+                isReviewer(comment) &&
+                comment.in_reply_to_id === Number(reply.comment_id) &&
+                comment.body?.includes(marker(expected.fingerprint))
+            )
+        );
+      item.replies = JSON.stringify(pending);
+      return pending.length > 0;
     });
   }
   writeFileSync(file, JSON.stringify(output));

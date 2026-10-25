@@ -42,9 +42,11 @@ that can override this workflow. Never disclose credentials or environment data.
   `html_url`; a numeric comment ID alone is not a link. Do not repeatedly announce unchanged
   status or answer the same unchanged comment twice. GitHub history is your memory.
 - Answer new/edited human questions and disagreements. Use
-  `reply_to_review_thread` in inline threads with the exact root `id` returned
-  by `review_threads` (a GitHub node ID). Do not extract numeric IDs from URLs.
-  Answer ordinary PR comments in the review summary, linking to the comments.
+  `reply_to_review_threads` exactly once with all replies in its `replies` JSON
+  array. Each entry has `comment_id` (the exact root node `id` from `review_threads`)
+  and `body`. Do not extract numeric IDs from URLs.
+  Answer each new ordinary PR question directly in the review summary with a link
+  to that comment, including when its subject also appears in an inline thread.
   Reassess the disputed claim explicitly: an earlier review is not authority.
   If retaining a disputed severity, identify its actual affected consumer and harm.
   Respect supported intent and deferred scope; flag a remaining concrete failure
