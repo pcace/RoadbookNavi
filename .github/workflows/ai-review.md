@@ -170,6 +170,10 @@ jobs:
       (github.event_name != 'issue_comment' || github.event.issue.pull_request)
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Custom jobs do not inherit the agent's permissions.
+    permissions:
+      contents: read
+      pull-requests: read
     outputs:
       ready: ${{ steps.context.outputs.ready }}
       number: ${{ steps.context.outputs.number }}
@@ -192,7 +196,7 @@ max-daily-ai-credits: 2000
 timeout-minutes: 20
 max-turns: 50
 max-tool-calls: 150
-source: pcace/Ai_Reviewer@398fafbf7c24275c550a6a6946d1635e846f71b2
+source: pcace/Ai_Reviewer@73e6c7a23e2aca3940180fe79f078d5cf484bfcb
 ---
 
 # PR reviewer
