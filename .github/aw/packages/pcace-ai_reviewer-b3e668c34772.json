@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "package": "pcace/Ai_Reviewer",
-  "source": "pcace/Ai_Reviewer@398fafbf7c24275c550a6a6946d1635e846f71b2",
-  "resolvedCommit": "398fafbf7c24275c550a6a6946d1635e846f71b2",
+  "source": "pcace/Ai_Reviewer@73e6c7a23e2aca3940180fe79f078d5cf484bfcb",
+  "resolvedCommit": "73e6c7a23e2aca3940180fe79f078d5cf484bfcb",
   "installer": "gh-aw v0.93.4",
   "files": [
     {
@@ -18,7 +18,7 @@
     {
       "source": ".github/workflows/ai-review.md",
       "destination": ".github/workflows/ai-review.md",
-      "sha256": "70ce0f38950b8fea2d3fafdc86056c91ccba78794adcfdf5548a8c87df3323b0"
+      "sha256": "54df88dd09c09f20a78b466b290a811a6943f656a3e313e795f2687593da450d"
     }
   ]
 }
