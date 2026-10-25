@@ -173,8 +173,8 @@ async function guard(
 // The upstream MCP thread response drops author association, so its approved
 // filter rejects the entire collection. Read REST metadata and enforce the same
 // approved-author boundary here; unknown and blocked authors stay excluded.
-async function reviewThreads(
-  { repository, number, token, blockedUsers = '' },
+async function readComments(
+  { repository, number, token, blockedUsers = '', kind = 'inline' },
   request = fetch
 ) {
   const blocked = new Set(blockedUsers.toLowerCase().split(/[,\s]+/));
@@ -183,7 +183,9 @@ async function reviewThreads(
   let filtered = 0;
   for (let page = 1; ; page++) {
     const response = await request(
-      `https://api.github.com/repos/${repository}/pulls/${number}/comments?per_page=100&page=${page}`,
+      `https://api.github.com/repos/${repository}/${
+        kind === 'pr' ? 'issues' : 'pulls'
+      }/${number}/comments?per_page=100&page=${page}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -219,7 +221,16 @@ async function reviewThreads(
         path,
         line,
         original_line,
-        html_url,
+        // Encode only GitHub's numeric link fragment, never comment content.
+        // Browsers resolve this to the same comment; phone filters leave it intact.
+        html_url: html_url?.replace(
+          /(#issuecomment-)(\d+)$/,
+          (_, prefix, id) =>
+            prefix +
+            [...id]
+              .map(digit => '%' + digit.charCodeAt(0).toString(16))
+              .join('')
+        ),
       });
     }
     if (batch.length < 100)
@@ -241,5 +252,5 @@ module.exports = {
   prepare,
   guard,
   marker,
-  reviewThreads,
+  readComments,
 };

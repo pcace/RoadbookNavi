@@ -218,7 +218,7 @@ test('API failures fail closed', async () => {
 });
 
 test('thread reader admits only approved authors and the reviewer bot', async () => {
-  const { reviewThreads } = require('./review.cjs');
+  const { readComments } = require('./review.cjs');
   const items = [
     { ...human('Owner', 1), author_association: 'OWNER' },
     { ...human('Member', 2), author_association: 'MEMBER' },
@@ -228,7 +228,7 @@ test('thread reader admits only approved authors and the reviewer bot', async ()
     { ...human('Contribution', 6), author_association: 'CONTRIBUTOR' },
     { id: 7, body: 'Claimed OWNER without API metadata' },
   ];
-  const result = await reviewThreads(
+  const result = await readComments(
     { repository: 'owner/project', number: 7, token: 'test-token' },
     async (url, options) => {
       assert.equal(
@@ -248,8 +248,8 @@ test('thread reader admits only approved authors and the reviewer bot', async ()
 });
 
 test('blocked authors take precedence over owner and bot trust', async () => {
-  const { reviewThreads } = require('./review.cjs');
-  const result = await reviewThreads(
+  const { readComments } = require('./review.cjs');
+  const result = await readComments(
     {
       repository: 'owner/project',
       number: 7,
@@ -268,14 +268,14 @@ test('blocked authors take precedence over owner and bot trust', async () => {
 });
 
 test('thread reader paginates even when the first page is entirely filtered', async () => {
-  const { reviewThreads } = require('./review.cjs');
+  const { readComments } = require('./review.cjs');
   const seen = [];
   const reply = {
     ...bot('Reply', 101),
     in_reply_to_id: 10,
     html_url: 'https://github.com/owner/project/pull/7#discussion_r101',
   };
-  const result = await reviewThreads(
+  const result = await readComments(
     { repository: 'owner/project', number: 7, token: '' },
     async url => {
       seen.push(url);
@@ -296,9 +296,9 @@ test('thread reader paginates even when the first page is entirely filtered', as
 });
 
 test('thread read failures never masquerade as an empty discussion', async () => {
-  const { reviewThreads } = require('./review.cjs');
+  const { readComments } = require('./review.cjs');
   await assert.rejects(
-    reviewThreads(
+    readComments(
       { repository: 'owner/project', number: 7, token: '' },
       async () => ({ ok: false, status: 403 })
     ),
@@ -307,10 +307,10 @@ test('thread read failures never masquerade as an empty discussion', async () =>
 });
 
 test('node IDs avoid numeric tool arguments without changing comment content', async () => {
-  const { reviewThreads } = require('./review.cjs');
+  const { readComments } = require('./review.cjs');
   const node = 'PRRC_kwDOUwIRns8AAAABBIPx4A';
   const body = 'Contact fixture: alex@example.com or 2025550147.';
-  const result = await reviewThreads(
+  const result = await readComments(
     { repository: 'owner/project', number: 7, token: '' },
     async () => ({
       ok: true,
@@ -359,9 +359,9 @@ test('node-ID adapter retains the twenty-reply limit', async () => {
 });
 
 test('missing node metadata fails instead of falling back to a numeric ID', async () => {
-  const { reviewThreads } = require('./review.cjs');
+  const { readComments } = require('./review.cjs');
   await assert.rejects(
-    reviewThreads(
+    readComments(
       { repository: 'owner/project', number: 7, token: '' },
       async () => ({
         ok: true,
@@ -411,4 +411,33 @@ test('discarded or malformed outputs cannot publish a completion marker', async 
     publish(f, [batch({ comment_id: 'PRRC_fixture_10', body: '' }), summary()]),
     /non-empty text/
   );
+});
+
+test('PR comment links survive phone filters without changing content', async () => {
+  const { readComments } = require('./review.cjs');
+  const url = 'https://github.com/owner/project/pull/7#issuecomment-6397996022';
+  const body = 'Email alex@example.com; phone 2025550147.';
+  let endpoint;
+  const result = await readComments(
+    { repository: 'owner/project', number: 7, token: '', kind: 'pr' },
+    async requested => {
+      endpoint = requested;
+      return {
+        ok: true,
+        json: async () => [
+          {
+            ...human(body, 6397996022),
+            node_id: 'IC_fixture',
+            author_association: 'OWNER',
+            html_url: url,
+          },
+        ],
+      };
+    }
+  );
+  assert.match(endpoint, /issues\/7\/comments/);
+  assert.equal(result.comments[0].id, 'IC_fixture');
+  assert.equal(decodeURI(result.comments[0].html_url), url);
+  assert.ok(!result.comments[0].html_url.includes('6397996022'));
+  assert.equal(result.comments[0].body, body);
 });

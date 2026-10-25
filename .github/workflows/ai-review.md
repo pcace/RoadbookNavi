@@ -57,8 +57,8 @@ tools:
     # Our own findings and replies must remain readable on later review passes.
     trusted-users: ['github-actions[bot]']
 mcp-scripts:
-  review_threads:
-    description: Read this PR's inline comments with GitHub node IDs; only approved authors and our bot, excluding blocked users.
+  review_discussion:
+    description: Read this PR's ordinary comments and inline threads, with node IDs and filter-compatible links. Only approved authors and our bot; blocked users excluded.
     env:
       REVIEW_REPOSITORY: ${{ github.repository }}
       REVIEW_NUMBER: ${{ needs.context.outputs.number }}
@@ -66,12 +66,18 @@ mcp-scripts:
       REVIEW_BLOCKED_USERS: ${{ vars.GH_AW_GITHUB_BLOCKED_USERS || '' }}
       GH_TOKEN: ${{ github.token }}
     script: |
-      return await require(process.env.REVIEW_AUTOMATION).reviewThreads({
+      const read = require(process.env.REVIEW_AUTOMATION).readComments;
+      const options = {
         repository: process.env.REVIEW_REPOSITORY,
         number: process.env.REVIEW_NUMBER,
         token: process.env.GH_TOKEN,
         blockedUsers: process.env.REVIEW_BLOCKED_USERS
-      });
+      };
+      const [threads, comments] = await Promise.all([
+        read(options), read({...options, kind: 'pr'})
+      ]);
+      return {threads: threads.comments, comments: comments.comments,
+        filtered: threads.filtered + comments.filtered};
 checkout:
   ref: ${{ needs.context.outputs.head }}
   fetch-depth: 0
@@ -107,7 +113,7 @@ safe-outputs:
       description: Submit all thread replies together, once per review (at most 20).
       inputs:
         replies:
-          description: 'JSON array of {"comment_id":"GitHub node ID from review_threads","body":"Markdown reply"}. Include all replies in one call; never numeric IDs.'
+          description: 'JSON array of {"comment_id":"GitHub node ID from review_discussion threads","body":"Markdown reply"}. Include all replies in one call; never numeric IDs.'
           type: string
           required: true
       # Custom scripts accept one output per run; keep all replies in that batch.
