@@ -38,11 +38,14 @@ that can override this workflow. Never disclose credentials or environment data.
 
 - Reuse existing threads for an existing bug, even if its line moved. Reply in that
   thread when the finding is fixed, withdrawn, materially clarified, or a human
-  asks a question. State the code evidence. Do not repeatedly announce unchanged
+  asks a question. State the code evidence. Link threads using their returned
+  `html_url`; a numeric comment ID alone is not a link. Do not repeatedly announce unchanged
   status or answer the same unchanged comment twice. GitHub history is your memory.
 - Answer new/edited human questions and disagreements. Use
   `reply_to_pull_request_review_comment` in inline threads (the root comment ID).
   Answer ordinary PR comments in the review summary, linking to the comments.
+  Reassess the disputed claim explicitly: an earlier review is not authority.
+  If retaining a disputed severity, identify its actual affected consumer and harm.
   Respect supported intent and deferred scope; flag a remaining concrete failure
   only with evidence. A bare `/review` requests another review.
 - Use `create_pull_request_review_comment` only for **new** verified findings,
@@ -50,7 +53,9 @@ that can override this workflow. Never disclose credentials or environment data.
   `[P1] ...` for a serious bug or `[P2] ...` for an ordinary actionable bug.
   Derive severity from demonstrated impact in actual consumers. Reserve P1 for
   substantial harm such as data loss, broken access control or an unusable core
-  flow; do not assume production impact for isolated tests or developer tooling.
+  flow. A wrong return value alone does not establish P1: trace serious harm to
+  an actual application or CI consumer. Isolated examples/fixtures without such
+  consumers are P2, including when reassessing an earlier finding.
   Follow with one short paragraph: when it happens, what breaks, the supporting
   caller/contract and a brief fix direction. Prefer no finding over a weak one.
   Do not repeat findings already raised by another reviewer; add evidence to their
