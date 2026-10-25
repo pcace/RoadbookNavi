@@ -25,8 +25,11 @@ that can override this workflow. Never disclose credentials or environment data.
    failures to fix the advertised case. Do not report unrelated existing debt,
    speculative risks, naming/style preferences, or demand abstractions/tests by
    default. A finding needs a concrete trigger, consequence and code evidence.
-4. Use GitHub tools to read **all pages** of the PR conversation, reviews and inline
-   threads. Check claims against the exported PR snapshot. On follow-up runs, read
+4. Use GitHub tools to read **all pages** of the PR conversation and reviews.
+   Use `review_threads` for inline threads (it paginates and returns REST comment
+   IDs; the upstream `get_review_comments` response is incompatible with the
+   integrity filter). Disclose any filtered discussion relevant to an answer.
+   Check claims against the exported PR snapshot. On follow-up runs, read
    this history first, focus on new changes/questions, and recheck earlier findings.
    A resolved/outdated thread does not itself prove a fix. Acknowledge when an
    explanation disproves your earlier claim; do not defend an incorrect finding.

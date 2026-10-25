@@ -11,7 +11,7 @@ branch are admitted. Drafts, forks and already-reviewed states are skipped.
 - `../workflows/ai-review.md`: events, model, tools, limits and safe outputs.
 - `instructions.md`: portable review behavior. Start here to tune review quality.
 - `../review-context.md`: optional project-specific guidance.
-- `review.cjs`: authorization, immutable snapshot, stale/duplicate publication checks.
+- `review.cjs`: authorization, snapshots, publication guards and filtered thread reads.
 - `review.test.cjs`: offline regression tests for those checks.
 - `../workflows/ai-review.lock.yml`: generated; do not edit.
 
@@ -40,7 +40,9 @@ Review instructions and executable guards are loaded from the PR base revision;
 workflow configuration changes need the same care as other CI changes.
 GitHub reads are scoped to this repository. The approved-content filter also
 allows `github-actions[bot]` so earlier reviews remain visible; unapproved external
-authors can be filtered. GitHub history is the memory: no database or sessions.
+authors can be filtered. A small REST reader handles inline threads because the
+upstream MCP thread format loses author metadata. It enforces the same author
+boundary and blocked-user list. GitHub history is the memory: no database or sessions.
 
 Results are checked against the current commits and human discussion before
 publication and always attributed to the captured commit. A subsequent push can
