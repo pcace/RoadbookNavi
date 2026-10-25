@@ -30,19 +30,13 @@ function fixture() {
         getCollaboratorPermissionLevel: async () => ({
           data: { permission: 'write' },
         }),
-        listPullRequestsAssociatedWithCommit: 'associated',
-      },
-      actions: {
-        getWorkflow: async () => ({
-          data: { path: '.github/workflows/ai-review-events.yml' },
-        }),
       },
     },
     paginate: async method => lists[method],
   };
   const context = {
     repo,
-    eventName: 'pull_request_target',
+    eventName: 'pull_request',
     ref: 'refs/heads/dev',
     payload: {
       repository: { default_branch: 'dev' },
