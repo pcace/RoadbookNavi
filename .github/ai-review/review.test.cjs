@@ -1,0 +1,215 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const { mkdtempSync, writeFileSync, readFileSync, rmSync } = require('node:fs');
+const { tmpdir } = require('node:os');
+const { join } = require('node:path');
+const { capture, prepare, guard, completed, marker } = require('./review.cjs');
+
+function fixture() {
+  const repo = { owner: 'owner', repo: 'project' };
+  const pr = {
+    number: 7,
+    state: 'open',
+    draft: false,
+    title: 'Fix routes',
+    body: '',
+    head: { sha: 'a'.repeat(40), repo: { full_name: 'owner/project' } },
+    base: { sha: 'b'.repeat(40), ref: 'dev' },
+  };
+  const lists = { comments: [], reviews: [], inline: [] };
+  const outputs = {};
+  const github = {
+    rest: {
+      pulls: {
+        get: async () => ({ data: pr }),
+        listReviews: 'reviews',
+        listReviewComments: 'inline',
+      },
+      issues: { listComments: 'comments' },
+      repos: {
+        getCollaboratorPermissionLevel: async () => ({
+          data: { permission: 'write' },
+        }),
+        listPullRequestsAssociatedWithCommit: 'associated',
+      },
+      actions: {
+        getWorkflow: async () => ({
+          data: { path: '.github/workflows/ai-review-events.yml' },
+        }),
+      },
+    },
+    paginate: async method => lists[method],
+  };
+  const context = {
+    repo,
+    eventName: 'pull_request_target',
+    ref: 'refs/heads/dev',
+    payload: {
+      repository: { default_branch: 'dev' },
+      sender: { type: 'User', login: 'author' },
+      pull_request: pr,
+    },
+  };
+  const core = {
+    setOutput: (key, value) => (outputs[key] = value),
+    notice: () => {},
+  };
+  return {
+    github,
+    context,
+    core,
+    pr,
+    lists,
+    outputs,
+    snapshot: () => capture(github, repo, 7),
+  };
+}
+const human = (body, id = 1) => ({
+  id,
+  body,
+  user: { type: 'User', login: 'author' },
+});
+const bot = (body, id = 2) => ({
+  id,
+  body,
+  user: { type: 'Bot', login: 'github-actions[bot]' },
+});
+const summary = () => ({
+  type: 'submit_pull_request_review',
+  event: 'COMMENT',
+  body: 'No new verified findings.',
+});
+async function publish(f, items = [summary()]) {
+  const dir = mkdtempSync(join(tmpdir(), 'review-test-'));
+  const file = join(dir, 'output.json');
+  writeFileSync(file, JSON.stringify({ items }));
+  try {
+    await guard(f, f.outputs, file);
+    return JSON.parse(readFileSync(file)).items;
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+}
+
+test('authorized open PR captures immutable commits and publishes a review', async () => {
+  const f = fixture();
+  await prepare(f);
+  assert.equal(f.outputs.ready, 'true');
+  assert.equal(f.outputs.head, f.pr.head.sha);
+  assert.deepEqual(await publish(f), [summary()]);
+});
+for (const [name, change] of [
+  ['draft', f => (f.pr.draft = true)],
+  ['closed', f => (f.pr.state = 'closed')],
+  ['wrong base', f => (f.pr.base.ref = 'main')],
+  ['fork', f => (f.pr.head.repo.full_name = 'external/project')],
+  ['bot', f => (f.context.payload.sender.type = 'Bot')],
+  [
+    'read-only actor',
+    f =>
+      (f.github.rest.repos.getCollaboratorPermissionLevel = async () => ({
+        data: { permission: 'read' },
+      })),
+  ],
+  [
+    'dispatch on feature branch',
+    f => {
+      f.context.eventName = 'workflow_dispatch';
+      f.context.ref = 'refs/heads/feature';
+    },
+  ],
+])
+  test(`does not spend inference on ${name}`, async () => {
+    const f = fixture();
+    change(f);
+    await prepare(f);
+    assert.equal(f.outputs.ready, undefined);
+  });
+for (const [name, change] of [
+  ['new head', f => (f.pr.head.sha = 'c'.repeat(40))],
+  ['new base', f => (f.pr.base.sha = 'd'.repeat(40))],
+  ['edited description', f => (f.pr.body = 'Different intent')],
+  [
+    'new discussion',
+    f => f.lists.comments.push(human('Please check the other caller')),
+  ],
+  ['closed PR', f => (f.pr.state = 'closed')],
+  ['draft PR', f => (f.pr.draft = true)],
+])
+  test(`suppresses an obsolete result after ${name}`, async () => {
+    const f = fixture();
+    await prepare(f);
+    change(f);
+    assert.deepEqual(await publish(f), []);
+  });
+test('edited and deleted human comments invalidate a snapshot; bot progress does not', async () => {
+  const f = fixture();
+  f.lists.comments.push(human('Initial question'));
+  await prepare(f);
+  f.lists.comments.push(bot('Progress'));
+  assert.deepEqual(await publish(f), [summary()]);
+  f.lists.comments[0].body = 'Corrected question';
+  assert.deepEqual(await publish(f), []);
+  await prepare(f);
+  f.lists.comments.shift();
+  assert.deepEqual(await publish(f), []);
+});
+test('successful state is deduplicated on preparation and publication, but human spoofing is ignored', async () => {
+  const f = fixture();
+  await prepare(f);
+  f.lists.reviews.push({
+    ...bot(marker(f.outputs.fingerprint)),
+    state: 'COMMENTED',
+  });
+  assert.deepEqual(await publish(f), []);
+  delete f.outputs.ready;
+  await prepare(f);
+  assert.equal(f.outputs.ready, undefined);
+  f.lists.reviews[0].user = human('').user;
+  assert.equal(completed(await f.snapshot()), false);
+});
+test('replies are scoped to this PR and retry-safe after partial publication', async () => {
+  const f = fixture();
+  f.lists.inline.push(human('Finding', 10), {
+    ...human('Question', 11),
+    in_reply_to_id: 10,
+  });
+  await prepare(f);
+  const reply = {
+    type: 'reply_to_pull_request_review_comment',
+    comment_id: 11,
+    body: 'Evidence',
+  };
+  assert.equal((await publish(f, [reply, summary()]))[0].comment_id, 10);
+  f.lists.inline.push({
+    ...bot(marker(f.outputs.fingerprint), 12),
+    in_reply_to_id: 10,
+  });
+  assert.deepEqual(await publish(f, [reply, summary()]), [summary()]);
+  await assert.rejects(
+    publish(f, [{ ...reply, comment_id: 999 }, summary()]),
+    /not a comment on this PR/
+  );
+});
+test('an incomplete or approving answer cannot masquerade as a finished review', async () => {
+  const f = fixture();
+  await prepare(f);
+  for (const items of [
+    [],
+    [summary(), summary()],
+    [{ ...summary(), event: 'APPROVE' }],
+  ]) {
+    await assert.rejects(
+      publish(f, items),
+      /one completed, non-blocking review/
+    );
+  }
+});
+test('API failures fail closed', async () => {
+  const f = fixture();
+  f.github.rest.pulls.get = async () => {
+    throw new Error('API unavailable');
+  };
+  await assert.rejects(prepare(f), /API unavailable/);
+  assert.equal(f.outputs.ready, undefined);
+});
