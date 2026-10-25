@@ -4,5 +4,5 @@ export function isFresh(savedAt, now, maxAge) {
 }
 
 export function nextIndex(index, count) {
-  return Math.min(index + 1, count);
+  return Math.min(index + 1, count - 1);
 }
