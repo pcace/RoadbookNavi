@@ -52,11 +52,12 @@ jobs:
         if: inputs.release_tag == ''
         run: pnpm install --frozen-lockfile
 
-      - name: Create release
+      - name: Prepare version PR or publish approved release
         if: inputs.release_tag == ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: pnpm exec semantic-release
+          GH_TOKEN: ${{ github.token }}
+        run: pnpm release
 
       - name: Resolve release metadata
         id: metadata
