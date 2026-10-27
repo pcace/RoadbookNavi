@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { isTauri } from '@tauri-apps/api/core';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -197,6 +198,11 @@ const RoutesList: React.FC = () => {
   return (
     <>
       <Box p={6} bg={bgColor} height="100%" overflow="auto">
+        {!isTauri() && (
+          <Text mb={4} fontSize="sm">
+            {t('web.notice')}
+          </Text>
+        )}
         <Button mb={4} loading={importing} onClick={handleImport}>
           {t('routeBuilder:labels.openRn2', { defaultValue: 'Öffnen (.rn2)' })}
         </Button>

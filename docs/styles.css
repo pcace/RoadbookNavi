@@ -355,3 +355,7 @@ footer a:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+[data-beta-only][hidden] {
+  display: none;
+}

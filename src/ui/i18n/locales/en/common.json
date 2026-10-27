@@ -67,5 +67,12 @@
         "description": "Remove a roadbook you no longer need. Navigate to your Routes List, select the route you want to delete, and confirm the deletion."
       }
     }
+  },
+  "web": {
+    "notice": "Web beta: routing uses brouter.de and sends your waypoints and routing profile there. Projects stay in this browser; export RN2 files as a backup. New routes need internet. GPS navigation requires the app to remain visible.",
+    "requestFailed": "The online service could not complete the request",
+    "profileFailed": "BRouter could not load the routing profile",
+    "unknownProfile": "The profile “{{profile}}” is not available in the web version. Choose a bundled profile.",
+    "invalidRoute": "BRouter did not return a valid route"
   }
 }

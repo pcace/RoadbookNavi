@@ -67,5 +67,12 @@
         "description": "Entfernen Sie ein Roadbook, das Sie nicht mehr benötigen. Navigieren Sie zu Ihrer Routenliste, wählen Sie die Route aus, die Sie löschen möchten, und bestätigen Sie die Löschung."
       }
     }
+  },
+  "web": {
+    "notice": "Web-Beta: Die Routenberechnung nutzt brouter.de und übermittelt deine Wegpunkte und das Routingprofil dorthin. Projekte bleiben in diesem Browser; exportiere RN2-Dateien als Sicherung. Neue Routen benötigen Internet. Für GPS-Navigation muss die App sichtbar bleiben.",
+    "requestFailed": "Der Online-Dienst konnte die Anfrage nicht ausführen",
+    "profileFailed": "BRouter konnte das Routingprofil nicht laden",
+    "unknownProfile": "Das Profil „{{profile}}“ ist in der Webversion nicht verfügbar. Wähle ein mitgeliefertes Profil.",
+    "invalidRoute": "BRouter hat keine gültige Route geliefert"
   }
 }

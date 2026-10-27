@@ -1,5 +1,4 @@
-import { save } from '@tauri-apps/plugin-dialog';
-import { writeFile, writeTextFile } from '@tauri-apps/plugin-fs';
+import { saveFile } from './files';
 import { jsPDF } from 'jspdf';
 import 'svg2pdf.js';
 import type { Project } from './model';
@@ -117,19 +116,20 @@ const pdfRouteStats = (project: Project, language: 'de' | 'en') => {
 };
 
 export async function saveRn2(project: Project) {
-  const path = await save({
-    defaultPath: `${project.name.replace(/[\\/:*?"<>|]/g, '-')}.rn2`,
-    filters: [{ name: 'Rally Navigator', extensions: ['rn2'] }],
-  });
-  if (!path) return;
-  const completed = await completeRn2Geometry(project, async entry => {
-    const p = entry.turn.points[0],
-      bounds = detailBounds({ lat: p.latitude, lon: p.longitude });
-    return (await osm.query(bounds, 'detail')).features;
-  });
-  const body = JSON.stringify(exportRn2(completed), null, 2) + '\n';
-  await writeTextFile(path, body);
-  if (completed !== project) await repository.save(completed);
+  let completed = project;
+  const saved = await saveFile(
+    `${project.name.replace(/[\\/:*?"<>|]/g, '-')}.rn2`,
+    [{ name: 'Rally Navigator', extensions: ['rn2'] }],
+    async () => {
+      completed = await completeRn2Geometry(project, async entry => {
+        const p = entry.turn.points[0],
+          bounds = detailBounds({ lat: p.latitude, lon: p.longitude });
+        return (await osm.query(bounds, 'detail')).features;
+      });
+      return JSON.stringify(exportRn2(completed), null, 2) + '\n';
+    }
+  );
+  if (saved && completed !== project) await repository.save(completed);
 }
 
 // Project imports are untrusted. Strip scripts, events, external resources and
@@ -203,11 +203,11 @@ export function safeSvg(value: string): string {
     : '<svg xmlns="http://www.w3.org/2000/svg"/>';
 }
 export async function exportProject(project: Project) {
-  const path = await save({
-    defaultPath: `${project.name}.roadbook.json`,
-    filters: [{ name: 'Roadbook-Projekt', extensions: ['json'] }],
-  });
-  if (path) await writeTextFile(path, JSON.stringify(project, null, 2));
+  await saveFile(
+    `${project.name}.roadbook.json`,
+    [{ name: 'Roadbook-Projekt', extensions: ['json'] }],
+    async () => JSON.stringify(project, null, 2)
+  );
 }
 export async function exportGpx(project: Project) {
   if (!project.track) throw new Error('Zuerst die Route berechnen.');
@@ -224,11 +224,11 @@ export async function exportGpx(project: Project) {
         })[c]!
     );
   const body = `<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1" creator="RoadbookNavi" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${esc(project.name)}</name><trkseg>${project.track.features[0].geometry.coordinates.map(c => `<trkpt lat="${c[1]}" lon="${c[0]}"><ele>${Number(c[2]) || 0}</ele></trkpt>`).join('')}</trkseg></trk></gpx>`;
-  const path = await save({
-    defaultPath: `${project.name}.gpx`,
-    filters: [{ name: 'GPX', extensions: ['gpx'] }],
-  });
-  if (path) await writeTextFile(path, body);
+  await saveFile(
+    `${project.name}.gpx`,
+    [{ name: 'GPX', extensions: ['gpx'] }],
+    async () => body
+  );
 }
 export async function renderPdf(
   project: Project,
@@ -713,18 +713,16 @@ export async function exportPdf(
 ) {
   const fileName =
     mode === 'a5' ? `${project.name}.pdf` : `${project.name}-rolle.pdf`;
-  const path = await save({
-    defaultPath: fileName,
-    filters: [{ name: 'PDF', extensions: ['pdf'] }],
-  });
-  if (path) await writeFile(path, await renderPdf(project, mode));
+  await saveFile(fileName, [{ name: 'PDF', extensions: ['pdf'] }], () =>
+    renderPdf(project, mode)
+  );
 }
 
 export async function exportGeojson(project: Project) {
   if (!project.track) throw new Error('Zuerst die Route berechnen.');
-  const path = await save({
-    defaultPath: `${project.name}.geojson`,
-    filters: [{ name: 'GeoJSON', extensions: ['geojson'] }],
-  });
-  if (path) await writeTextFile(path, JSON.stringify(project.track));
+  await saveFile(
+    `${project.name}.geojson`,
+    [{ name: 'GeoJSON', extensions: ['geojson'] }],
+    async () => JSON.stringify(project.track)
+  );
 }

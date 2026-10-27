@@ -104,7 +104,7 @@ export const AppSettings = () => {
     try {
       await completeAppReset();
       // Reload page with force refresh
-      window.location.href = window.location.origin;
+      window.location.reload();
     } catch (error) {
       console.error('Error resetting app:', error);
       alert(t('settings:app.resetAppError'));

@@ -5,6 +5,7 @@ import React, {
   useState,
   useMemo,
 } from 'react';
+import { isTauri } from '@tauri-apps/api/core';
 import { Box, Flex, Spinner } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
 import MarkdownIt from 'markdown-it';
@@ -58,13 +59,18 @@ const HelpContentComponent: React.FC<HelpContentProps> = ({
 
       try {
         const lang = i18n.language.startsWith('de') ? 'de' : 'en';
-        const response = await fetch(`/help/native-${lang}.md`);
+        const response = await fetch(
+          `${import.meta.env.BASE_URL}help/${isTauri() ? 'native' : 'web'}-${lang}.md`
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to load help file: ${response.statusText}`);
         }
 
-        const text = await response.text();
+        const text = (await response.text()).replaceAll(
+          'src="/help/',
+          `src="${import.meta.env.BASE_URL}help/`
+        );
 
         // Initialize markdown-it with anchor plugin
         const md = new MarkdownIt({
