@@ -48,7 +48,7 @@ flows.
 
 ## Developer quick start
 
-Requirements: Node.js 24.10+, pnpm 10+, Rust, and JDK 17. Android builds also need
+Requirements: Node.js 24.15+, pnpm 10+, Rust, and JDK 17. Android builds also need
 the Android SDK/NDK and the `aarch64-linux-android` Rust target.
 
 ```bash

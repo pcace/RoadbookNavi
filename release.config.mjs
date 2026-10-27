@@ -2,12 +2,12 @@ const changelogTypes = [
   { type: 'feat', section: 'New features' },
   { type: 'fix', section: 'Bug fixes' },
   { type: 'perf', section: 'Performance improvements' },
-  { type: 'refactor', section: 'Internal improvements' },
-  { type: 'docs', section: 'Documentation' },
-  { type: 'build', section: 'Build and dependencies' },
-  { type: 'ci', section: 'Build and dependencies' },
-  { type: 'test', section: 'Tests', hidden: true },
-  { type: 'chore', section: 'Maintenance', hidden: true },
+  { type: 'refactor', section: 'Internal improvements', effect: 'changelog' },
+  { type: 'docs', section: 'Documentation', effect: 'changelog' },
+  { type: 'build', section: 'Build and dependencies', effect: 'changelog' },
+  { type: 'ci', section: 'Build and dependencies', effect: 'changelog' },
+  { type: 'test', section: 'Tests', effect: 'hidden' },
+  { type: 'chore', section: 'Maintenance', effect: 'hidden' },
 ]
 
 export default {
