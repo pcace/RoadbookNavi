@@ -1,4 +1,4 @@
 interface:
-  display_name: "RoadbookNavi PDF Updates"
-  short_description: "Prevent PDF worker mismatches and loading stalls"
-  default_prompt: "Use $update-pdf-runtime to update or diagnose RoadbookNavi PDF rendering and verify the worker version and visible pages."
+  display_name: 'RoadbookNavi PDF Updates'
+  short_description: 'Prevent PDF worker mismatches and loading stalls'
+  default_prompt: 'Use $update-pdf-runtime to update or diagnose RoadbookNavi PDF rendering and verify the worker version and visible pages.'
