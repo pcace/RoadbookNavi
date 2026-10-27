@@ -10,13 +10,23 @@ Git tags, GitHub releases, and native artifacts in sync.
 | `main` | Stable  | `v1.40.0`        | Latest release |
 | `dev`  | Beta    | `v1.40.0-beta.1` | Prerelease     |
 
-A push to either branch is analyzed after CI. If it contains a releasable
-Conventional Commit, the workflow creates the version commit, Git tag, changelog,
-and GitHub release. It then starts the Android, macOS, Windows, and Linux builds.
-Each build is checked out from the new version tag and uploads its installer to
-that release. Documentation, tests, maintenance, and build-only pushes wait for
-the next user-visible release and do not start expensive native builds by
-themselves.
+A push to either branch is analyzed after CI. Releasable Conventional Commits
+create or update a version pull request from `codex/release-main` or
+`codex/release-dev`. The PR contains the version changes, changelog and
+`release-plan.json`. Review its CI and merge it yourself. Only then does the
+workflow create the Git tag and GitHub release and start the Android, macOS,
+Windows and Linux builds. The workflow never pushes commits to `main` or `dev`.
+
+Each installer is built from that approved, tagged commit and uploaded to the
+release. Additional changes on the target branch refresh the version PR and
+require another merge before publication. Documentation, tests, maintenance and
+build-only pushes wait for the next user-visible release.
+
+In **Settings → Actions → General → Workflow permissions**, enable
+**Allow GitHub Actions to create and approve pull requests**. The workflow uses
+this setting only to create or update version PRs; it never approves or merges
+them. The existing ruleset restricting `main` and `dev` updates to the maintainer
+stays in place. No personal access token or release-app exception is needed.
 
 The website links to `/releases/latest`, which GitHub resolves to the newest
 stable release. Beta releases therefore never replace the public stable download.
@@ -26,8 +36,9 @@ stable release. Beta releases therefore never replace the public stable download
 The release toolchain uses Semantic Release 26 beta, commit-analyzer 14 beta,
 and release-notes-generator 15 beta to support Conventional Commits preset 10
 and changelog writer 9. These upstream versions require Node.js 24.15 or newer.
-`pnpm test:release` exercises commit analysis and release-note generation with
-the installed packages and repository configuration in CI, without publishing.
+`pnpm test:release` exercises commit analysis, release-note generation and the
+version-PR lifecycle against local Git repositories that reject automated branch
+updates. It does not publish GitHub releases.
 
 Semantic Release builds the release overview and `CHANGELOG.md` from Conventional
 Commit messages. In the usual squash-merge workflow, the pull request title is
@@ -51,9 +62,9 @@ description.
 
 ## Promoting a beta
 
-Merge the tested `dev` changes into `main`. The release workflow collects the
-changes since the previous stable tag, removes the prerelease suffix, and
-publishes the stable build. Merge or rebase `main` back into `dev` afterwards so
+Merge the tested `dev` changes into `main`. The release workflow prepares a
+stable version PR from the changes since the previous stable tag. Merge that PR
+to publish the stable build. Merge or rebase `main` back into `dev` afterwards so
 development starts from the published stable version.
 
 ## Rebuilding failed artifacts
