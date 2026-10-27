@@ -22,7 +22,8 @@
     "engine:build": "node scripts/build-routing-engine.mjs",
     "desktop:build": "pnpm engine:build && tauri build",
     "android:build": "pnpm engine:build --android && node scripts/android-build.mjs",
-    "android:build:debug": "pnpm engine:build --android && node scripts/android-build.mjs --debug --apk --target aarch64"
+    "android:build:debug": "pnpm engine:build --android && node scripts/android-build.mjs --debug --apk --target aarch64",
+    "build:web": "node scripts/build-web.mjs"
   },
   "dependencies": {
     "@chakra-ui/react": "3.37.0",

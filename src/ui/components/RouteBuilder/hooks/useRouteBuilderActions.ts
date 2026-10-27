@@ -4,6 +4,7 @@ import type { FeatureCollection, GeoJsonProperties, LineString } from 'geojson';
 import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { listen } from '@tauri-apps/api/event';
+import { isTauri } from '@tauri-apps/api/core';
 import { reverseGeocode } from '../../../services/localProjects';
 import {
   cacheRoadbookForOffline,
@@ -87,6 +88,7 @@ export const useRouteBuilderActions = ({
   }, [mapMoveTimeoutRef]);
 
   useEffect(() => {
+    if (!isTauri()) return;
     let disposed = false;
     let unlisten: (() => void) | undefined;
     void listen<{ current: number; total?: number }>(
