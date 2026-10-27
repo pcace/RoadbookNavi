@@ -23,6 +23,12 @@ stable release. Beta releases therefore never replace the public stable download
 
 ## Release notes and versions
 
+The release toolchain uses Semantic Release 26 beta, commit-analyzer 14 beta,
+and release-notes-generator 15 beta to support Conventional Commits preset 10
+and changelog writer 9. These upstream versions require Node.js 24.15 or newer.
+`pnpm test:release` exercises commit analysis and release-note generation with
+the installed packages and repository configuration in CI, without publishing.
+
 Semantic Release builds the release overview and `CHANGELOG.md` from Conventional
 Commit messages. In the usual squash-merge workflow, the pull request title is
 the resulting commit message. Keep it short, specific, and useful to app users.
