@@ -23,6 +23,11 @@ default. Set `BROUTER_SOURCE` when it lives elsewhere.
 
 ## Development workflow
 
+Repository skills are stored in `.agents/skills/<skill-name>/SKILL.md`.
+For PDF library updates and viewer loading failures, follow
+[update-pdf-runtime](.agents/skills/update-pdf-runtime/SKILL.md), which records
+the recurring PDF.js worker version mismatch and the required rendering checks.
+
 1. Create a focused branch from the current development branch.
 2. Keep platform-independent logic in `src/core`.
 3. Keep comments, identifiers, commit messages, and developer documentation in
