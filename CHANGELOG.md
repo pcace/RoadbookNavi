@@ -1,3 +1,51 @@
+## [1.39.0-beta.7](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.6...v1.39.0-beta.7) (2026-10-27)
+
+### New features
+
+- add beta web app with online BRouter routing ([fa9e0c9](https://github.com/pcace/RoadbookNavi/commit/fa9e0c9d802d469755a8df8b7a3cd5afab3e1b4c))
+- replace Goose reviewer with Pi and GitHub Agentic Workflows ([78fbbe6](https://github.com/pcace/RoadbookNavi/commit/78fbbe6ad10cf0d67282a83ff4090350f12cc561))
+
+### Bug fixes
+
+- **ci:** accept native Goose shell output normalization ([c0a7de3](https://github.com/pcace/RoadbookNavi/commit/c0a7de385c2468e2fca1976be59ecf9d58c19841))
+- **ci:** preserve multiline task context during recipe rendering ([37248e0](https://github.com/pcace/RoadbookNavi/commit/37248e0d8043026800eaf119b056856df8e2f0a1))
+- **ci:** reply automatically to PR comments and pushes ([e0d477c](https://github.com/pcace/RoadbookNavi/commit/e0d477c3e21ba6fa85fe0fc829e743afdf8c8ba2))
+- **ci:** require fresh context before accepting continued reviews ([6c5faf3](https://github.com/pcace/RoadbookNavi/commit/6c5faf346433f3c80b1287fb5d58e349b3a85961))
+- **ci:** restore PR sessions and answer explicit review commands ([132902b](https://github.com/pcace/RoadbookNavi/commit/132902b3953a0979ca26ea6496a4206b10b459e0))
+- **deps:** adapt to pbf and pdfjs API changes ([c257da6](https://github.com/pcace/RoadbookNavi/commit/c257da6b4e59e20f14143adcbbc9686bf9d197db))
+- ground review severity in actual impact ([e3da2be](https://github.com/pcace/RoadbookNavi/commit/e3da2be87454e5e5b618d5dcff42e8626c8a4bb1))
+- let the reviewer read its previous bot comments ([c6fa7fd](https://github.com/pcace/RoadbookNavi/commit/c6fa7fdcea5f197dafcb321b6853bc65c8f81a1f))
+- preserve PR discussion links through phone redaction ([4b47f0b](https://github.com/pcace/RoadbookNavi/commit/4b47f0b3785c39bd989c22a8b24a72b4d9664e68))
+- publish all reviewer thread replies in one bounded batch ([76d8d3b](https://github.com/pcace/RoadbookNavi/commit/76d8d3b1705b430f74646b5bb19e32c79e5f9b7b))
+- publish releases after maintainer merges version PRs ([c9f3fe5](https://github.com/pcace/RoadbookNavi/commit/c9f3fe56b2ac18820ace23f15657d0df2769733e))
+- read approved inline threads with complete REST metadata ([a712402](https://github.com/pcace/RoadbookNavi/commit/a712402d5a2a589c06be54f147548db89fb256d7))
+- remove web beta notice above roadbooks ([69a1b34](https://github.com/pcace/RoadbookNavi/commit/69a1b34964c44540ce68d27d2352124ee4aab951))
+- render encoded comment links as explicit Markdown ([ad6574e](https://github.com/pcace/RoadbookNavi/commit/ad6574e1900cb66fa3582dd1d606cdde1ba44d2d))
+- require demonstrated impact when reassessing review priority ([4bcecb9](https://github.com/pcace/RoadbookNavi/commit/4bcecb9bf3103734482edad7a8446f0a7eae4b22))
+- restore native builds, map tiles and roadbook PDFs ([4077fc8](https://github.com/pcace/RoadbookNavi/commit/4077fc8332cfef96e4c5c2fff41e35c6bda4d927))
+- review exact PR files after framework configuration restoration ([bf75800](https://github.com/pcace/RoadbookNavi/commit/bf758007a89fb7da5dfaa293430ba8491128627d))
+- **review:** explain provider failures without losing PR memory ([d9af06c](https://github.com/pcace/RoadbookNavi/commit/d9af06cab22404be7e207ac450700126e3f71dbf))
+- support reviewer models absent from the pricing catalog ([5067d9b](https://github.com/pcace/RoadbookNavi/commit/5067d9bca7af83c101dbd2031aaf16a49c24792b))
+- update release tooling for current changelog preset ([eaf621f](https://github.com/pcace/RoadbookNavi/commit/eaf621f967d0391b7fc97f1328d4c229cf0d3b53))
+- use GitHub node IDs for reviewer thread replies ([1b36764](https://github.com/pcace/RoadbookNavi/commit/1b36764a270e916a4ac6ce63c364f23e7a7cab45))
+
+### Documentation
+
+- add repository skill for safe PDF runtime updates ([d5648bc](https://github.com/pcace/RoadbookNavi/commit/d5648bc760ce5ce54172cab3de4353f980526b93))
+- **ci:** clarify review continuation verification ([7594b5e](https://github.com/pcace/RoadbookNavi/commit/7594b5ea531c4a236ffe20ba46ff3730eefe252e))
+- **ci:** record successful review session continuation ([5268d8b](https://github.com/pcace/RoadbookNavi/commit/5268d8b3771999f28be255fe36a989d8792f917c))
+- explain discussion visibility boundary ([1e0644e](https://github.com/pcace/RoadbookNavi/commit/1e0644ed86b60d6f388af83db08a9aed206d3da9))
+
+### Build and dependencies
+
+- add staged Pi and OpenRouter integration test ([b270547](https://github.com/pcace/RoadbookNavi/commit/b2705472c92ac502e4fe37d5673acefd957a5b21))
+- install released AI reviewer package ([e3af413](https://github.com/pcace/RoadbookNavi/commit/e3af413f81d9868a870c8507c095bcbf71d3fe31))
+- leave generated agentic workflow formatting to the compiler ([dcdf2a3](https://github.com/pcace/RoadbookNavi/commit/dcdf2a3e23172719a6393ff89a39dc3d37abcdd8))
+- **review:** isolate fixed-free provider failures ([a31240f](https://github.com/pcace/RoadbookNavi/commit/a31240f47bae35f68cdf4e555876d868e5cf1f48))
+- select the OpenRouter model through a repository variable ([e1ccb84](https://github.com/pcace/RoadbookNavi/commit/e1ccb84fbfd048a36151a4e06f45423e3881473e))
+- update AI reviewer package to v0.1.1 ([47b63c8](https://github.com/pcace/RoadbookNavi/commit/47b63c83f5f88c8681f0b7183159b5112ff66c4d))
+- verify native Pi search and output detection through OpenRouter ([6564b3b](https://github.com/pcace/RoadbookNavi/commit/6564b3ba77a984cdbef7d9d5066e045809f84831))
+
 ## [1.39.0-beta.6](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.5...v1.39.0-beta.6) (2026-10-21)
 
 ### New features
