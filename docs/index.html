@@ -58,11 +58,50 @@
         <div class="container">
           <h2 data-text="downloadTitle"></h2>
           <p class="section-lead" data-text="downloadText"></p>
+          <div class="download-options">
+            <div>
+              <a
+                class="button primary"
+                data-download="windows"
+                href="https://github.com/pcace/RoadbookNavi/releases/download/v1.39.0/RoadbookNavi-Windows-1.39.0-x64.exe"
+                data-text="downloadWindows"
+                >Download for Windows</a
+              >
+              <p class="download-detail">x64 · .exe</p>
+            </div>
+            <div>
+              <a
+                class="button primary"
+                data-download="macos"
+                href="https://github.com/pcace/RoadbookNavi/releases/download/v1.39.0/RoadbookNavi-macOS-1.39.0-arm64.dmg"
+                data-text="downloadMacos"
+                >Download for macOS</a
+              >
+              <p class="download-detail">Apple Silicon · .dmg</p>
+            </div>
+            <div>
+              <a
+                class="button primary"
+                data-download="linux"
+                href="https://github.com/pcace/RoadbookNavi/releases/download/v1.39.0/RoadbookNavi-Linux-1.39.0-x86_64.AppImage"
+                data-text="downloadLinux"
+                >Download for Linux</a
+              >
+              <p class="download-detail">x86_64 · AppImage</p>
+            </div>
+          </div>
           <div class="actions">
             <a
-              class="button primary"
-              href="https://github.com/pcace/RoadbookNavi/releases/latest"
-              data-text="downloadButton"
+              class="button secondary"
+              data-download="linux-deb"
+              href="https://github.com/pcace/RoadbookNavi/releases/download/v1.39.0/RoadbookNavi-Linux-1.39.0-amd64.deb"
+              data-text="downloadDeb"
+            ></a>
+            <a
+              class="button secondary"
+              data-download="android"
+              href="https://github.com/pcace/RoadbookNavi/releases/download/v1.39.0/RoadbookNavi-Android-1.39.0-arm64.apk"
+              data-text="downloadAndroid"
             ></a>
             <a
               class="button primary"
@@ -190,8 +229,12 @@
             'Plan routes, generate roadbooks, and navigate without a RoadbookNavi account or server.',
           downloadTitle: 'Download RoadbookNavi',
           downloadText:
-            'Get the latest available build for macOS, Android, Windows, or Linux from GitHub Releases.',
-          downloadButton: 'Download latest release',
+            'Download the latest stable version directly for your platform.',
+          downloadWindows: 'Download for Windows',
+          downloadMacos: 'Download for macOS',
+          downloadLinux: 'Download for Linux',
+          downloadDeb: 'Debian / Ubuntu (.deb)',
+          downloadAndroid: 'Download for Android',
           onlineButton: 'Start online',
           onlineText:
             'Web app with BRouter online routing. Projects stay in your browser. Native apps calculate routes locally.',
@@ -241,8 +284,12 @@
             'Plane Routen, erzeuge Roadbooks und navigiere ohne RoadbookNavi-Konto oder Server.',
           downloadTitle: 'RoadbookNavi herunterladen',
           downloadText:
-            'Hole dir die aktuelle verfügbare Version für macOS, Android, Windows oder Linux aus den GitHub Releases.',
-          downloadButton: 'Aktuelle Version herunterladen',
+            'Lade die aktuelle stabile Version direkt für dein Betriebssystem herunter.',
+          downloadWindows: 'Für Windows herunterladen',
+          downloadMacos: 'Für macOS herunterladen',
+          downloadLinux: 'Für Linux herunterladen',
+          downloadDeb: 'Debian / Ubuntu (.deb)',
+          downloadAndroid: 'Für Android herunterladen',
           onlineButton: 'Online starten',
           onlineText:
             'Web-App mit BRouter-Online-Routing. Projekte bleiben in deinem Browser. Installierte Apps berechnen Routen lokal.',

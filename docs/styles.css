@@ -193,6 +193,23 @@ a {
   margin: 0;
 }
 
+.download-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.download-options .button {
+  display: block;
+}
+
+.download-detail {
+  margin: 0.65rem 0 0;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;
@@ -334,6 +351,7 @@ footer a:focus-visible {
   }
 
   .benefit-grid,
+  .download-options,
   .videos,
   .feature-grid {
     grid-template-columns: 1fr;
@@ -341,6 +359,12 @@ footer a:focus-visible {
 
   .benefit-grid {
     gap: 2.5rem;
+  }
+
+  .download-options {
+    max-width: 360px;
+    margin-inline: auto;
+    gap: 1.5rem;
   }
 }
 
@@ -356,6 +380,6 @@ footer a:focus-visible {
   }
 }
 
-[data-beta-only][hidden] {
+[data-online-only][hidden] {
   display: none;
 }
