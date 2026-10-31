@@ -1,47 +1,40 @@
-# Beta website and web app
+# Production website
 
-`pnpm build:web` copies this landing page into `dist-web/` and builds the React
-application at `dist-web/app/`. Native builds continue to use `pnpm build` and
-`dist/`. No generated files are committed and no backend or server database is
-needed. The browser calls brouter.de directly using the bundled Enduro profiles.
+`roadbooknavi.de` is the single public website. GitHub Pages belongs to the
+`pcace/RoadbookNavi` source repository and publishes only `main`, using
+`.github/workflows/pages.yml`. `www.roadbooknavi.de` redirects to the apex.
+The former beta website and `beta.roadbooknavi.de` have been retired. Beta
+releases continue to be published as GitHub prereleases from `dev`.
 
-`.github/workflows/beta-pages.yml` builds and deploys only pushes to `dev` (or a
-manual run on `dev`). It refuses to deploy unless the configured Pages domain is
-exactly `beta.roadbooknavi.de`. Stable releases on `main` do not run this workflow.
-The Online button is visible only on the beta domain and local previews.
+The workflow copies this dependency-free landing page into `dist-web/`. Once
+`main` includes the `build:web` script, it instead installs dependencies, tests,
+and builds the landing page and browser app together. Each deployment writes
+the production `CNAME`, `.nojekyll`, and `/source.json` with the source commit.
+Generated files are uploaded as a Pages artifact and are not committed.
 
 GitHub repository setup:
 
-1. In **Settings → Pages**, select **GitHub Actions** as the publishing source.
-2. Keep the custom domain `beta.roadbooknavi.de` and HTTPS enabled.
-3. Allow the `dev` branch to deploy to the `github-pages` environment if branch
-   restrictions are configured.
-4. Keep the DNS CNAME for `beta` pointing to `pcace.github.io`.
+1. Select **GitHub Actions** as the Pages publishing source.
+2. Set `roadbooknavi.de` as the custom domain and enable HTTPS.
+3. Allow only `main` in the `github-pages` environment's branch policy.
+4. Keep `pages.yml` on the default branch so manual runs can target `main`.
 
-The artifact includes this directory's `CNAME` and the existing download links.
-For a local preview, serve `dist-web/` using a static HTTP server and open `/`.
-The Online button opens `/app/`; hash routes support refreshes without rewrites.
+DNS is maintained in `ServerAsCode/ansible/vars/dns-zones.yml`. The apex has
+GitHub Pages' four IPv4 and four IPv6 addresses, and `www` is a CNAME to
+`pcace.github.io.`. There is no beta DNS record or separate hosting repository.
 
-Projects are local to the browser and domain. Users should export RN2 backups;
-there is no automatic native/browser synchronization. New routing needs internet
-and the website has no service worker for offline restarts. Usage at beta launch
-is expected to stay below ten visits per month. GPS navigation requires a visible
-page and location permission. Built-in geocoding remains submit-only, with cached
-responses and a serialized 1.1-second request interval in each browser; public
-Nominatim limits apply to the entire application, so reassess before scaling.
+Stable `main` currently contains the landing page and native downloads. The
+browser application becomes public when its changes are promoted to `main`.
 
-## Stable website
+For browser development, `pnpm build:web` builds the website and React app at
+`dist-web/app/`. Native builds continue to use `pnpm build` and `dist/`. The
+browser calls brouter.de with the bundled Enduro profiles and stores projects
+locally in IndexedDB. Imports and exports use browser files and downloads.
+Hash routes support refreshes without server rewrites. Serve `dist-web/` locally
+and open `/app/` to preview work on `dev`. There is no public beta website.
 
-`roadbooknavi.de` is hosted independently in `pcace/RoadbookNavi-stable`.
-`.github/workflows/stable-pages.yml` publishes `docs/` only from `main`, using
-the `stable-pages` environment and its `STABLE_PAGES_DEPLOY_KEY`. That environment
-permits only `main`; the public deploy key grants write access only to the
-hosting repository. Its Pages source is `gh-pages` at `/`, with custom domain
-`roadbooknavi.de` and HTTPS enabled. The stable workflow overrides the published
-`CNAME` and records the source commit in `/source.json`. It is also present on
-`dev` so GitHub can offer manual runs on `main` from the default branch.
-
-DNS is maintained in `ServerAsCode/ansible/vars/dns-zones.yml`: the stable apex
-uses GitHub Pages' A/AAAA addresses, `www` uses `pcace.github.io.`, and the beta
-CNAME retains its existing value. Stable `main` currently contains the landing
-page and native download links; the browser app continues to be beta-only.
+Projects belong to the browser and domain; export RN2 backups. The browser app
+has no native/browser synchronization or service worker. Routing requires an
+internet connection; GPS navigation requires a visible page and location
+permission. Geocoding is submit-only, cached, and serialized with a 1.1-second
+request interval per browser; reassess public Nominatim usage before scaling.

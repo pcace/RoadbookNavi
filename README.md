@@ -56,12 +56,12 @@ pnpm install
 pnpm dev
 ```
 
-For the browser beta, `pnpm build:web` builds the existing website and the web app
+For browser development, `pnpm build:web` builds the existing website and the web app
 at `/app/` into `dist-web/`. Browser projects use IndexedDB; routing sends
 waypoints and the selected bundled Enduro profile to brouter.de. File imports
 and exports use browser file selection and downloads. Native builds continue to
 use local Tauri storage and BRouter. See [docs/README.md](docs/README.md) for the
-beta-only Pages deployment.
+production Pages deployment from `main`.
 
 Run the checks used for contributions:
 

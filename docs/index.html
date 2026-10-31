@@ -68,7 +68,7 @@
               class="button primary"
               href="app/"
               data-text="onlineButton"
-              data-beta-only
+              data-online-only
               hidden
             ></a>
             <a
@@ -77,7 +77,7 @@
               data-text="issuesButton"
             ></a>
           </div>
-          <p data-text="onlineText" data-beta-only hidden></p>
+          <p data-text="onlineText" data-online-only hidden></p>
         </div>
       </section>
 
@@ -294,15 +294,16 @@
           button.classList.toggle('active', active);
           button.setAttribute('aria-pressed', String(active));
         });
-        const beta = [
-          'beta.roadbooknavi.de',
+        const online = [
+          'roadbooknavi.de',
+          'www.roadbooknavi.de',
           'localhost',
           '127.0.0.1',
         ].includes(location.hostname);
-        document.querySelectorAll('[data-beta-only]').forEach(element => {
-          element.hidden = !beta;
+        document.querySelectorAll('[data-online-only]').forEach(element => {
+          element.hidden = !online;
         });
-        document.querySelector('a[data-beta-only]').href =
+        document.querySelector('a[data-online-only]').href =
           `app/?lng=${selected}`;
         localStorage.setItem('roadbooknavi-language', selected);
       }
