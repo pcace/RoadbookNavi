@@ -29,3 +29,19 @@ is expected to stay below ten visits per month. GPS navigation requires a visibl
 page and location permission. Built-in geocoding remains submit-only, with cached
 responses and a serialized 1.1-second request interval in each browser; public
 Nominatim limits apply to the entire application, so reassess before scaling.
+
+## Stable website
+
+`roadbooknavi.de` is hosted independently in `pcace/RoadbookNavi-stable`.
+`.github/workflows/stable-pages.yml` publishes `docs/` only from `main`, using
+the `stable-pages` environment and its `STABLE_PAGES_DEPLOY_KEY`. That environment
+permits only `main`; the public deploy key grants write access only to the
+hosting repository. Its Pages source is `gh-pages` at `/`, with custom domain
+`roadbooknavi.de` and HTTPS enabled. The stable workflow overrides the published
+`CNAME` and records the source commit in `/source.json`. It is also present on
+`dev` so GitHub can offer manual runs on `main` from the default branch.
+
+DNS is maintained in `ServerAsCode/ansible/vars/dns-zones.yml`: the stable apex
+uses GitHub Pages' A/AAAA addresses, `www` uses `pcace.github.io.`, and the beta
+CNAME retains its existing value. Stable `main` currently contains the landing
+page and native download links; the browser app continues to be beta-only.
