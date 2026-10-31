@@ -1,7 +1,9 @@
 # Dependencies and build output
 node_modules/
 /dist/
+/dist-web/
 /dev-dist/
+/.semantic-release-output.json
 /.vite/
 /src-tauri/target/
 /native/brouter/build/

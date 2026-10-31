@@ -1,3 +1,4 @@
+import { isTauri } from '@tauri-apps/api/core';
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Text, Link } from '@chakra-ui/react';
 import { useTranslation } from 'react-i18next';
@@ -110,6 +111,7 @@ const About: React.FC = () => {
             <Button
               size="sm"
               variant="outline"
+              hidden={!isTauri()}
               disabled={!isOnline || isChecking}
               loading={isChecking}
               onClick={checkVersion}

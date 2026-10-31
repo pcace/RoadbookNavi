@@ -1,6 +1,9 @@
 import { it, expect, vi, beforeEach } from 'vitest';
 const native = vi.hoisted(() => vi.fn());
-vi.mock('@tauri-apps/api/core', () => ({ invoke: native }));
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: native,
+  isTauri: () => true,
+}));
 vi.mock('./ui/stores/settingsStore', () => ({
   useSettings: { getState: () => ({ interface: { language: 'de' } }) },
 }));

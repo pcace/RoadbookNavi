@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "package": "pcace/Ai_Reviewer",
+  "source": "pcace/Ai_Reviewer@73e6c7a23e2aca3940180fe79f078d5cf484bfcb",
+  "resolvedCommit": "73e6c7a23e2aca3940180fe79f078d5cf484bfcb",
+  "installer": "gh-aw v0.93.4",
+  "files": [
+    {
+      "source": "LICENSE",
+      "destination": ".github/aw/ai-review/LICENSE",
+      "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+    },
+    {
+      "source": ".github/aw/ai-review/review.cjs",
+      "destination": ".github/aw/ai-review/review.cjs",
+      "sha256": "15a8d811c9017c7e1b979bfecbcd5b9d4f8c804a0dd95e5eeea563ebaa1cd7b4"
+    },
+    {
+      "source": ".github/workflows/ai-review.md",
+      "destination": ".github/workflows/ai-review.md",
+      "sha256": "54df88dd09c09f20a78b466b290a811a6943f656a3e313e795f2687593da450d"
+    }
+  ]
+}
