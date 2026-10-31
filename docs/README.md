@@ -19,9 +19,9 @@ GitHub repository setup:
 3. Allow only `main` in the `github-pages` environment's branch policy.
 4. Keep `pages.yml` on the default branch so manual runs can target `main`.
 
-DNS is maintained in `ServerAsCode/ansible/vars/dns-zones.yml`. The apex has
-GitHub Pages' four IPv4 and four IPv6 addresses, and `www` is a CNAME to
-`pcace.github.io.`. There is no beta DNS record or separate hosting repository.
+Configure the apex domain with GitHub Pages' four IPv4 and four IPv6 addresses,
+and set `www` to a CNAME for `pcace.github.io.`. The website has no beta DNS
+record and uses this repository's Pages site directly.
 
 Stable `main` currently contains the landing page and native downloads. The
 browser application becomes public when its changes are promoted to `main`.
