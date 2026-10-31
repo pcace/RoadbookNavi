@@ -28,8 +28,8 @@ this setting only to create or update version PRs; it never approves or merges
 them. The existing ruleset restricting `main` and `dev` updates to the maintainer
 stays in place. No personal access token or release-app exception is needed.
 
-The website links to `/releases/latest`, which GitHub resolves to the newest
-stable release. Beta releases therefore never replace the public stable download.
+The website downloads installers directly from the newest complete stable
+release. Beta releases never replace those downloads.
 
 ## Release notes and versions
 

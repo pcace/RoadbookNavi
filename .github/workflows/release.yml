@@ -397,3 +397,20 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ needs.create-release.outputs.tag_name }}
         run: gh release upload "$RELEASE_TAG" release-assets/* --clobber
+
+  update-website-downloads:
+    needs:
+      - create-release
+      - build-native-apps
+      - build-windows-app
+      - build-linux-app
+    if: github.ref == 'refs/heads/main' && !contains(needs.create-release.outputs.tag_name, '-')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Publish the completed stable downloads on the website
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main --repo "$GITHUB_REPOSITORY"

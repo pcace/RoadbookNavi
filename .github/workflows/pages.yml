@@ -37,6 +37,10 @@ jobs:
           printf '%s\n' roadbooknavi.de > dist-web/CNAME
           touch dist-web/.nojekyll
           printf '{"repository":"pcace/RoadbookNavi","branch":"main","commit":"%s"}\n' "$SOURCE_SHA" > dist-web/source.json
+      - name: Link directly to published stable installers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/website-downloads.mjs dist-web
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist-web
