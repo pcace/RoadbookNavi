@@ -1,0 +1,72 @@
+name: Desktop PDF rendering
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'src/pdf*.ts'
+      - 'src/export.ts'
+      - 'src/ui/components/RoadbookPdfViewer.*'
+      - 'scripts/desktop-pdf.mjs'
+      - '.github/workflows/desktop-pdf.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-pdf-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  desktop-pdf:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install native build and WebKit test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential libssl-dev libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev librsvg2-dev webkit2gtk-driver \
+            xvfb dbus-x11
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare the same routing engine as the desktop release
+        run: |
+          git clone --filter=blob:none https://github.com/abrensch/brouter.git "$RUNNER_TEMP/brouter"
+          git -C "$RUNNER_TEMP/brouter" checkout 77e363db6f4d0fff81374cbf63338b4583f97b43
+          pnpm install --frozen-lockfile
+      - name: Build a new native desktop app
+        env:
+          BROUTER_SOURCE: ${{ runner.temp }}/brouter
+        run: |
+          pnpm desktop:build --debug --no-bundle
+          cp -a native/brouter/resources src-tauri/target/debug/engine
+      - name: Install the Tauri WebDriver
+        run: cargo install tauri-driver --locked
+      - name: Test real PDF generation, rendering and cache in WebKit
+        env:
+          WEBKIT_DISABLE_DMABUF_RENDERER: '1'
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: dbus-run-session -- xvfb-run -a node scripts/desktop-pdf.mjs
+      - name: Upload desktop screenshots and results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-pdf-results
+          path: output/desktop-pdf/
+          if-no-files-found: ignore
+          retention-days: 7
