@@ -13,6 +13,7 @@ import {
 } from './ui/components/RouteBuilder/utils/surfaces';
 import i18n from './ui/i18n';
 import { onlineReverse, useGeocoding } from './geocoding';
+import { ROADBOOK_ENTRY_HEIGHT } from './pdfLayout';
 
 type PdfSurface = {
   key: string;
@@ -262,7 +263,7 @@ export async function renderPdf(
   if (!project.entries.length) throw new Error('Zuerst ein Roadbook erzeugen.');
   const pageWidth = 420;
   const titleHeight = 250;
-  const entryHeight = 100;
+  const entryHeight = ROADBOOK_ENTRY_HEIGHT;
   const totalHeight = titleHeight + project.entries.length * entryHeight + 50;
   // A5 is the download format, roll is the printable continuous format and
   // screen splits the same continuous layout into manageable render chunks.

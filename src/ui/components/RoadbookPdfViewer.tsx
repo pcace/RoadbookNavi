@@ -13,6 +13,7 @@ import {
 import { offlineCache } from '../utils/offlineCache';
 import { useAppStore } from '../stores/appStore';
 import { useSettings } from '../stores/settingsStore';
+import { roadbookContentHeight } from '../../pdfLayout';
 
 // Keep pdfjs-dist pinned to React-PDF's PDF.js version; their worker protocols must match.
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker&url';
@@ -76,7 +77,7 @@ const LazyPdfPage: React.FC<LazyPdfPageProps> = ({
     <div
       ref={wrapperRef}
       data-roadbook-page={pageNumber}
-      style={{ width: '100%', height }}
+      style={{ width: '100%', height, overflow: 'hidden' }}
     >
       {shouldRender && (
         <Page
@@ -915,7 +916,14 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
                 Array.from({ length: pdf.numPages }, async (_, index) => {
                   const page = await pdf.getPage(index + 1);
                   const viewport = page.getViewport({ scale: 1 });
-                  return { width: viewport.width, height: viewport.height };
+                  const height =
+                    exportType === 'pdf-screen' && index === pdf.numPages - 1
+                      ? roadbookContentHeight(
+                          viewport.height,
+                          (await page.getTextContent()).items
+                        )
+                      : viewport.height;
+                  return { width: viewport.width, height };
                 })
               );
               setPageDimensions(dimensions);
