@@ -2775,7 +2775,7 @@ dependencies = [
 
 [[package]]
 name = "roadbooknavi"
-version = "1.39.0-beta.7"
+version = "1.39.0-beta.8"
 dependencies = [
  "base64 0.22.1",
  "dunce",
