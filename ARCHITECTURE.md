@@ -6,6 +6,17 @@ without Tauri.
 
 ## Components
 
+### Browser beta
+
+`src/platform.ts` dispatches service commands to Tauri in native builds and lazily
+loads `src/web.ts` in browsers. The web adapter stores projects in a separate
+IndexedDB database, caches OpenFreeMap tiles using the Cache API, and uses
+brouter.de with the same `native/profiles/*.brf` files and `timode=3`. Uploaded
+profile IDs are cached by content hash and renewed if the server removes them.
+`src/files.ts` selects native file dialogs or browser downloads. The native
+engine and project schema are unchanged. Only `dev` deploys the web beta to
+`beta.roadbooknavi.de`; `main` does not deploy the web app.
+
 ### `src`
 
 The application shell and local feature services live here. Top-level modules

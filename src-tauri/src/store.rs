@@ -1,7 +1,7 @@
 use rusqlite::{params, Connection};
-use serde_json::Value;
 #[cfg(test)]
 use serde_json::json;
+use serde_json::Value;
 use std::{fs, path::Path};
 
 pub type Result<T> = std::result::Result<T, String>;

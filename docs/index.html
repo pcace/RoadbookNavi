@@ -65,11 +65,19 @@
               data-text="downloadButton"
             ></a>
             <a
+              class="button primary"
+              href="app/"
+              data-text="onlineButton"
+              data-online-only
+              hidden
+            ></a>
+            <a
               class="button secondary"
               href="https://github.com/pcace/RoadbookNavi/issues"
               data-text="issuesButton"
             ></a>
           </div>
+          <p data-text="onlineText" data-online-only hidden></p>
         </div>
       </section>
 
@@ -184,6 +192,9 @@
           downloadText:
             'Get the latest available build for macOS, Android, Windows, or Linux from GitHub Releases.',
           downloadButton: 'Download latest release',
+          onlineButton: 'Start online (Beta)',
+          onlineText:
+            'Web beta with BRouter online routing. Projects stay in your browser. Native apps calculate routes locally.',
           issuesButton: 'Issues and ideas',
           actionTitle: 'RoadbookNavi in action',
           routePlanningCaption: 'Plan routes and create roadbooks',
@@ -232,6 +243,9 @@
           downloadText:
             'Hole dir die aktuelle verfügbare Version für macOS, Android, Windows oder Linux aus den GitHub Releases.',
           downloadButton: 'Aktuelle Version herunterladen',
+          onlineButton: 'Online starten (Beta)',
+          onlineText:
+            'Web-Beta mit BRouter-Online-Routing. Projekte bleiben in deinem Browser. Installierte Apps berechnen Routen lokal.',
           issuesButton: 'Fehler und Ideen',
           actionTitle: 'RoadbookNavi in Aktion',
           routePlanningCaption: 'Routen planen und Roadbooks erstellen',
@@ -280,6 +294,17 @@
           button.classList.toggle('active', active);
           button.setAttribute('aria-pressed', String(active));
         });
+        const online = [
+          'roadbooknavi.de',
+          'www.roadbooknavi.de',
+          'localhost',
+          '127.0.0.1',
+        ].includes(location.hostname);
+        document.querySelectorAll('[data-online-only]').forEach(element => {
+          element.hidden = !online;
+        });
+        document.querySelector('a[data-online-only]').href =
+          `app/?lng=${selected}`;
         localStorage.setItem('roadbooknavi-language', selected);
       }
 

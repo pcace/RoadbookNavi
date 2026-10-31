@@ -2,12 +2,12 @@ const changelogTypes = [
   { type: 'feat', section: 'New features' },
   { type: 'fix', section: 'Bug fixes' },
   { type: 'perf', section: 'Performance improvements' },
-  { type: 'refactor', section: 'Internal improvements' },
-  { type: 'docs', section: 'Documentation' },
-  { type: 'build', section: 'Build and dependencies' },
-  { type: 'ci', section: 'Build and dependencies' },
-  { type: 'test', section: 'Tests', hidden: true },
-  { type: 'chore', section: 'Maintenance', hidden: true },
+  { type: 'refactor', section: 'Internal improvements', effect: 'changelog' },
+  { type: 'docs', section: 'Documentation', effect: 'changelog' },
+  { type: 'build', section: 'Build and dependencies', effect: 'changelog' },
+  { type: 'ci', section: 'Build and dependencies', effect: 'changelog' },
+  { type: 'test', section: 'Tests', effect: 'hidden' },
+  { type: 'chore', section: 'Maintenance', effect: 'hidden' },
 ]
 
 export default {
@@ -34,28 +34,6 @@ export default {
       {
         preset: 'conventionalcommits',
         presetConfig: { types: changelogTypes },
-      },
-    ],
-    '@semantic-release/changelog',
-    [
-      '@semantic-release/exec',
-      {
-        prepareCmd:
-          'node scripts/prepare-release.mjs ${nextRelease.version} ${nextRelease.gitTag}',
-      },
-    ],
-    [
-      '@semantic-release/git',
-      {
-        assets: [
-          'CHANGELOG.md',
-          'package.json',
-          'src-tauri/tauri.conf.json',
-          'src-tauri/Cargo.toml',
-          'src-tauri/Cargo.lock',
-        ],
-        message:
-          'chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}',
       },
     ],
     '@semantic-release/github',

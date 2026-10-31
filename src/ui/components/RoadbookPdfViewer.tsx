@@ -14,8 +14,8 @@ import { offlineCache } from '../utils/offlineCache';
 import { useAppStore } from '../stores/appStore';
 import { useSettings } from '../stores/settingsStore';
 
-// Configure PDF.js worker – use explicit node_modules path so Vite bundles it correctly
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+// Keep pdfjs-dist pinned to React-PDF's PDF.js version; their worker protocols must match.
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker&url';
 pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 type ExportType = 'pdf' | 'pdf-roll' | 'pdf-screen';
@@ -38,6 +38,7 @@ interface LazyPdfPageProps {
   height: number;
   scrollRoot: React.RefObject<HTMLDivElement | null>;
   onRenderSuccess: () => void;
+  onRenderError: (error: Error) => void;
 }
 
 const LazyPdfPage: React.FC<LazyPdfPageProps> = ({
@@ -46,6 +47,7 @@ const LazyPdfPage: React.FC<LazyPdfPageProps> = ({
   height,
   scrollRoot,
   onRenderSuccess,
+  onRenderError,
 }) => {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const [shouldRender, setShouldRender] = useState(pageNumber === 1);
@@ -83,6 +85,8 @@ const LazyPdfPage: React.FC<LazyPdfPageProps> = ({
           renderTextLayer={false}
           renderAnnotationLayer={false}
           onRenderSuccess={onRenderSuccess}
+          onRenderError={onRenderError}
+          onLoadError={onRenderError}
           loading={<></>}
         />
       )}
@@ -747,8 +751,8 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
         }
 
         try {
-          if (typeof doc.destroy === 'function') {
-            await doc.destroy();
+          if (typeof loadingTask.destroy === 'function') {
+            await loadingTask.destroy();
           }
         } catch {
           // ignore
@@ -903,17 +907,27 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
       ) : (
         <Document
           file={pdfUrl}
+          // Use this viewer's loading/error UI instead of suspending the app section.
+          suspense={false}
           onLoadSuccess={async pdf => {
-            const dimensions = await Promise.all(
-              Array.from({ length: pdf.numPages }, async (_, index) => {
-                const page = await pdf.getPage(index + 1);
-                const viewport = page.getViewport({ scale: 1 });
-                return { width: viewport.width, height: viewport.height };
-              })
-            );
-            setPageDimensions(dimensions);
-            if (dimensions[0]?.width) setPageWidth(dimensions[0].width);
-            setNumPages(pdf.numPages);
+            try {
+              const dimensions = await Promise.all(
+                Array.from({ length: pdf.numPages }, async (_, index) => {
+                  const page = await pdf.getPage(index + 1);
+                  const viewport = page.getViewport({ scale: 1 });
+                  return { width: viewport.width, height: viewport.height };
+                })
+              );
+              setPageDimensions(dimensions);
+              if (dimensions[0]?.width) setPageWidth(dimensions[0].width);
+              setNumPages(pdf.numPages);
+            } catch (pdfError) {
+              setError(
+                pdfError instanceof Error
+                  ? pdfError.message
+                  : 'Die PDF-Seiten konnten nicht geladen werden.'
+              );
+            }
           }}
           onLoadError={pdfError => {
             console.error('[RoadbookPdfViewer] PDF load failed', pdfError);
@@ -971,6 +985,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
                 width={containerWidth}
                 height={containerWidth * (dimensions.height / dimensions.width)}
                 onRenderSuccess={() => setRenderedPageCount(count => count + 1)}
+                onRenderError={pdfError => setError(pdfError.message)}
               />
             );
           })}

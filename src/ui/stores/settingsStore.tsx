@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { isTauri } from '@tauri-apps/api/core';
 import { persist } from 'zustand/middleware';
 import i18n from '../i18n';
 import type { AppSettings } from '../types';
@@ -24,7 +25,7 @@ export const useSettings = create<Settings>()(
       interface: {
         colorMode: 'system',
         headerPosition: 'automatic',
-        language: 'en',
+        language: isTauri() ? 'en' : i18n.resolvedLanguage || 'en',
       },
       app: {
         keepScreenOn: true,
@@ -37,7 +38,7 @@ export const useSettings = create<Settings>()(
         roadbookScrollSpeed: 30,
         closeDistanceThreshold: 200,
         defaultMapStyle: 'open_street_map',
-        defaultRoutingProfile: 'trekking',
+        defaultRoutingProfile: isTauri() ? 'trekking' : 'enduro-easy',
       },
       isLoading: false,
       error: null,

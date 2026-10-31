@@ -2,6 +2,8 @@ import { routeSurfacePreview } from './utils/routeSurfaces';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Map, AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
+import { setWorkerUrl } from 'maplibre-gl';
+import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   Box,
@@ -31,6 +33,9 @@ import { RouteMapStatusOverlays } from './RouteMapStatusOverlays';
 import { useRouteMapInteractions } from './hooks/useRouteMapInteractions';
 import { computeRouteAnalysis } from './utils/routeAnalysis';
 import { normalizeSurfaceKey } from './utils/surfaces';
+
+// Bundle the worker and its shared modules so it also loads inside Tauri.
+setWorkerUrl(mapWorkerUrl);
 
 const RouteMap: React.FC = () => {
   const { t } = useTranslation();

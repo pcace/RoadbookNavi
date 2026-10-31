@@ -1,6 +1,6 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from './platform';
 import { VectorTile } from '@mapbox/vector-tile';
-import Pbf from 'pbf';
+import { PbfReader } from 'pbf';
 import { bboxClip, bboxPolygon, booleanIntersects } from '@turf/turf';
 import type {
   BBox,
@@ -137,7 +137,7 @@ async function decodeTile(
   tile: TileId,
   bounds: Bbox
 ): Promise<Feature<Geometry, GeoJsonProperties>[]> {
-  const vectorTile = new VectorTile(new Pbf(await loadTile(tile)));
+  const vectorTile = new VectorTile(new PbfReader(await loadTile(tile)));
   const features: Feature<Geometry, GeoJsonProperties>[] = [];
   for (const layerName of DRAWING_LAYERS) {
     const layer = vectorTile.layers[layerName];

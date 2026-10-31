@@ -11,7 +11,7 @@ artwork, or data from sources whose terms are incompatible with GPL-3.0.
 
 ## Setup
 
-Install Node.js 24.10+, pnpm 10+, Rust, and JDK 17, then run:
+Install Node.js 24.15+, pnpm 10+, Rust, and JDK 17, then run:
 
 ```bash
 pnpm install
@@ -22,6 +22,11 @@ A sibling checkout of [BRouter](https://github.com/abrensch/brouter) is used by
 default. Set `BROUTER_SOURCE` when it lives elsewhere.
 
 ## Development workflow
+
+Repository skills are stored in `.agents/skills/<skill-name>/SKILL.md`.
+For PDF library updates and viewer loading failures, follow
+[update-pdf-runtime](.agents/skills/update-pdf-runtime/SKILL.md), which records
+the recurring PDF.js worker version mismatch and the required rendering checks.
 
 1. Create a focused branch from the current development branch.
 2. Keep platform-independent logic in `src/core`.
@@ -42,6 +47,7 @@ default. Set `BROUTER_SOURCE` when it lives elsewhere.
 pnpm format:check
 pnpm type-check
 pnpm test
+pnpm test:release
 pnpm build
 cargo fmt --check --manifest-path src-tauri/Cargo.toml
 cargo test --manifest-path src-tauri/Cargo.toml
