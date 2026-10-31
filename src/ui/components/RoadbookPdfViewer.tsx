@@ -14,6 +14,7 @@ import { offlineCache } from '../utils/offlineCache';
 import { useAppStore } from '../stores/appStore';
 import { useSettings } from '../stores/settingsStore';
 import { roadbookContentHeight } from '../../pdfLayout';
+import { readPdfTextItems } from '../../pdfText';
 
 // Keep pdfjs-dist pinned to React-PDF's PDF.js version; their worker protocols must match.
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker&url';
@@ -698,8 +699,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
           const viewport = page.getViewport({ scale: 1 });
           const pageHeight = viewport.height;
 
-          const textContent = await page.getTextContent();
-          const items = (textContent.items || []) as any[];
+          const items = (await readPdfTextItems(page)) as any[];
 
           for (let i = 0; i < items.length; i++) {
             const item = items[i];
@@ -920,7 +920,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
                     exportType === 'pdf-screen' && index === pdf.numPages - 1
                       ? roadbookContentHeight(
                           viewport.height,
-                          (await page.getTextContent()).items
+                          await readPdfTextItems(page)
                         )
                       : viewport.height;
                   return { width: viewport.width, height };
