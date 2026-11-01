@@ -76,7 +76,25 @@
         "title": "Delete Roadbook",
         "description": "Remove a roadbook you no longer need. Navigate to your Routes List, select the route you want to delete, and confirm the deletion."
       }
-    }
+    },
+    "siteTitle": "RoadbookNavi – Help and guide",
+    "siteDescription": "From an idea to a roadbook: plan, rename, export and navigate. Step-by-step instructions with current screenshots.",
+    "siteNavigation": "Website and language",
+    "openApp": "Open app",
+    "skip": "Skip to guide",
+    "chapters": "Chapters",
+    "chaptersSearch": "Chapters & search",
+    "back": "Back to the app",
+    "searchLabel": "Search this guide",
+    "searchPlaceholder": "e.g. export, GPS …",
+    "matches_one": "{{count}} matching chapter",
+    "matches_other": "{{count}} matching chapters",
+    "matches_many": "{{count}} matching chapters",
+    "chapterNavigation": "Help chapters",
+    "markdown": "Read the Markdown file",
+    "loading": "Loading guide …",
+    "fullSize": "Full-size screenshot",
+    "retry": "Try again"
   },
   "web": {
     "notice": "Web beta: routing uses brouter.de and sends your waypoints and routing profile there. Projects stay in this browser; export RN2 files as a backup. New routes need internet. GPS navigation requires the app to remain visible.",

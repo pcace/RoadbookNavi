@@ -76,7 +76,25 @@
         "title": "Supprimer un roadbook",
         "description": "Supprimez les roadbooks dont vous n’avez plus besoin. Sélectionnez le roadbook dans la liste et confirmez la suppression."
       }
-    }
+    },
+    "siteTitle": "RoadbookNavi – Aide et guide",
+    "siteDescription": "De l’idée au roadbook : planifier, renommer, exporter et naviguer. Des instructions pas à pas avec des captures d’écran actuelles.",
+    "siteNavigation": "Site web et langue",
+    "openApp": "Ouvrir l’application",
+    "skip": "Aller au guide",
+    "chapters": "Chapitres",
+    "chaptersSearch": "Chapitres et recherche",
+    "back": "Retour à l’application",
+    "searchLabel": "Rechercher dans ce guide",
+    "searchPlaceholder": "p. ex., exporter, GPS…",
+    "matches_one": "{{count}} chapitre correspondant",
+    "matches_other": "{{count}} chapitres correspondants",
+    "matches_many": "{{count}} chapitres correspondants",
+    "chapterNavigation": "Chapitres de l’aide",
+    "markdown": "Lire le fichier Markdown",
+    "loading": "Chargement du guide…",
+    "fullSize": "Capture en taille réelle",
+    "retry": "Réessayer"
   },
   "web": {
     "notice": "Bêta web : le calcul d’itinéraire utilise brouter.de, qui reçoit vos points de passage et votre profil de routage. Les projets restent dans ce navigateur ; exportez des fichiers RN2 pour les sauvegarder. Les nouveaux itinéraires nécessitent Internet. La navigation GPS exige que l’application reste visible.",

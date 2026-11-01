@@ -35,6 +35,7 @@ function website({
     },
   }));
   const onlineLink = {};
+  const helpLinks = [...html.matchAll(/data-help-link/g)].map(() => ({}));
   const document = {
     documentElement: {},
     querySelector(selector) {
@@ -43,9 +44,11 @@ function website({
     querySelectorAll(selector) {
       return selector === '[data-text]'
         ? elements
-        : selector === '[data-language]'
-          ? buttons
-          : [];
+        : selector === '[data-help-link]'
+          ? helpLinks
+          : selector === '[data-language]'
+            ? buttons
+            : [];
     },
   };
   let stored = saved;
@@ -69,7 +72,14 @@ function website({
     },
   };
   runInNewContext(script, context);
-  return { document, buttons, elements, onlineLink, stored: () => stored };
+  return {
+    document,
+    buttons,
+    elements,
+    onlineLink,
+    helpLinks,
+    stored: () => stored,
+  };
 }
 
 test('every website field and accessible label is translated in all four languages', () => {
@@ -77,6 +87,9 @@ test('every website field and accessible label is translated in all four languag
     const site = website({ language });
     assert.equal(site.document.documentElement.lang, language);
     assert.equal(site.onlineLink.href, `app/?lng=${language}`);
+    assert.ok(site.helpLinks.length >= 2);
+    for (const link of site.helpLinks)
+      assert.equal(link.href, `help/${language}/`);
     for (const element of site.elements) {
       assert.equal(
         typeof element[element.dataset.attribute || 'textContent'],
@@ -121,6 +134,7 @@ test('changing language updates website content, app links and persistence', () 
   );
   assert.equal(site.onlineLink.href, 'app/?lng=es');
   assert.equal(site.stored(), 'es');
+  for (const link of site.helpLinks) assert.equal(link.href, 'help/es/');
 });
 
 test('website translation still works when browser storage is disabled', () => {

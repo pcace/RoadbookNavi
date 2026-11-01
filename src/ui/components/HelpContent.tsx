@@ -1,308 +1,200 @@
-import { normalizeLanguage } from '../i18n/languages';
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-} from 'react';
-import { isTauri } from '@tauri-apps/api/core';
-import { Box, Flex, Spinner } from '@chakra-ui/react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import MarkdownIt from 'markdown-it';
-import markdownItAnchor from 'markdown-it-anchor';
-import { useColorModeValue } from './ui/color-mode';
+import { renderHelpMarkdown } from '../utils/helpMarkdown';
+import { normalizeLanguage } from '../i18n/languages';
+import './HelpContent.css';
 
-type HelpContentProps = {
-  enabled?: boolean;
-  height?: string;
-  padding?: number;
-};
-
-const HelpContentComponent: React.FC<HelpContentProps> = ({
-  enabled = true,
-  height,
-  padding = 8,
-}) => {
+export const HelpContent = () => {
   const { t, i18n } = useTranslation();
-  const [content, setContent] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const contentBoxRef = useRef<HTMLDivElement>(null);
-
-  const textColor = useColorModeValue('gray.700', 'gray.200');
-
-  // CSS color values - call hooks at top level, then memoize
-  const h1BorderColor = useColorModeValue('#E2E8F0', '#4A5568');
-  const imgBorderColor = useColorModeValue('#E2E8F0', '#4A5568');
-  const blockquoteBg = useColorModeValue('#EBF8FF', '#1A365D');
-  const codeBg = useColorModeValue('#EDF2F7', '#2D3748');
-  const hrBorderColor = useColorModeValue('#E2E8F0', '#4A5568');
-
-  const cssColors = useMemo(
-    () => ({
-      h1BorderColor,
-      imgBorderColor,
-      blockquoteBg,
-      codeBg,
-      hrBorderColor,
-    }),
-    [h1BorderColor, imgBorderColor, blockquoteBg, codeBg, hrBorderColor]
-  );
-
-  // Load markdown file based on current language
+  const language = normalizeLanguage(i18n.resolvedLanguage || i18n.language);
+  const [markdown, setMarkdown] = useState('');
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [query, setQuery] = useState('');
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const returnTo = useRef('/app/routes-list');
+  const from = location.state?.helpFrom;
+  if (
+    typeof from === 'string' &&
+    from.startsWith('/app/') &&
+    !from.startsWith('/app/help')
+  )
+    returnTo.current = from;
+  const [image, setImage] = useState<{ src: string; alt: string } | null>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const navigation = useRef<HTMLDetailsElement>(null);
+  const base = `${import.meta.env.BASE_URL}help/`;
+  const section = params.get('section');
   useEffect(() => {
-    if (!enabled) return;
-
-    const loadMarkdown = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const lang = normalizeLanguage(i18n.resolvedLanguage);
-        const response = await fetch(
-          `${import.meta.env.BASE_URL}help/${isTauri() ? 'native' : 'web'}-${lang}.md`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to load help file: ${response.statusText}`);
-        }
-
-        const text = (await response.text()).replaceAll(
-          'src="/help/',
-          `src="${import.meta.env.BASE_URL}help/`
-        );
-
-        // Initialize markdown-it with anchor plugin
-        const md = new MarkdownIt({
-          html: true,
-          linkify: true,
-          typographer: true,
-        }).use(markdownItAnchor, {
-          // NOTE: do NOT pass `permalink: false` — markdown-it-anchor 9.x
-          // types only allow a PermalinkGenerator here; omitting the option
-          // is the (runtime-equivalent) way to disable permalinks.
-          level: [2, 3],
-          slugify: (s: string) => {
-            return s
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/\p{M}/gu, '')
-              .replace(/ß/g, 'ss')
-              .replace(/[^\p{L}\p{N}]+/gu, '-')
-              .replace(/^-|-$/g, '');
-          },
-        });
-
-        const htmlContent = md.render(text);
-        setContent(htmlContent);
-      } catch (err) {
-        console.error('Error loading markdown:', err);
-        setError(t('help.errorLoading'));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadMarkdown();
-  }, [enabled, i18n.language, t]);
-
-  // Handle anchor link clicks
-  const handleAnchorClick = useCallback((e: MouseEvent) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest('a');
-
-    if (anchor && anchor.hash) {
-      e.preventDefault();
-
-      const targetId = anchor.hash.substring(1);
-      const element = document.getElementById(targetId);
-
-      if (element) {
-        // Only update URL hash if we're on the documentation page
-        const isDocumentationPage =
-          window.location.pathname === '/documentation';
-        if (isDocumentationPage) {
-          window.history.pushState(null, '', anchor.hash);
-        }
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }
+    if (window.matchMedia('(max-width: 899px)').matches && navigation.current)
+      navigation.current.open = false;
   }, []);
 
-  // Attach event listener for anchor clicks
   useEffect(() => {
-    const contentBox = contentBoxRef.current;
-    if (!contentBox || !content) return;
+    const controller = new AbortController();
+    setLoading(true);
+    setError(false);
+    setQuery('');
+    fetch(`${base}${language}.md`, { signal: controller.signal })
+      .then(response => {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.text();
+      })
+      .then(setMarkdown)
+      .catch(error => {
+        if (error.name !== 'AbortError') setError(true);
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [base, language]);
 
-    contentBox.addEventListener('click', handleAnchorClick);
+  const { html, chapters } = useMemo(
+    () => renderHelpMarkdown(markdown, base),
+    [markdown, base]
+  );
+  const normalize = (value: string) =>
+    value.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+  const matches = chapters.filter(chapter =>
+    normalize(chapter.text).includes(normalize(query.trim()))
+  );
 
-    return () => {
-      contentBox.removeEventListener('click', handleAnchorClick);
-    };
-  }, [content, handleAnchorClick]);
-
-  // Scroll to hash fragment on initial load or when content changes
   useEffect(() => {
-    if (!content || loading) return;
+    if (loading || !section) return;
+    const frame = requestAnimationFrame(() => {
+      const heading = document.getElementById(section);
+      heading?.scrollIntoView({ block: 'start' });
+      heading?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [html, loading, section]);
 
-    const hash = window.location.hash;
-    if (hash) {
-      // Small delay to ensure content is fully rendered
-      setTimeout(() => {
-        const targetId = hash.substring(1);
-        const element = document.getElementById(targetId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 100);
-    }
-  }, [content, loading]);
+  useEffect(() => {
+    if (image && !dialog.current?.open) dialog.current?.showModal();
+    if (!image && dialog.current?.open) dialog.current.close();
+  }, [image]);
+
+  const openChapter = (id: string) => {
+    setParams({ section: id }, { state: { helpFrom: returnTo.current } });
+    const heading = document.getElementById(id);
+    heading?.scrollIntoView({ block: 'start' });
+    heading?.focus({ preventScroll: true });
+    if (window.matchMedia('(max-width: 899px)').matches && navigation.current)
+      navigation.current.open = false;
+  };
 
   return (
-    <Box
-      ref={contentBoxRef}
-      overflowY="auto"
-      overflowX="hidden"
-      h={height}
-      p={padding}
-    >
-      {loading ? (
-        <Flex justify="center" align="center" h={height ? '100%' : undefined}>
-          <Spinner size="xl" />
-        </Flex>
-      ) : error ? (
-        <Box color="red.500" textAlign="center">
-          {error}
-        </Box>
-      ) : (
-        <Box
-          className="markdown-content"
-          color={textColor}
-          maxWidth="100%"
-          wordBreak="break-word"
-          dangerouslySetInnerHTML={{ __html: content }}
-          css={{
-            '& h1': {
-              fontSize: '1.875rem',
-              fontWeight: 'bold',
-              marginTop: '1.5rem',
-              marginBottom: '1rem',
-              paddingBottom: '0.5rem',
-              borderBottom: `2px solid ${cssColors.h1BorderColor}`,
-            },
-            '& h2': {
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              marginTop: '1.5rem',
-              marginBottom: '0.75rem',
-            },
-            '& h3': {
-              fontSize: '1.25rem',
-              fontWeight: '600',
-              marginTop: '1rem',
-              marginBottom: '0.5rem',
-            },
-            '& p': {
-              marginBottom: '1rem',
-              lineHeight: '1.7',
-            },
-            '& img': {
-              maxWidth: '100%',
-              width: '100%',
-              height: 'auto',
-              borderRadius: '0.375rem',
-              marginTop: '1rem',
-              marginBottom: '1rem',
-              border: `1px solid ${cssColors.imgBorderColor}`,
-              objectFit: 'contain',
-            },
-            '& video': {
-              maxWidth: '100%',
-              width: '100%',
-              height: 'auto',
-              borderRadius: '0.375rem',
-              marginTop: '1rem',
-              marginBottom: '1rem',
-              border: `1px solid ${cssColors.imgBorderColor}`,
-              objectFit: 'contain',
-              display: 'block',
-            },
-            '& ul, & ol': {
-              marginBottom: '1rem',
-              paddingLeft: '1.5rem',
-            },
-            '& li': {
-              marginBottom: '0.5rem',
-            },
-            '& blockquote': {
-              paddingLeft: '1rem',
-              paddingTop: '0.5rem',
-              paddingBottom: '0.5rem',
-              marginTop: '1rem',
-              marginBottom: '1rem',
-              borderLeft: '4px solid #3182CE',
-              backgroundColor: cssColors.blockquoteBg,
-              borderRadius: '0.375rem',
-            },
-            '& blockquote p': {
-              marginBottom: '0',
-            },
-            '& code': {
-              backgroundColor: cssColors.codeBg,
-              paddingLeft: '0.5rem',
-              paddingRight: '0.5rem',
-              paddingTop: '0.25rem',
-              paddingBottom: '0.25rem',
-              borderRadius: '0.25rem',
-              fontSize: '0.875rem',
-            },
-            '& pre': {
-              backgroundColor: cssColors.codeBg,
-              padding: '1rem',
-              borderRadius: '0.375rem',
-              overflowX: 'auto',
-              marginBottom: '1rem',
-              maxWidth: '100%',
-            },
-            '& pre code': {
-              backgroundColor: 'transparent',
-              padding: '0',
-            },
-            '& hr': {
-              marginTop: '2rem',
-              marginBottom: '2rem',
-              borderColor: cssColors.hrBorderColor,
-            },
-            '& a': {
-              color: '#3182CE',
-              textDecoration: 'underline',
-              '&:hover': {
-                color: '#2C5282',
-              },
-            },
-            '& strong': {
-              fontWeight: 'bold',
-            },
-            '& em': {
-              fontStyle: 'italic',
-            },
-          }}
-        />
-      )}
-    </Box>
+    <div className="help-page help-in-app" lang={language}>
+      <a
+        className="help-skip"
+        href="#help-article"
+        onClick={event => {
+          event.preventDefault();
+          document.getElementById('help-article')?.focus();
+        }}
+      >
+        {t('help.skip')}
+      </a>
+      <div className="help-layout">
+        <details className="help-sidebar" ref={navigation} open>
+          <summary>{t('help.chaptersSearch')}</summary>
+          <div className="help-sidebar-content">
+            <button
+              className="help-back"
+              onClick={() => navigate(returnTo.current)}
+            >
+              ← {t('help.back')}
+            </button>
+            <form
+              onSubmit={event => {
+                event.preventDefault();
+                if (matches[0]) openChapter(matches[0].id);
+              }}
+            >
+              <label htmlFor="help-search">{t('help.searchLabel')}</label>
+              <input
+                id="help-search"
+                type="search"
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+                placeholder={t('help.searchPlaceholder')}
+              />
+            </form>
+            <p className="help-search-status" role="status">
+              {query && t('help.matches', { count: matches.length })}
+            </p>
+            <nav aria-label={t('help.chapterNavigation')}>
+              {matches.map(chapter => (
+                <a
+                  key={chapter.id}
+                  href={`#/app/help?section=${encodeURIComponent(chapter.id)}`}
+                  aria-current={section === chapter.id ? 'location' : undefined}
+                  onClick={event => {
+                    event.preventDefault();
+                    openChapter(chapter.id);
+                  }}
+                >
+                  {chapter.title}
+                </a>
+              ))}
+            </nav>
+            <a className="help-source" href={`${base}${language}.md`}>
+              {t('help.markdown')}
+            </a>
+          </div>
+        </details>
+        <main id="help-article" className="help-article" tabIndex={-1}>
+          {loading ? (
+            <p role="status">{t('help.loading')}</p>
+          ) : error ? (
+            <div role="alert">
+              <p>{t('help.errorLoading')}</p>
+              <button onClick={() => window.location.reload()}>
+                {t('help.retry')}
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={event => {
+                const link = (event.target as HTMLElement).closest('a');
+                if (!link) return;
+                if (link.classList.contains('help-screenshot')) {
+                  event.preventDefault();
+                  setImage({
+                    src: link.href,
+                    alt: link.querySelector('img')?.alt || '',
+                  });
+                } else if (link.getAttribute('href')?.startsWith('#')) {
+                  event.preventDefault();
+                  openChapter(
+                    decodeURIComponent(link.getAttribute('href')!.slice(1))
+                  );
+                }
+              }}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          )}
+        </main>
+      </div>
+      <dialog
+        ref={dialog}
+        className="help-lightbox"
+        aria-label={t('help.fullSize')}
+        onClose={() => setImage(null)}
+        onClick={event => {
+          if (event.target === event.currentTarget) setImage(null);
+        }}
+      >
+        <button className="help-lightbox-close" onClick={() => setImage(null)}>
+          {t('buttons.close')} ×
+        </button>
+        {image && <img src={image.src} alt={image.alt} />}
+        <p>{image?.alt}</p>
+      </dialog>
+    </div>
   );
 };
-
-// Export memoized version to prevent unnecessary re-renders
-export const HelpContent = React.memo(
-  HelpContentComponent,
-  (prevProps, nextProps) => {
-    // Only re-render if these props actually change
-    return (
-      prevProps.enabled === nextProps.enabled &&
-      prevProps.height === nextProps.height &&
-      prevProps.padding === nextProps.padding
-    );
-  }
-);

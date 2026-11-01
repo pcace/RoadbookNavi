@@ -76,7 +76,25 @@
         "title": "Eliminar roadbook",
         "description": "Elimina los roadbooks que ya no necesites. Selecciona el roadbook en la lista y confirma su eliminación."
       }
-    }
+    },
+    "siteTitle": "RoadbookNavi – Ayuda y guía",
+    "siteDescription": "De una idea a un roadbook: planifica, renombra, exporta y navega. Instrucciones paso a paso con capturas actuales.",
+    "siteNavigation": "Sitio web e idioma",
+    "openApp": "Abrir aplicación",
+    "skip": "Ir a la guía",
+    "chapters": "Capítulos",
+    "chaptersSearch": "Capítulos y búsqueda",
+    "back": "Volver a la aplicación",
+    "searchLabel": "Buscar en esta guía",
+    "searchPlaceholder": "p. ej., exportar, GPS…",
+    "matches_one": "{{count}} capítulo coincidente",
+    "matches_other": "{{count}} capítulos coincidentes",
+    "matches_many": "{{count}} capítulos coincidentes",
+    "chapterNavigation": "Capítulos de ayuda",
+    "markdown": "Leer el archivo Markdown",
+    "loading": "Cargando guía…",
+    "fullSize": "Captura a tamaño completo",
+    "retry": "Volver a intentar"
   },
   "web": {
     "notice": "Beta web: el cálculo de rutas utiliza brouter.de, al que se envían tus puntos de paso y el perfil de ruta. Los proyectos se guardan en este navegador; exporta archivos RN2 como copia de seguridad. Las rutas nuevas necesitan Internet. La aplicación debe permanecer visible para la navegación GPS.",

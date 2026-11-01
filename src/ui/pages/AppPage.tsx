@@ -131,6 +131,9 @@ const AppPage: React.FC = () => {
     const currentRoadbookSession = getRoadbookSessionState(location.pathname);
     const previousRoadbookSession = lastRoadbookSessionRef.current;
 
+    // Reading help continues the current session, as the former help dialog did.
+    if (currentRoadbookSession.section === 'help') return;
+
     const shouldResetForRoadbookLoad =
       currentRoadbookSession.section === 'roadbook' &&
       currentRoadbookSession.routeId &&
@@ -477,6 +480,10 @@ const AppPage: React.FC = () => {
             />
             <Route
               path="/routes-list"
+              element={<MainContent {...mainContentProps} />}
+            />
+            <Route
+              path="/help"
               element={<MainContent {...mainContentProps} />}
             />
             <Route

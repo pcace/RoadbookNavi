@@ -76,7 +76,25 @@
         "title": "Roadbook löschen",
         "description": "Entfernen Sie ein Roadbook, das Sie nicht mehr benötigen. Navigieren Sie zu Ihrer Routenliste, wählen Sie die Route aus, die Sie löschen möchten, und bestätigen Sie die Löschung."
       }
-    }
+    },
+    "siteTitle": "RoadbookNavi – Hilfe und Anleitung",
+    "siteDescription": "Von der Idee zum Roadbook: planen, umbenennen, exportieren und navigieren. Schritt für Schritt mit aktuellen Screenshots.",
+    "siteNavigation": "Website und Sprache",
+    "openApp": "App öffnen",
+    "skip": "Zur Anleitung",
+    "chapters": "Kapitel",
+    "chaptersSearch": "Kapitel & Suche",
+    "back": "Zur App zurück",
+    "searchLabel": "Hilfe durchsuchen",
+    "searchPlaceholder": "z. B. exportieren, GPS …",
+    "matches_one": "{{count}} passendes Kapitel",
+    "matches_other": "{{count}} passende Kapitel",
+    "matches_many": "{{count}} passende Kapitel",
+    "chapterNavigation": "Hilfekapitel",
+    "markdown": "Anleitung als Markdown",
+    "loading": "Anleitung wird geladen …",
+    "fullSize": "Screenshot in voller Größe",
+    "retry": "Erneut versuchen"
   },
   "web": {
     "notice": "Web-Beta: Die Routenberechnung nutzt brouter.de und übermittelt deine Wegpunkte und das Routingprofil dorthin. Projekte bleiben in diesem Browser; exportiere RN2-Dateien als Sicherung. Neue Routen benötigen Internet. Für GPS-Navigation muss die App sichtbar bleiben.",

@@ -21,6 +21,7 @@ jobs:
       - run: pnpm test
       - run: pnpm test:release
       - run: node --test scripts/website-*.test.mjs
+      - run: node --test scripts/help-site.test.mjs
       - run: pnpm build
       - run: pnpm build:web
 
