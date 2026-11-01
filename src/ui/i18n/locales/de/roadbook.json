@@ -8,13 +8,22 @@
   "navigation": {
     "nextTurn": "Nächste Abbiegung",
     "currentPosition": "Aktuelle Position",
-    "totalDistance": "Gesamtentfernung"
+    "totalDistance": "Gesamtentfernung",
+    "resetOdometer": "Nullen",
+    "here": "Hier"
   },
   "states": {
     "clickToCreate": "Neues Roadbook erstellen",
     "clickToCreateSubtext": "Hier klicken um mit der Roadbook Planung zu beginnen",
     "calculating": "Roadbook wird berechnet...",
-    "processed": "Tulips bearbeitet"
+    "processed": "Tulips bearbeitet",
+    "loading": "Lade Roadbook…",
+    "generating": "Generiere Roadbook…",
+    "loadingPdf": "Lade PDF…",
+    "loadingIndex": "Lade Index…",
+    "calculatingRoute": "Route berechnen …",
+    "loadingMap": "Kartendaten laden …",
+    "drawing": "Kreuzungszeichnung {{current}} von {{total}}"
   },
   "actions": {
     "createRoadbook": "Roadbook erstellen"
@@ -26,6 +35,31 @@
     "start": "START",
     "finish": "ZIEL",
     "surface": "OBERFLÄCHE",
-    "noSurfaceData": "Keine Oberflächendaten"
+    "noSurfaceData": "Keine Oberflächendaten",
+    "page": "Seite {{page}}"
+  },
+  "errors": {
+    "loadFailed": "PDF konnte nicht geladen werden",
+    "pagesFailed": "Die PDF-Seiten konnten nicht geladen werden.",
+    "invalidPdf": "Die erzeugte PDF-Datei ist ungültig.",
+    "sourceFailed": "Die PDF-Daten konnten nicht gelesen werden."
+  },
+  "instructions": {
+    "straight": "Geradeaus",
+    "right": "Rechts",
+    "left": "Links",
+    "sharpRight": "Scharf rechts",
+    "sharpLeft": "Scharf links",
+    "slightRight": "Leicht rechts",
+    "slightLeft": "Leicht links",
+    "uturn": "Wenden",
+    "start": "Start",
+    "finish": "Ziel erreicht",
+    "track": "Feldweg",
+    "secondary": "Landstraße",
+    "tertiary": "Kreisstraße",
+    "residential": "Ortsstraße",
+    "withTerrain": "{{direction}} auf {{terrain}}",
+    "entry": "Eintrag {{number}}"
   }
 }

@@ -1,8 +1,14 @@
+import { normalizeLanguage } from '../i18n/languages';
 import { create } from 'zustand';
 import { isTauri } from '@tauri-apps/api/core';
 import { persist } from 'zustand/middleware';
 import i18n from '../i18n';
 import type { AppSettings } from '../types';
+
+const requestedLanguage =
+  typeof window === 'undefined'
+    ? null
+    : new URLSearchParams(window.location.search).get('lng');
 
 type UI = {
   colorMode: 'light' | 'dark' | 'system';
@@ -25,7 +31,7 @@ export const useSettings = create<Settings>()(
       interface: {
         colorMode: 'system',
         headerPosition: 'automatic',
-        language: isTauri() ? 'en' : i18n.resolvedLanguage || 'en',
+        language: normalizeLanguage(i18n.resolvedLanguage),
       },
       app: {
         keepScreenOn: true,
@@ -43,11 +49,18 @@ export const useSettings = create<Settings>()(
       isLoading: false,
       error: null,
       loadSettings: async () => {
-        await i18n.changeLanguage(get().interface.language);
+        const language = normalizeLanguage(
+          requestedLanguage || get().interface.language
+        );
+        set(s => ({ interface: { ...s.interface, language } }));
+        await i18n.changeLanguage(language);
       },
       updateInterfaceSettings: async patch => {
-        set(s => ({ interface: { ...s.interface, ...patch } }));
-        if (patch.language) await i18n.changeLanguage(patch.language);
+        const normalized = patch.language
+          ? { ...patch, language: normalizeLanguage(patch.language) }
+          : patch;
+        set(s => ({ interface: { ...s.interface, ...normalized } }));
+        if (normalized.language) await i18n.changeLanguage(normalized.language);
       },
       updateAppSettings: async patch => {
         set(s => ({ app: { ...s.app, ...patch } }));

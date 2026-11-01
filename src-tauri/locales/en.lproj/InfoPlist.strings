@@ -1,0 +1,3 @@
+// SPDX-License-Identifier: GPL-3.0-only
+"NSLocationWhenInUseUsageDescription" = "RoadbookNavi uses your location to follow your progress through the roadbook automatically.";
+"NSLocationUsageDescription" = "RoadbookNavi uses your location to follow your progress through the roadbook automatically.";

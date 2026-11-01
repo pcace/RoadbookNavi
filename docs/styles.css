@@ -256,7 +256,7 @@ a {
   margin: 0;
 }
 
-.videos video {
+.videos img {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -382,4 +382,12 @@ footer a:focus-visible {
 
 [data-online-only][hidden] {
   display: none;
+}
+
+.hero-help {
+  margin-top: 1.8rem;
+}
+.videos a:focus-visible {
+  outline: 3px solid #1672bc;
+  outline-offset: 5px;
 }

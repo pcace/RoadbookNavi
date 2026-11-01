@@ -1,3 +1,4 @@
+import { normalizeLanguage } from './ui/i18n/languages';
 import { validateProject, validPoint } from './model';
 import type { BRouterGeoJSON } from './core/types';
 import i18n from './ui/i18n';
@@ -213,12 +214,14 @@ function geocode(args: Record<string, unknown>) {
         `${String(args.base).replace(/\/$/, '')}/${args.operation}`
       );
       if (url.protocol !== 'https:' || url.username || url.password)
-        throw new Error('geocoding.invalidBaseUrl');
+        throw new Error('geocoding.insecureServiceUrl');
       url.searchParams.set('format', 'jsonv2');
       url.searchParams.set('addressdetails', '1');
       url.searchParams.set(
         'accept-language',
-        args.language === 'de' ? 'de' : 'en'
+        normalizeLanguage(
+          typeof args.language === 'string' ? args.language : undefined
+        )
       );
       if (args.key) url.searchParams.set('api_key', String(args.key));
       if (args.operation === 'search') {

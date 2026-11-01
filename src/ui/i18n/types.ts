@@ -3,6 +3,7 @@ import type commonDE from './locales/de/common.json';
 import type roadbookDE from './locales/de/roadbook.json';
 import type settingsDE from './locales/de/settings.json';
 import type routeBuilderDE from './locales/de/routeBuilder.json';
+import type { SupportedLanguage } from './languages';
 
 declare module 'react-i18next' {
   interface CustomTypeOptions {
@@ -16,7 +17,7 @@ declare module 'react-i18next' {
   }
 }
 
-export type SupportedLanguage = 'de' | 'en';
+export type { SupportedLanguage } from './languages';
 
 export interface LanguageOption {
   code: SupportedLanguage;

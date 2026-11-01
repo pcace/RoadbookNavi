@@ -2,8 +2,8 @@
   "title": "Roadbook planen",
   "warnings": {
     "routeTooLong": "Das Roadbook ist bereits {{length}} km lang. Maximale Länge: {{maxLength}} km.",
-    "editUnavailable": "Bearbeiten ist nur für online gespeicherte eigene Routen möglich.",
-    "duplicateUnavailable": "Duplizieren ist nur für online gespeicherte eigene Routen möglich."
+    "editUnavailable": "Bearbeiten ist nur für gespeicherte Roadbooks verfügbar.",
+    "duplicateUnavailable": "Duplizieren ist nur für gespeicherte Roadbooks verfügbar."
   },
   "routeProfiles": {
     "enduro": "Enduro (Schwerst)",
@@ -13,7 +13,9 @@
     "car": "Auto",
     "carFastNoMotorway": "Auto (schnell, ohne Autobahn)",
     "walking": "Zu Fuß",
-    "mtb": "Mountainbike"
+    "mtb": "Mountainbike",
+    "trekking": "Trekking",
+    "enduro_new": "Enduro (neu)"
   },
   "labels": {
     "roadbookName": "Roadbook Name",
@@ -75,7 +77,11 @@
       "name-desc": "Name: Z–A",
       "length-asc": "Länge: kurz → lang",
       "length-desc": "Länge: lang → kurz"
-    }
+    },
+    "details": "Details",
+    "noSurfaceData": "Keine Oberflächendaten verfügbar.",
+    "routeFallback": "Route {{id}}",
+    "duplicateName": "{{name}} – Kopie"
   },
   "routeInfo": {
     "length": "Länge",
@@ -183,5 +189,13 @@
     "shareUnavailable": "Teilen ist nur für online gespeicherte eigene Routen möglich.",
     "sharedRouteDeleteError": "Geteilte Routen können nur vom Besitzer gelöscht werden.",
     "removeAccessUnavailable": "Der Zugriff kann nur online entfernt werden."
+  },
+  "map": {
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "resetNorth": "Karte nach Norden ausrichten",
+    "myPosition": "Zu meiner Position",
+    "title": "Karte",
+    "toggleAttribution": "Quellenangaben ein-/ausblenden"
   }
 }

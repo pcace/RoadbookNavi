@@ -1,4 +1,4 @@
-import React, { Suspense, lazy, useState } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Flex, HStack, IconButton } from '@chakra-ui/react';
 import {
@@ -19,21 +19,17 @@ import {
   getAppSectionFromPathname,
 } from '../utils/roadbookRoute';
 
-const HelpModal = lazy(() =>
-  import('./HelpModal').then(module => ({ default: module.HelpModal }))
-);
-
 export const NewFooter: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const path = getAppSectionFromPathname(useLocation().pathname);
+  const location = useLocation();
+  const path = getAppSectionFromPathname(location.pathname);
   const autoFollow = useAppStore(state => state.autoFollow);
   const setAutoFollow = useAppStore(state => state.setAutoFollow);
   const isHeaderExpanded = useAppStore(state => state.isHeaderExpanded);
   const toggleHeaderExpanded = useAppStore(state => state.toggleHeaderExpanded);
   const currentRouteId = useAppStore(state => state.currentRouteId);
   const currentRouteName = useAppStore(state => state.currentRouteName);
-  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const {
     bg,
     borderColor,
@@ -126,17 +122,17 @@ export const NewFooter: React.FC = () => {
           title={t('buttons.help')}
           bg={buttonBg}
           color={buttonColor}
-          onClick={() => setIsHelpOpen(true)}
+          onClick={() => {
+            if (path !== 'help')
+              navigate('/app/help', {
+                state: { helpFrom: location.pathname + location.search },
+              });
+          }}
+          aria-current={path === 'help' ? 'page' : undefined}
         >
           <IoIosHelpCircle />
         </IconButton>
       </Box>
-
-      <Suspense fallback={null}>
-        {isHelpOpen && (
-          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-        )}
-      </Suspense>
     </Flex>
   );
 };

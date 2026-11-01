@@ -1,3 +1,6 @@
+import { turnInstruction } from './ui/i18n/turnInstruction';
+import { useTranslation } from 'react-i18next';
+import { getErrorMessage } from './ui/utils/errorMessage';
 import { useEffect, useRef, useState } from 'react';
 import {
   watchPosition,
@@ -9,6 +12,7 @@ import type { Project } from './model';
 import { safeSvg } from './export';
 
 export function Navigation({ project }: { project: Project }) {
+  const { t } = useTranslation();
   const [odometer, setOdometer] = useState(0),
     [gps, setGps] = useState(false),
     [error, setError] = useState(''),
@@ -110,9 +114,11 @@ export function Navigation({ project }: { project: Project }) {
           −10 m
         </button>
         <button onClick={() => setOdometer(x => x + 10)}>+10 m</button>
-        <button onClick={() => setOdometer(0)}>Nullen</button>
+        <button onClick={() => setOdometer(0)}>
+          {t('roadbook:navigation.resetOdometer')}
+        </button>
         <button className={gps ? 'selected' : ''} onClick={() => setGps(!gps)}>
-          {gps ? 'GPS stoppen' : 'GPS starten'}
+          {t(gps ? 'gps.stop' : 'gps.start')}
         </button>
         <label>
           <input
@@ -120,20 +126,17 @@ export function Navigation({ project }: { project: Project }) {
             checked={follow}
             onChange={e => setFollow(e.target.checked)}
           />{' '}
-          Automatisch folgen
+          {t('gps.autoFollow')}
         </label>
       </div>
       {error && (
         <p role="alert" className="error">
-          {error}
+          {getErrorMessage(error, t('gps.error'))}
         </p>
       )}
-      <p className="muted">
-        Navigation bei geöffneter App. Bei gesperrtem Bildschirm ist die
-        Positionsfortschreibung noch nicht garantiert.
-      </p>
+      <p className="muted">{t('gps.visibleApp')}</p>
       {!project.entries.length && (
-        <p>In der Planung zuerst ein Roadbook erzeugen.</p>
+        <p>{t('routeBuilder:labels.createRouteFirst')}</p>
       )}
       {project.entries.map((e, i) => (
         <div
@@ -154,10 +157,12 @@ export function Navigation({ project }: { project: Project }) {
               ).toFixed(2)}{' '}
               km
             </small>
-            <button onClick={() => setOdometer(e.distance)}>Hier</button>
+            <button onClick={() => setOdometer(e.distance)}>
+              {t('roadbook:navigation.here')}
+            </button>
           </div>
           <div dangerouslySetInnerHTML={{ __html: safeSvg(e.svg) }} />
-          <p>{e.note || e.turn.instruction}</p>
+          <p>{e.note || turnInstruction(e.turn.instruction)}</p>
         </div>
       ))}
     </section>

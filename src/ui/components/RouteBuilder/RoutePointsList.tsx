@@ -1,3 +1,5 @@
+import { profileLabel } from '../../i18n/profileLabel';
+import { getErrorMessage } from '../../utils/errorMessage';
 import { useNativeProfiles } from '../../config/runtime';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -340,7 +342,7 @@ const RoutePointsList: React.FC = () => {
 
   const nativeProfiles = useNativeProfiles();
   const routingProfiles = createListCollection({
-    items: nativeProfiles.map(value => ({ label: value, value })),
+    items: nativeProfiles.map(value => ({ label: profileLabel(value), value })),
   });
 
   const editableRoutes = [...routes].sort(
@@ -480,7 +482,7 @@ const RoutePointsList: React.FC = () => {
     } catch (error) {
       console.error('Error renaming route:', error);
       alert(
-        `Roadbook konnte nicht umbenannt werden: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`
+        `${t('errors.routeRenameError')}: ${getErrorMessage(error, t('common.unknownError'))}`
       );
     } finally {
       setIsSubmittingAction(false);
@@ -510,7 +512,7 @@ const RoutePointsList: React.FC = () => {
     } catch (error) {
       console.error('Error deleting route:', error);
       alert(
-        `Roadbook konnte nicht gelöscht werden: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`
+        `${t('errors.routeDeleteError')}: ${getErrorMessage(error, t('common.unknownError'))}`
       );
     } finally {
       setIsSubmittingAction(false);
@@ -528,7 +530,7 @@ const RoutePointsList: React.FC = () => {
       const baseName =
         currentEditableRoute.name || t('routeBuilder:labels.unnamedRoute');
       const duplicatedRoute = await routesStore.saveRoute({
-        name: `${baseName}-duplikat`,
+        name: t('routeBuilder:labels.duplicateName', { name: baseName }),
         waypoints: currentEditableRoute.waypoints,
         profile: currentEditableRoute.profile,
         cached_brouterTrack_data: currentEditableRoute.cached_brouterTrack_data,
@@ -546,7 +548,7 @@ const RoutePointsList: React.FC = () => {
     } catch (error) {
       console.error('Error duplicating route:', error);
       alert(
-        `Roadbook konnte nicht dupliziert werden: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`
+        `${t('errors.routeDuplicateError')}: ${getErrorMessage(error, t('common.unknownError'))}`
       );
     } finally {
       setIsSubmittingAction(false);
@@ -1000,7 +1002,11 @@ const RoutePointsList: React.FC = () => {
                 </Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" disabled={isSubmittingAction} />
+                <CloseButton
+                  aria-label={t('common.close')}
+                  size="sm"
+                  disabled={isSubmittingAction}
+                />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>
@@ -1047,7 +1053,11 @@ const RoutePointsList: React.FC = () => {
                 </Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" disabled={isSubmittingAction} />
+                <CloseButton
+                  aria-label={t('common.close')}
+                  size="sm"
+                  disabled={isSubmittingAction}
+                />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>

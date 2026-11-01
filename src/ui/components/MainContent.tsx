@@ -10,6 +10,10 @@ import {
   parseRoadbookRouteRef,
 } from '../utils/roadbookRoute';
 
+const HelpContent = lazy(() =>
+  import('./HelpContent').then(module => ({ default: module.HelpContent }))
+);
+
 const RoadbookNavi = lazy(() =>
   import('./Roadbook').then(module => ({ default: module.RoadbookNavi }))
 );
@@ -147,6 +151,14 @@ export const MainContent: React.FC<MainContentProps> = ({
 
   return (
     <>
+      {wasVisited('help') && (
+        <Box height="100%" display={path === 'help' ? 'block' : 'none'}>
+          <Suspense fallback={sectionFallback}>
+            <HelpContent />
+          </Suspense>
+        </Box>
+      )}
+
       {wasVisited('roadbook') && (
         <Box height="100%" display={path === 'roadbook' ? 'block' : 'none'}>
           <Suspense fallback={sectionFallback}>
