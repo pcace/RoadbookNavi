@@ -115,7 +115,7 @@ async function screenshot(name) {
   const data = await request(`/session/${session}/screenshot`);
   await writeFile(join(output, name + '.png'), Buffer.from(data, 'base64'));
 }
-async function open(id, mode) {
+async function open(id, mode, expectInvalidPdf = false) {
   await execute(() => {
     location.hash = '/app/routes-list';
   });
@@ -142,6 +142,13 @@ async function open(id, mode) {
     id,
     mode
   );
+  if (expectInvalidPdf) {
+    await until(
+      () => document.body.innerText.includes('Could not load PDF'),
+      'visible invalid-PDF error'
+    );
+    return;
+  }
   await until(() => {
     if (
       document.body.innerText.includes('PDF konnte nicht geladen werden') ||
@@ -283,6 +290,38 @@ try {
     results.push({ mode, entries: count, ...layout, cachedReopen: true });
     console.log('PASS', results.at(-1));
   }
+  // Corrupt only this run's isolated cache and require a visible viewer error.
+  const invalidId = scenarios[0].project.id;
+  const corrupted = await executeAsync(async id => {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('RoadbookCache');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = reject;
+    });
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('roadbooks_pdf', 'readwrite');
+      const store = transaction.objectStore('roadbooks_pdf');
+      const request = store.get(id);
+      request.onsuccess = () => {
+        const record = request.result;
+        record.pdfBytes = new TextEncoder().encode('Invalid PDF test data');
+        store.put(record);
+      };
+      transaction.oncomplete = () => {
+        db.close();
+        resolve(true);
+      };
+      transaction.onerror = () => {
+        db.close();
+        reject(transaction.error);
+      };
+    });
+  }, invalidId);
+  assert.equal(corrupted, true);
+  await open(invalidId, 'native', true);
+  await screenshot('invalid-pdf');
+  results.push({ invalidPdf: true, visibleError: true });
+  console.log('PASS', results.at(-1));
   await writeFile(
     join(output, 'results.json'),
     JSON.stringify(results, null, 2)
