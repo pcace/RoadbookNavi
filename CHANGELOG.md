@@ -1,3 +1,25 @@
+## [1.39.0-beta.8](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.7...v1.39.0-beta.8) (2026-10-31)
+
+### New features
+
+- add direct installer downloads to the website ([5e8a47a](https://github.com/pcace/RoadbookNavi/commit/5e8a47acdc16dbe15b11d3fef620a71e2f5c7a90))
+
+### Bug fixes
+
+- read roadbook PDF text without stream async iteration ([7dc15f6](https://github.com/pcace/RoadbookNavi/commit/7dc15f6a8a2df5148d0c5d417118772434e49403))
+- remove trailing whitespace from roadbook PDF views ([3d81029](https://github.com/pcace/RoadbookNavi/commit/3d81029a4164cc5c5fc8a5cd17d9e3cfe13b9c28))
+
+### Documentation
+
+- keep website setup documentation self-contained ([bf00f55](https://github.com/pcace/RoadbookNavi/commit/bf00f5542da54d23b1f7ec9711082ced4444a7b0))
+- reduce readmes to essential project information ([0e3bf1d](https://github.com/pcace/RoadbookNavi/commit/0e3bf1d2fefee74a773797bbcb91f9f1a7d30747))
+- update the production web app labels ([46ee7d7](https://github.com/pcace/RoadbookNavi/commit/46ee7d72834de84b86b292535a510b02b592c0bd))
+
+### Build and dependencies
+
+- allow stable Pages dispatch from the default branch ([3cc2129](https://github.com/pcace/RoadbookNavi/commit/3cc21293ed12c62af6a632be29688171719d0f1a))
+- retire the beta website and keep one production site ([26ce45e](https://github.com/pcace/RoadbookNavi/commit/26ce45ee675f7fe21ad58c54da802c24f5c5ea8c))
+
 ## [1.39.0-beta.7](https://github.com/pcace/RoadbookNavi/compare/v1.39.0-beta.6...v1.39.0-beta.7) (2026-10-27)
 
 ### New features
