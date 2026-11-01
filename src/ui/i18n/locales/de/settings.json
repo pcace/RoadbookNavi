@@ -32,7 +32,8 @@
     "top": "Oben",
     "light": "Hell",
     "dark": "Dunkel",
-    "system": "System"
+    "system": "System",
+    "toggleColorMode": "Farbschema wechseln"
   },
   "app": {
     "keepScreenOn": "Bildschirm aktiv halten",
@@ -139,6 +140,23 @@
   },
   "languages": {
     "de": "Deutsch",
-    "en": "English"
+    "en": "English",
+    "fr": "Français",
+    "es": "Español"
+  },
+  "keys": {
+    "notSet": "Nicht gesetzt",
+    "pressKey": "Taste drücken…",
+    "Enter": "Eingabe",
+    "Space": "Leertaste",
+    "Escape": "Esc",
+    "Tab": "Tab",
+    "Backspace": "Rücktaste",
+    "Delete": "Entf",
+    "Home": "Pos1",
+    "End": "Ende",
+    "PageUp": "Bild ↑",
+    "PageDown": "Bild ↓",
+    "Insert": "Einfg"
   }
 }

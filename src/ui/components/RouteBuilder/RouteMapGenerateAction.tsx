@@ -102,7 +102,7 @@ export const RouteMapGenerateAction: React.FC<RouteMapGenerateActionProps> = ({
         </Button>
         <IconButton
           size="md"
-          aria-label="Details"
+          aria-label={t('routeBuilder:labels.details')}
           aria-pressed={isAnalysisOpen}
           onClick={onAnalysisToggle}
           disabled={!routeStats || isLoading || isGenerating}

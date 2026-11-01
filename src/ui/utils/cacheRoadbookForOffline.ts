@@ -4,6 +4,7 @@ import {
 } from '../services/localProjects';
 import { offlineCache, type RoadbookIndexEntry } from './offlineCache';
 import i18n from '../i18n';
+import { normalizeLanguage } from '../i18n/languages';
 
 export interface RoadbookCacheProgress {
   text: string;
@@ -18,15 +19,14 @@ interface CacheRoadbookForOfflineParams {
   onProgress?: (progress: RoadbookCacheProgress) => void;
 }
 
-const DEFAULT_PROGRESS_MESSAGE = 'Loading...';
-
 export async function cacheRoadbookForOffline({
   routeId,
   routeName,
   profile,
-  fallbackMessage = DEFAULT_PROGRESS_MESSAGE,
+  fallbackMessage = i18n.t('common.loading'),
   onProgress,
 }: CacheRoadbookForOfflineParams): Promise<void> {
+  const language = normalizeLanguage(i18n.resolvedLanguage);
   const emitProgress = (text: string, percent?: number) => {
     onProgress?.({ text, percent });
   };
@@ -76,6 +76,7 @@ export async function cacheRoadbookForOffline({
     body: JSON.stringify({
       routeId,
       exportType: 'pdf-screen',
+      language,
     }),
   });
   const pdfBlob = await pdfResponse.blob();
@@ -100,6 +101,6 @@ export async function cacheRoadbookForOffline({
     indexJson as RoadbookIndexEntry[],
     routeName,
     profile,
-    i18n.resolvedLanguage?.startsWith('de') ? 'de' : 'en'
+    language
   );
 }

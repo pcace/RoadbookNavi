@@ -1,3 +1,4 @@
+import { normalizeLanguage } from '../i18n/languages';
 import React, {
   useCallback,
   useEffect,
@@ -58,7 +59,7 @@ const HelpContentComponent: React.FC<HelpContentProps> = ({
       setError(null);
 
       try {
-        const lang = i18n.language.startsWith('de') ? 'de' : 'en';
+        const lang = normalizeLanguage(i18n.resolvedLanguage);
         const response = await fetch(
           `${import.meta.env.BASE_URL}help/${isTauri() ? 'native' : 'web'}-${lang}.md`
         );
@@ -83,19 +84,12 @@ const HelpContentComponent: React.FC<HelpContentProps> = ({
           // is the (runtime-equivalent) way to disable permalinks.
           level: [2, 3],
           slugify: (s: string) => {
-            const umlautMap: { [key: string]: string } = {
-              ä: 'a',
-              ö: 'o',
-              ü: 'u',
-              ß: 'ss',
-              Ä: 'A',
-              Ö: 'O',
-              Ü: 'U',
-            };
             return s
               .toLowerCase()
-              .replace(/[äöüßÄÖÜ]/g, match => umlautMap[match] || match)
-              .replace(/[^a-z0-9]+/g, '-')
+              .normalize('NFD')
+              .replace(/\p{M}/gu, '')
+              .replace(/ß/g, 'ss')
+              .replace(/[^\p{L}\p{N}]+/gu, '-')
               .replace(/^-|-$/g, '');
           },
         });
@@ -104,7 +98,7 @@ const HelpContentComponent: React.FC<HelpContentProps> = ({
         setContent(htmlContent);
       } catch (err) {
         console.error('Error loading markdown:', err);
-        setError(t('help.errorLoading') || 'Error loading help content');
+        setError(t('help.errorLoading'));
       } finally {
         setLoading(false);
       }

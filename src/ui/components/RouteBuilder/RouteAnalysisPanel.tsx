@@ -113,7 +113,7 @@ const RouteAnalysisPanel: React.FC<RouteAnalysisPanelProps> = ({
                   : {routeStats.offRoadPct}%
                 </Text>
                 <Flex align="center" gap={2} opacity={0.9}>
-                  <Text fontSize="xs">Details</Text>
+                  <Text fontSize="xs">{t('routeBuilder:labels.details')}</Text>
                   <CollapsibleArrow />
                 </Flex>
               </Flex>
@@ -192,7 +192,9 @@ const RouteAnalysisPanel: React.FC<RouteAnalysisPanelProps> = ({
                       bg={s.color}
                     />
                     <Text>
-                      {t(`routeBuilder:surfaces.${s.key}`, {
+                      {t(`surfaces.${s.key}`, {
+                        ns: 'routeBuilder',
+                        nsSeparator: false,
                         defaultValue: s.display,
                       })}{' '}
                       {routeStats.formatMeters(s.length_m)}
@@ -202,7 +204,7 @@ const RouteAnalysisPanel: React.FC<RouteAnalysisPanelProps> = ({
               </Box>
             ) : (
               <Text fontSize="xs" opacity={0.8}>
-                Keine Oberflächendaten verfügbar.
+                {t('routeBuilder:labels.noSurfaceData')}
               </Text>
             )}
           </Box>

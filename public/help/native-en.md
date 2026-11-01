@@ -41,6 +41,4 @@ Select a saved roadbook in the planner to edit it. Filter the list by name and s
 
 Navigation uses a continuous roll PDF. Configure auto-follow, step-by-step or continuous scrolling and key bindings in Settings.
 
-<img src="/help/img/small/autofollow.png" alt="Auto-follow">
-
 **Save** in the roadbook list offers RN2, GPX, GeoJSON, A5 PDF and roll PDF. RN2 preserves drawings and is suitable for sharing roadbooks as files. GPX/GeoJSON carry the track. Use **Open (.rn2)** to import a received file.

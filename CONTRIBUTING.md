@@ -31,7 +31,9 @@ the recurring PDF.js worker version mismatch and the required rendering checks.
 1. Create a focused branch from the current development branch.
 2. Keep platform-independent logic in `src/core`.
 3. Keep comments, identifiers, commit messages, and developer documentation in
-   English. User-visible text belongs in both locale files.
+   English. User-visible text belongs in every supported locale (`de`, `en`, `es`, and `fr`).
+   Include the website and native/browser help when changing shared user-facing
+   copy. `pnpm test` checks locale keys, placeholders, and help media.
 4. Use a Conventional Commit title for the pull request. `feat:` adds a feature,
    `fix:` fixes user-visible behavior, and `perf:` improves performance. Write the
    rest of the title so it can appear unchanged in the release notes. Pull

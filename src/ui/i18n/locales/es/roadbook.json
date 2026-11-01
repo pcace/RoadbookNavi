@@ -1,0 +1,65 @@
+{
+  "title": "Roadbook",
+  "entries": {
+    "distance": "Distancia",
+    "turn": "Giro",
+    "waypoint": "Punto de paso"
+  },
+  "navigation": {
+    "nextTurn": "Próximo giro",
+    "currentPosition": "Posición actual",
+    "totalDistance": "Distancia total",
+    "resetOdometer": "Poner a cero",
+    "here": "Aquí"
+  },
+  "states": {
+    "clickToCreate": "Crear un nuevo roadbook",
+    "clickToCreateSubtext": "Pulsa aquí para empezar a planificar un roadbook",
+    "calculating": "Calculando roadbook…",
+    "processed": "viñetas procesadas",
+    "loading": "Cargando roadbook…",
+    "generating": "Generando roadbook…",
+    "loadingPdf": "Cargando PDF…",
+    "loadingIndex": "Cargando índice…",
+    "calculatingRoute": "Calculando ruta…",
+    "loadingMap": "Cargando datos del mapa…",
+    "drawing": "Dibujo de cruce {{current}} de {{total}}"
+  },
+  "actions": {
+    "createRoadbook": "Crear roadbook"
+  },
+  "pdf": {
+    "distance": "DISTANCIA",
+    "waypoints": "PUNTOS DE PASO",
+    "profile": "PERFIL",
+    "start": "SALIDA",
+    "finish": "LLEGADA",
+    "surface": "SUPERFICIE",
+    "noSurfaceData": "Sin datos de superficie",
+    "page": "Página {{page}}"
+  },
+  "errors": {
+    "loadFailed": "No se ha podido cargar el PDF",
+    "pagesFailed": "No se han podido cargar las páginas del PDF.",
+    "invalidPdf": "El archivo PDF generado no es válido.",
+    "sourceFailed": "No se han podido leer los datos del PDF."
+  },
+  "instructions": {
+    "straight": "Recto",
+    "right": "Derecha",
+    "left": "Izquierda",
+    "sharpRight": "Giro cerrado a la derecha",
+    "sharpLeft": "Giro cerrado a la izquierda",
+    "slightRight": "Leve giro a la derecha",
+    "slightLeft": "Leve giro a la izquierda",
+    "uturn": "Cambio de sentido",
+    "start": "Salida",
+    "finish": "Llegada alcanzada",
+    "track": "pista",
+    "secondary": "carretera secundaria",
+    "tertiary": "carretera local",
+    "residential": "calle residencial",
+    "withTerrain": "{{direction}} por {{terrain}}",
+    "entry": "Viñeta {{number}}"
+  }
+}

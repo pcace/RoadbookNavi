@@ -42,6 +42,4 @@ In der Planung ein gespeichertes Roadbook auswählen und bearbeiten. In der List
 
 Die Navigationsansicht verwendet ein durchgehendes Roll-PDF. Automatisches Folgen sowie schrittweises oder kontinuierliches Scrollen und die Tastenbelegung lassen sich in den Einstellungen anpassen.
 
-<img src="/help/img/small/autofollow.png" alt="Automatisches Folgen">
-
 Über **Speichern** in der Roadbook-Liste stehen RN2, GPX, GeoJSON, PDF A5 und PDF-Rolle zur Verfügung. RN2 erhält Roadbook-Zeichnungen und eignet sich zum Dateiaustausch. GPX/GeoJSON transportieren die Strecke. Über **Öffnen (.rn2)** eine erhaltene Datei importieren.

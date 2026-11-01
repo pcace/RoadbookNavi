@@ -30,7 +30,13 @@
     "macOS": {
       "infoPlist": "Info.plist",
       "entitlements": "Entitlements.plist",
-      "signingIdentity": "-"
+      "signingIdentity": "-",
+      "files": {
+        "Resources/de.lproj/InfoPlist.strings": "locales/de.lproj/InfoPlist.strings",
+        "Resources/en.lproj/InfoPlist.strings": "locales/en.lproj/InfoPlist.strings",
+        "Resources/es.lproj/InfoPlist.strings": "locales/es.lproj/InfoPlist.strings",
+        "Resources/fr.lproj/InfoPlist.strings": "locales/fr.lproj/InfoPlist.strings"
+      }
     },
     "resources": {
       "../LICENSE": "LICENSE.txt",

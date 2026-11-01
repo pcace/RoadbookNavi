@@ -30,7 +30,13 @@ export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
               <Dialog.Title>{t('help.title')}</Dialog.Title>
             </Dialog.Header>
             <Dialog.CloseTrigger asChild>
-              <CloseButton size="sm" position="absolute" right={4} top={4} />
+              <CloseButton
+                aria-label={t('common.close')}
+                size="sm"
+                position="absolute"
+                right={4}
+                top={4}
+              />
             </Dialog.CloseTrigger>
 
             <Dialog.Body

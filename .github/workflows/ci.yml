@@ -20,7 +20,7 @@ jobs:
       - run: pnpm format:check
       - run: pnpm test
       - run: pnpm test:release
-      - run: node --test scripts/website-downloads.test.mjs
+      - run: node --test scripts/website-*.test.mjs
       - run: pnpm build
       - run: pnpm build:web
 

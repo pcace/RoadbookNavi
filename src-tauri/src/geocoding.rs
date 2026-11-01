@@ -11,6 +11,22 @@ use std::{
 
 // Shared by forward/reverse lookups, including simultaneous UI requests.
 static NEXT_REQUEST: Mutex<Option<Instant>> = Mutex::new(None);
+
+fn lookup_language(language: &str) -> &'static str {
+    match language
+        .split(['-', '_'])
+        .next()
+        .unwrap_or("en")
+        .to_ascii_lowercase()
+        .as_str()
+    {
+        "de" => "de",
+        "es" => "es",
+        "fr" => "fr",
+        _ => "en",
+    }
+}
+
 fn endpoint(base: &str, operation: &str) -> Result<reqwest::Url> {
     if !["search", "reverse"].contains(&operation) {
         return Err("geocoding.unknownOperation".into());
@@ -45,10 +61,7 @@ pub fn lookup(
     url.query_pairs_mut()
         .append_pair("format", "jsonv2")
         .append_pair("addressdetails", "1")
-        .append_pair(
-            "accept-language",
-            if language == "de" { "de" } else { "en" },
-        );
+        .append_pair("accept-language", lookup_language(language));
     if operation == "search" {
         if query.trim().len() < 3 || query.len() > 300 {
             return Err("geocoding.invalidQuery".into());
@@ -137,6 +150,19 @@ pub fn lookup(
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn lookup_languages() {
+        for (language, expected) in [
+            ("de-DE", "de"),
+            ("en-GB", "en"),
+            ("es-MX", "es"),
+            ("FR_ca", "fr"),
+            ("it", "en"),
+        ] {
+            assert_eq!(lookup_language(language), expected);
+        }
+    }
+
     #[test]
     fn endpoints() {
         assert_eq!(

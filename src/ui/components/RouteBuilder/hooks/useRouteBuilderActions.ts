@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../utils/errorMessage';
 import { useCallback, useEffect, useState } from 'react';
 import type { MutableRefObject, RefObject } from 'react';
 import type { FeatureCollection, GeoJsonProperties, LineString } from 'geojson';
@@ -420,9 +421,7 @@ export const useRouteBuilderActions = ({
     } catch (error) {
       console.error('Error importing GPX:', error);
       setError(
-        error instanceof Error
-          ? `GPX Import Fehler: ${error.message}`
-          : 'Fehler beim Importieren der GPX-Datei'
+        `${t('errors.gpxImportFailed')}: ${getErrorMessage(error, t('common.unknownError'))}`
       );
       setGpxUnderlay(null);
     } finally {
@@ -515,9 +514,7 @@ export const useRouteBuilderActions = ({
       if (error.response?.data?.error) {
         setError(error.response.data.message || error.response.data.error);
       } else {
-        setError(
-          error instanceof Error ? error.message : t('errors.routeSaveError')
-        );
+        setError(getErrorMessage(error, t('errors.routeSaveError')));
       }
     }
   };
