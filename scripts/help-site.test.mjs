@@ -5,6 +5,21 @@ import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { buildHelpSite } from './build-help.mjs';
 
+function checkLanguageLinks(html, file) {
+  const links = [
+    ...html.matchAll(/<a\b[^>]*data-help-language="([^"]+)"[^>]*>/g),
+  ];
+  assert.equal(links.length, 3, 'All three translated guides are linked');
+  for (const [tag, language] of links) {
+    const href = tag.match(/href="([^"]+)"/)[1];
+    assert.ok(href.endsWith('/' + language + '/'));
+    assert.ok(
+      existsSync(resolve(dirname(file), href, 'index.html')),
+      'Missing formatted translation: ' + href
+    );
+  }
+}
+
 test('public help contains the full guide without JavaScript and ships its assets', () => {
   const directory = mkdtempSync(join(tmpdir(), 'roadbook-help-test-'));
   try {
@@ -12,6 +27,7 @@ test('public help contains the full guide without JavaScript and ships its asset
     for (const language of ['de', 'en', 'es', 'fr']) {
       const file = join(directory, language, 'index.html');
       const html = readFileSync(file, 'utf8');
+      checkLanguageLinks(html, file);
       assert.ok(html.includes('<main id="help-article"'));
       const headings = {
         de: ['Von der Idee zum Roadbook', 'Odometer einstellen'],
@@ -64,6 +80,10 @@ test('public help contains the full guide without JavaScript and ships its asset
     );
     assert.ok(existsSync(join(directory, 'de.md')));
     assert.ok(existsSync(join(directory, 'en.md')));
+    checkLanguageLinks(
+      readFileSync(join(directory, 'index.html'), 'utf8'),
+      join(directory, 'index.html')
+    );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }
