@@ -1,3 +1,9 @@
+## [1.41.1](https://github.com/pcace/RoadbookNavi/compare/v1.41.0...v1.41.1) (2026-11-01)
+
+### Bug fixes
+
+- move help below downloads and open translated guides ([3a4c4ab](https://github.com/pcace/RoadbookNavi/commit/3a4c4ab6cf1099f7ca3eafc5217b3afbe2bd9a6b))
+
 ## [1.41.0](https://github.com/pcace/RoadbookNavi/compare/v1.40.0...v1.41.0) (2026-11-01)
 
 ### New features

@@ -1,8 +1,8 @@
 {
   "branch": "main",
-  "sourceHead": "fcaf44e9c1eb9bd3dfac32b6da354544f663c80f",
-  "version": "1.41.0",
-  "tag": "v1.41.0",
-  "changelogBase": "deb368312d1da0dd197decafb79e5fabb0697f15",
-  "notes": "## [1.41.0](https://github.com/pcace/RoadbookNavi/compare/v1.40.0...v1.41.0) (2026-11-01)\n\n### New features\n\n* add searchable user guides with current screenshots ([9a9f2e6](https://github.com/pcace/RoadbookNavi/commit/9a9f2e62d2a57e790efe4a2abd40e45ab3e1548b))\n* add Spanish and French language support ([cd48401](https://github.com/pcace/RoadbookNavi/commit/cd484010bb7f087fd5f8fa8ce71c123624b4c7ce))\n* translate the updated user guide into Spanish and French ([c594987](https://github.com/pcace/RoadbookNavi/commit/c5949870bd5276a7cd4e68512b22dbc65d83ea82))\n\n### Documentation\n\n* polish the GitHub project landing page ([e299873](https://github.com/pcace/RoadbookNavi/commit/e29987387a8a35532d8a023422baacb24cfbced8))\n"
+  "sourceHead": "b02a54a0c9f001a864d5cc80f0022d891b8027af",
+  "version": "1.41.1",
+  "tag": "v1.41.1",
+  "changelogBase": "4be0891bcfe24d16255a3fb39e25e66286c37a45",
+  "notes": "## [1.41.1](https://github.com/pcace/RoadbookNavi/compare/v1.41.0...v1.41.1) (2026-11-01)\n\n### Bug fixes\n\n* move help below downloads and open translated guides ([3a4c4ab](https://github.com/pcace/RoadbookNavi/commit/3a4c4ab6cf1099f7ca3eafc5217b3afbe2bd9a6b))\n"
 }
