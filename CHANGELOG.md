@@ -1,3 +1,15 @@
+## [1.41.0-beta.1](https://github.com/pcace/RoadbookNavi/compare/v1.40.0...v1.41.0-beta.1) (2026-11-01)
+
+### New features
+
+- add searchable user guides with current screenshots ([9a9f2e6](https://github.com/pcace/RoadbookNavi/commit/9a9f2e62d2a57e790efe4a2abd40e45ab3e1548b))
+- add Spanish and French language support ([cd48401](https://github.com/pcace/RoadbookNavi/commit/cd484010bb7f087fd5f8fa8ce71c123624b4c7ce))
+- translate the updated user guide into Spanish and French ([c594987](https://github.com/pcace/RoadbookNavi/commit/c5949870bd5276a7cd4e68512b22dbc65d83ea82))
+
+### Documentation
+
+- polish the GitHub project landing page ([e299873](https://github.com/pcace/RoadbookNavi/commit/e29987387a8a35532d8a023422baacb24cfbced8))
+
 ## [1.40.0](https://github.com/pcace/RoadbookNavi/compare/v1.39.0...v1.40.0) (2026-10-31)
 
 ### New features
