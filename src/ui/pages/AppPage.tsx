@@ -1,3 +1,5 @@
+import { useTranslation } from 'react-i18next';
+import { getGpsErrorMessage } from '../utils/errorMessage';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Routes,
@@ -49,6 +51,7 @@ const getRoadbookSessionState = (pathname: string) => {
 
 const AppPage: React.FC = () => {
   useThemeManager();
+  const { t } = useTranslation();
   // Use stable selectors for each piece of state
   const turns = useAppStore(state => state.turns);
   const navigation = useAppStore(state => state.navigation);
@@ -64,7 +67,7 @@ const AppPage: React.FC = () => {
   const [gpsTracker] = useState(() => new GPSTracker());
   const [compassTracker] = useState(() => new CompassTracker());
   const [wakeLock] = useState(() => new ScreenWakeLock());
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<GeolocationPositionError | null>(null);
 
   // Get settings from the settings store
   const { app: appSettings, loadSettings } = useSettings();
@@ -127,6 +130,9 @@ const AppPage: React.FC = () => {
   useEffect(() => {
     const currentRoadbookSession = getRoadbookSessionState(location.pathname);
     const previousRoadbookSession = lastRoadbookSessionRef.current;
+
+    // Reading help continues the current session, as the former help dialog did.
+    if (currentRoadbookSession.section === 'help') return;
 
     const shouldResetForRoadbookLoad =
       currentRoadbookSession.section === 'roadbook' &&
@@ -301,23 +307,8 @@ const AppPage: React.FC = () => {
   );
 
   const handleGPSError = useCallback((error: GeolocationPositionError) => {
-    let errorMessage = `GPS Fehler: ${error.message}`;
-
-    switch (error.code) {
-      case error.PERMISSION_DENIED:
-        errorMessage +=
-          ' - Zugriff verweigert. Bitte die Standortberechtigung in den Systemeinstellungen erlauben.';
-        break;
-      case error.POSITION_UNAVAILABLE:
-        errorMessage += ' - Position nicht verfügbar';
-        break;
-      case error.TIMEOUT:
-        errorMessage += ' - Timeout';
-        break;
-    }
-
-    console.error(errorMessage);
-    setError(errorMessage);
+    console.error('GPS error:', error);
+    setError(error);
   }, []);
 
   // GPS tracking setup - always active
@@ -326,7 +317,7 @@ const AppPage: React.FC = () => {
     gpsTracker.onError(handleGPSError);
 
     // Start GPS tracking
-    gpsTracker.startTracking();
+    if (GPSTracker.isSupported()) gpsTracker.startTracking();
 
     if (settings.keepScreenOn) {
       wakeLock.request();
@@ -454,14 +445,16 @@ const AppPage: React.FC = () => {
     >
       {error && (
         <Box className="error-banner" width="100%">
-          {error}
-          <button onClick={() => setError(null)}>×</button>
+          {getGpsErrorMessage(error)}
+          <button aria-label={t('common.close')} onClick={() => setError(null)}>
+            ×
+          </button>
         </Box>
       )}
 
       {!GPSTracker.isSupported() && (
         <Box className="warning" width="100%">
-          ⚠️ GPS wird von diesem Browser nicht unterstützt
+          ⚠️ {t('gps.unsupported')}
         </Box>
       )}
 
@@ -487,6 +480,10 @@ const AppPage: React.FC = () => {
             />
             <Route
               path="/routes-list"
+              element={<MainContent {...mainContentProps} />}
+            />
+            <Route
+              path="/help"
               element={<MainContent {...mainContentProps} />}
             />
             <Route

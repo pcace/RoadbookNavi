@@ -19,6 +19,8 @@ import {
 } from '../../rn2-edit';
 import { onlineSearch, onlineReverse } from '../../geocoding';
 import type { FeatureCollection, LineString } from 'geojson';
+import i18n from '../i18n';
+import { normalizeLanguage } from '../i18n/languages';
 
 export interface RouteRequestParams {
   routeId?: string;
@@ -238,7 +240,8 @@ export async function renderLocalRoadbook(
       ? 'roll'
       : body.exportType === 'pdf-screen'
         ? 'screen'
-        : 'a5'
+        : 'a5',
+    normalizeLanguage(body.language || i18n.resolvedLanguage)
   );
   if (
     pdf.length < 5 ||

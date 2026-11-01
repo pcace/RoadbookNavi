@@ -1,4 +1,5 @@
-'use client';
+import { useTranslation } from 'react-i18next';
+('use client');
 
 import type { IconButtonProps, SpanProps } from '@chakra-ui/react';
 import { ClientOnly, IconButton, Skeleton, Span } from '@chakra-ui/react';
@@ -53,12 +54,13 @@ export const ColorModeButton = React.forwardRef<
   ColorModeButtonProps
 >(function ColorModeButton(props, ref) {
   const { toggleColorMode } = useColorMode();
+  const { t } = useTranslation();
   return (
     <ClientOnly fallback={<Skeleton boxSize="8" />}>
       <IconButton
         onClick={toggleColorMode}
         variant="ghost"
-        aria-label="Toggle color mode"
+        aria-label={t('settings:interface.toggleColorMode')}
         size="sm"
         ref={ref}
         {...props}

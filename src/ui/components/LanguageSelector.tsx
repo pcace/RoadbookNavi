@@ -1,17 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { SupportedLanguage } from '../i18n/types';
 import { useColorModeValue } from './ui/color-mode';
 import { useSettings } from '../stores/settingsStore';
 import { setLanguage } from '../utils/setLanguage';
-
-const languages: Array<{
-  code: SupportedLanguage;
-  name: string;
-  flag: string;
-}> = [
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-];
+import {
+  languageOptions as languages,
+  normalizeLanguage,
+} from '../i18n/languages';
 
 interface LanguageSelectorProps {
   textColor?: string;
@@ -22,10 +18,12 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   textColor,
   borderColor,
 }) => {
+  const { t } = useTranslation();
   const { interface: uiSettings } = useSettings();
 
-  const currentLanguage =
-    languages.find(lang => lang.code === uiSettings.language) || languages[0];
+  const currentLanguage = languages.find(
+    lang => lang.code === normalizeLanguage(uiSettings.language)
+  )!;
 
   const handleLanguageChange = async (languageCode: SupportedLanguage) => {
     await setLanguage(languageCode);
@@ -37,6 +35,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   return (
     <select
+      aria-label={t('settings:interface.language')}
       value={currentLanguage.code}
       onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
         handleLanguageChange(e.target.value as SupportedLanguage);

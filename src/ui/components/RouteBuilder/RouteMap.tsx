@@ -298,6 +298,12 @@ const RouteMap: React.FC = () => {
             });
           }}
           attributionControl={false}
+          locale={{
+            'Map.Title': t('routeBuilder:map.title'),
+            'AttributionControl.ToggleAttribution': t(
+              'routeBuilder:map.toggleAttribution'
+            ),
+          }}
           style={{ width: '100%', height: '100%' }}
           mapStyle={mapStyleSpec as any}
           interactiveLayerIds={['route-line', 'route-line-highlight']}
@@ -435,7 +441,11 @@ const RouteMap: React.FC = () => {
                 </Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" disabled={isGenerating} />
+                <CloseButton
+                  aria-label={t('common.close')}
+                  size="sm"
+                  disabled={isGenerating}
+                />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>

@@ -9,17 +9,20 @@ export function routeLength(route: UserRoute): number | null {
 export function filterAndSortRoutes(
   routes: UserRoute[],
   query: string,
-  order: string
+  order: string,
+  locale?: string
 ): UserRoute[] {
   const direction = order.endsWith('-desc') ? -1 : 1;
   return routes
     .filter(r =>
-      r.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
+      r.name
+        .toLocaleLowerCase(locale)
+        .includes(query.trim().toLocaleLowerCase(locale))
     )
     .sort((a, b) => {
       let result = 0;
       if (order.startsWith('name'))
-        result = a.name.localeCompare(b.name, undefined, {
+        result = a.name.localeCompare(b.name, locale, {
           numeric: true,
           sensitivity: 'base',
         });

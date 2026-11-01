@@ -1,0 +1,65 @@
+{
+  "title": "Roadbook",
+  "entries": {
+    "distance": "Distance",
+    "turn": "Changement de direction",
+    "waypoint": "Point de passage"
+  },
+  "navigation": {
+    "nextTurn": "Prochain changement de direction",
+    "currentPosition": "Position actuelle",
+    "totalDistance": "Distance totale",
+    "resetOdometer": "Remettre à zéro",
+    "here": "Ici"
+  },
+  "states": {
+    "clickToCreate": "Créer un roadbook",
+    "clickToCreateSubtext": "Cliquez ici pour planifier un roadbook",
+    "calculating": "Calcul du roadbook…",
+    "processed": "tulipes traitées",
+    "loading": "Chargement du roadbook…",
+    "generating": "Génération du roadbook…",
+    "loadingPdf": "Chargement du PDF…",
+    "loadingIndex": "Chargement de l’index…",
+    "calculatingRoute": "Calcul de l’itinéraire…",
+    "loadingMap": "Chargement des données cartographiques…",
+    "drawing": "Dessin d’intersection {{current}} sur {{total}}"
+  },
+  "actions": {
+    "createRoadbook": "Créer un roadbook"
+  },
+  "pdf": {
+    "distance": "DISTANCE",
+    "waypoints": "POINTS DE PASSAGE",
+    "profile": "PROFIL",
+    "start": "DÉPART",
+    "finish": "ARRIVÉE",
+    "surface": "REVÊTEMENT",
+    "noSurfaceData": "Aucune donnée de revêtement",
+    "page": "Page {{page}}"
+  },
+  "errors": {
+    "loadFailed": "Impossible de charger le PDF",
+    "pagesFailed": "Impossible de charger les pages du PDF.",
+    "invalidPdf": "Le fichier PDF généré est invalide.",
+    "sourceFailed": "Impossible de lire les données PDF."
+  },
+  "instructions": {
+    "straight": "Tout droit",
+    "right": "À droite",
+    "left": "À gauche",
+    "sharpRight": "Virage serré à droite",
+    "sharpLeft": "Virage serré à gauche",
+    "slightRight": "Légèrement à droite",
+    "slightLeft": "Légèrement à gauche",
+    "uturn": "Demi-tour",
+    "start": "Départ",
+    "finish": "Arrivée atteinte",
+    "track": "chemin",
+    "secondary": "route secondaire",
+    "tertiary": "route locale",
+    "residential": "rue résidentielle",
+    "withTerrain": "{{direction}} sur {{terrain}}",
+    "entry": "Case {{number}}"
+  }
+}

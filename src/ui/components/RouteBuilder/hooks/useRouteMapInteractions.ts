@@ -169,7 +169,9 @@ export const useRouteMapInteractions = ({
       const surfaceKey = normalizeSurfaceKey(
         props.surface_norm || props.surface || 'unknown'
       );
-      const surfaceLabel = t(`routeBuilder:surfaces.${surfaceKey}`, {
+      const surfaceLabel = t(`surfaces.${surfaceKey}`, {
+        ns: 'routeBuilder',
+        nsSeparator: false,
         defaultValue: surfaceKey,
       });
       const lenM = Number(props.length_m ?? 0);

@@ -1,3 +1,4 @@
+import { profileLabel } from '../../i18n/profileLabel';
 import { useNativeProfiles } from '../../config/runtime';
 import {
   Box,
@@ -170,6 +171,7 @@ export const AppSettings = () => {
         </Text>
         <NativeSelect.Root size="sm" maxW="240px">
           <NativeSelect.Field
+            aria-label={t('settings:app.defaultMapStyle')}
             value={settingsStore.app.defaultMapStyle ?? 'open_topo'}
             onChange={e =>
               settingsStore.updateAppSettings({
@@ -202,6 +204,7 @@ export const AppSettings = () => {
         </Text>
         <NativeSelect.Root size="sm" maxW="240px">
           <NativeSelect.Field
+            aria-label={t('settings:app.defaultRoutingProfile')}
             value={settingsStore.app.defaultRoutingProfile ?? 'Car-FastEco'}
             onChange={e =>
               settingsStore.updateAppSettings({
@@ -211,7 +214,7 @@ export const AppSettings = () => {
           >
             {nativeProfiles.map(value => (
               <option key={value} value={value}>
-                {value}
+                {profileLabel(value)}
               </option>
             ))}
           </NativeSelect.Field>

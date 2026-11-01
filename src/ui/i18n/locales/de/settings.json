@@ -32,7 +32,8 @@
     "top": "Oben",
     "light": "Hell",
     "dark": "Dunkel",
-    "system": "System"
+    "system": "System",
+    "toggleColorMode": "Farbschema wechseln"
   },
   "app": {
     "keepScreenOn": "Bildschirm aktiv halten",
@@ -48,15 +49,15 @@
     "odometerIncrease": "Odometer erhöhen",
     "odometerIncreaseDescription": "Taste zum Erhöhen des Odometer-Werts",
     "roadbookScrollKeys": "Roadbook-Scroll-Tasten",
-    "roadbookScrollKeysDescription": "Konfigurieren Sie die Tasten für das manuelle Scrollen im Roadbook. Diese Tasten schalten automatisch vom Auto-Follow-Modus in den manuellen Modus um.",
+    "roadbookScrollKeysDescription": "Konfiguriere die Tasten für das manuelle Scrollen im Roadbook. Schalte Auto-Follow über das Standort-Symbol aus, wenn du frei blättern möchtest.",
     "roadbookScrollUp": "Roadbook nach oben",
     "roadbookScrollUpDescription": "Taste zum Scrollen nach oben im Roadbook",
     "roadbookScrollDown": "Roadbook nach unten",
     "roadbookScrollDownDescription": "Taste zum Scrollen nach unten im Roadbook",
     "autoFollowToggleKey": "Auto-Follow Umschalten",
-    "autoFollowToggleKeyDescription": "Konfigurieren Sie die Taste zum Ein- und Ausschalten des Auto-Follow-Modus.",
+    "autoFollowToggleKeyDescription": "Auto-Follow schaltest du derzeit über das Standort-Symbol in der Roadbook-Ansicht. Diese zusätzliche Tastenbelegung wird aktuell nicht angewendet.",
     "autoFollowToggle": "Auto-Follow umschalten",
-    "autoFollowToggleDescription": "Taste zum Ein- und Ausschalten des Auto-Follow-Modus",
+    "autoFollowToggleDescription": "Noch ohne Wirkung; verwende das Standort-Symbol.",
     "roadbookScrollMode": "Roadbook-Scroll-Modus",
     "roadbookScrollModeDescription": "Wählen Sie zwischen schrittweisem Scrollen (springt von Eintrag zu Eintrag) oder kontinuierlichem Scrollen (gleichmäßiges Scrollen beim Halten der Taste).",
     "scrollModeEntry": "Schrittweise (Einträge)",
@@ -66,7 +67,7 @@
     "slow": "Langsam",
     "fast": "Schnell",
     "closeDistanceThreshold": "Nahbereichsschwelle",
-    "closeDistanceThresholdDescription": "Distanz in Metern, ab der Roadbook-Einträge als 'nah' markiert werden (grüne Hinterlegung). Nützlich um kurze Abstände zwischen Abbiegungen zu erkennen.",
+    "closeDistanceThresholdDescription": "Nahbereichsschwelle in Metern einstellen. Die grünen Markierungen im aktuellen PDF verwenden unabhängig davon einen festen Abstand von 200 m.",
     "offlineCache": "Roadbook-Vorschauen",
     "offlineCacheDescription": "Verwaltet lokal erzeugte PDF-Vorschauen für gespeicherte Roadbooks.",
     "cachedRoutes": "Zwischengespeicherte Routen: {{count}}",
@@ -139,6 +140,23 @@
   },
   "languages": {
     "de": "Deutsch",
-    "en": "English"
+    "en": "English",
+    "fr": "Français",
+    "es": "Español"
+  },
+  "keys": {
+    "notSet": "Nicht gesetzt",
+    "pressKey": "Taste drücken…",
+    "Enter": "Eingabe",
+    "Space": "Leertaste",
+    "Escape": "Esc",
+    "Tab": "Tab",
+    "Backspace": "Rücktaste",
+    "Delete": "Entf",
+    "Home": "Pos1",
+    "End": "Ende",
+    "PageUp": "Bild ↑",
+    "PageDown": "Bild ↓",
+    "Insert": "Einfg"
   }
 }

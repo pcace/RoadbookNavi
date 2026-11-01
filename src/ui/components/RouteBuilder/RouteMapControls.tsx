@@ -42,7 +42,7 @@ export const RouteMapControls: React.FC<RouteMapControlsProps> = ({
       >
         <IconButton
           size="md"
-          aria-label="Zoom in"
+          aria-label={t('routeBuilder:map.zoomIn')}
           onClick={() => {
             if (mapRef.current) {
               mapRef.current.zoomIn();
@@ -58,7 +58,7 @@ export const RouteMapControls: React.FC<RouteMapControlsProps> = ({
 
         <IconButton
           size="md"
-          aria-label="Zoom out"
+          aria-label={t('routeBuilder:map.zoomOut')}
           onClick={() => {
             if (mapRef.current) {
               mapRef.current.zoomOut();
@@ -74,7 +74,7 @@ export const RouteMapControls: React.FC<RouteMapControlsProps> = ({
 
         <IconButton
           size="md"
-          aria-label="Reset bearing to north"
+          aria-label={t('routeBuilder:map.resetNorth')}
           onClick={() => {
             if (mapRef.current) {
               mapRef.current.resetNorth();
@@ -101,9 +101,7 @@ export const RouteMapControls: React.FC<RouteMapControlsProps> = ({
           <Menu.Trigger asChild>
             <IconButton
               size="md"
-              aria-label={t('routeBuilder:labels.mapStyle', {
-                defaultValue: 'Kartenstil auswählen',
-              })}
+              aria-label={t('routeBuilder:labels.mapStyle')}
               bg="rgba(255, 255, 255, 0.95)"
               color="gray.800"
               _hover={{ bg: 'rgba(255, 255, 255, 1)' }}
@@ -139,7 +137,7 @@ export const RouteMapControls: React.FC<RouteMapControlsProps> = ({
 
         <IconButton
           size="md"
-          aria-label="Zu meiner Position"
+          aria-label={t('routeBuilder:map.myPosition')}
           onClick={onZoomToCurrentLocation}
           bg="rgba(255, 255, 255)"
           color="gray.800"

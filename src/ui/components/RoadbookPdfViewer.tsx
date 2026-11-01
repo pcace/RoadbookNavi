@@ -1,3 +1,6 @@
+import { useTranslation } from 'react-i18next';
+import { normalizeLanguage } from '../i18n/languages';
+import { getErrorMessage } from '../utils/errorMessage';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Box, Center, Spinner, Text } from '@chakra-ui/react';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -100,6 +103,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
   routeId,
   exportType = 'pdf',
 }) => {
+  const { t } = useTranslation();
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [pdfData, setPdfData] = useState<Uint8Array | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
@@ -127,7 +131,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
   const currentVelocityRef = useRef(0);
 
   const { app: appSettings, interface: interfaceSettings } = useSettings();
-  const pdfLanguage = interfaceSettings.language.startsWith('de') ? 'de' : 'en';
+  const pdfLanguage = normalizeLanguage(interfaceSettings.language);
   const odometer = useAppStore(state => state.odometer);
   const autoFollow = useAppStore(state => state.autoFollow);
   const roadbookIndex = useAppStore(state => state.roadbookIndex);
@@ -534,14 +538,14 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
       try {
         const routeMetadata = await routeMetadataPromise;
 
-        setLoadingText('Generiere Roadbook…');
+        setLoadingText(t('roadbook:states.generating'));
         setLoadingPercent(0);
         await generateRoadbookWithProgress({
           routeId,
           profile: routeMetadata.profile,
           onEvent: evt => {
             if (evt.event === 'status') {
-              const text = evt.data.message || 'Generiere Roadbook…';
+              const text = evt.data.message || t('roadbook:states.generating');
               const progress = evt.data.progress;
               const total = evt.data.total;
               const percent =
@@ -554,7 +558,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
               setLoadingPercent(percent);
             }
             if (evt.event === 'progress') {
-              const text = evt.data.message || 'Generiere Roadbook…';
+              const text = evt.data.message || t('roadbook:states.generating');
               const percent =
                 typeof evt.data.percentage === 'number'
                   ? evt.data.percentage
@@ -569,7 +573,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
           },
         });
 
-        setLoadingText('Lade PDF…');
+        setLoadingText(t('roadbook:states.loadingPdf'));
         setLoadingPercent(null);
 
         const response = await renderLocalRoadbook('/roadbook', {
@@ -578,6 +582,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
           body: JSON.stringify({
             routeId,
             exportType,
+            language: pdfLanguage,
           }),
         });
 
@@ -593,7 +598,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
         setPdfUrl(objectUrl);
         setPdfData(bytes);
 
-        setLoadingText('Lade Index…');
+        setLoadingText(t('roadbook:states.loadingIndex'));
         setLoadingPercent(null);
 
         const indexResponse = await renderLocalRoadbook('/roadbook', {
@@ -631,8 +636,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
       if (cancelled) return;
       if (e instanceof DOMException && e.name === 'AbortError') return;
 
-      const message =
-        e instanceof Error ? e.message : 'Failed to load roadbook PDF';
+      const message = getErrorMessage(e, t('roadbook:errors.loadFailed'));
       setError(message);
     });
 
@@ -642,6 +646,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [
+    t,
     exportType,
     pdfLanguage,
     routeId,
@@ -846,7 +851,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
       <Center h="full" w="full">
         <Box textAlign="center" maxW="500px" px={4}>
           <Text fontWeight="semibold" mb={2}>
-            PDF konnte nicht geladen werden
+            {t('roadbook:errors.loadFailed')}
           </Text>
           <Text color="gray.600" fontSize="sm">
             {error}
@@ -869,7 +874,9 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
       >
         <Box textAlign="center" px={4}>
           <Spinner size="lg" mb={3} />
-          <Text fontWeight="semibold">{loadingText || 'Lade Roadbook…'}</Text>
+          <Text fontWeight="semibold">
+            {loadingText || t('roadbook:states.loading')}
+          </Text>
           {loadingPercent != null && (
             <Text color="gray.600" fontSize="sm">
               {loadingPercent}%
@@ -902,7 +909,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
         >
           <Box textAlign="center" px={4}>
             <Spinner size="lg" mb={3} />
-            <Text fontWeight="semibold">Lade Roadbook…</Text>
+            <Text fontWeight="semibold">{t('roadbook:states.loading')}</Text>
           </Box>
         </Box>
       ) : (
@@ -931,26 +938,20 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
               setNumPages(pdf.numPages);
             } catch (pdfError) {
               setError(
-                pdfError instanceof Error
-                  ? pdfError.message
-                  : 'Die PDF-Seiten konnten nicht geladen werden.'
+                getErrorMessage(pdfError, t('roadbook:errors.pagesFailed'))
               );
             }
           }}
           onLoadError={pdfError => {
             console.error('[RoadbookPdfViewer] PDF load failed', pdfError);
             setError(
-              pdfError instanceof Error
-                ? pdfError.message
-                : 'Die erzeugte PDF-Datei ist ungültig.'
+              getErrorMessage(pdfError, t('roadbook:errors.invalidPdf'))
             );
           }}
           onSourceError={pdfError => {
             console.error('[RoadbookPdfViewer] PDF source failed', pdfError);
             setError(
-              pdfError instanceof Error
-                ? pdfError.message
-                : 'Die PDF-Daten konnten nicht gelesen werden.'
+              getErrorMessage(pdfError, t('roadbook:errors.sourceFailed'))
             );
           }}
           loading={
@@ -966,7 +967,9 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
             >
               <Box textAlign="center" px={4}>
                 <Spinner size="lg" mb={3} />
-                <Text fontWeight="semibold">Lade Roadbook…</Text>
+                <Text fontWeight="semibold">
+                  {t('roadbook:states.loading')}
+                </Text>
               </Box>
             </Box>
           }
@@ -974,7 +977,7 @@ export const RoadbookPdfViewer: React.FC<RoadbookPdfViewerProps> = ({
             <Center h="full" w="full">
               <Box textAlign="center" maxW="500px" px={4}>
                 <Text fontWeight="semibold" mb={2}>
-                  PDF konnte nicht geladen werden
+                  {t('roadbook:errors.loadFailed')}
                 </Text>
               </Box>
             </Center>

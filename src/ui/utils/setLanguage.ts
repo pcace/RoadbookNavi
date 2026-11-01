@@ -1,17 +1,10 @@
 import i18n from '../i18n';
 import { useSettings } from '../stores/settingsStore';
+import { normalizeLanguage, type SupportedLanguage } from '../i18n/languages';
 
 // Normalize arbitrary language tags to supported app languages
-const normalize = (lng: string): 'de' | 'en' => {
-  const l = (lng || '').toLowerCase();
-  if (l.startsWith('en')) return 'en';
-  if (l.startsWith('de')) return 'de';
-  // default fallback
-  return 'de';
-};
-
 export const setLanguage = async (lng: string) => {
-  const target = normalize(lng);
+  const target = normalizeLanguage(lng);
 
   // Update i18n immediately (and let detector cache to localStorage/cookie)
   await i18n.changeLanguage(target);
@@ -19,18 +12,23 @@ export const setLanguage = async (lng: string) => {
   try {
     // Store the explicit preference independently from detector metadata.
     localStorage.setItem('preferredLanguage', target);
+    const url = new URL(window.location.href);
+    if (url.searchParams.has('lng')) {
+      url.searchParams.set('lng', target);
+      window.history.replaceState(window.history.state, '', url);
+    }
   } catch {}
 
   const { updateInterfaceSettings } = useSettings.getState();
   await updateInterfaceSettings({ language: target });
 };
 
-export const getPreferredLanguage = (): 'de' | 'en' | null => {
+export const getPreferredLanguage = (): SupportedLanguage | null => {
   try {
     const explicit = localStorage.getItem('preferredLanguage');
-    if (explicit) return normalize(explicit);
+    if (explicit) return normalizeLanguage(explicit);
     const detected = localStorage.getItem('i18nextLng');
-    return detected ? normalize(detected) : null;
+    return detected ? normalizeLanguage(detected) : null;
   } catch {
     return null;
   }

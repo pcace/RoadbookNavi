@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../utils/errorMessage';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -41,7 +42,7 @@ const EXPORT_FORMATS = [
 ] as const;
 
 const RoutesList: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const routesStore = useRoutesStore();
   const importRoadbook = useNativeImport();
@@ -101,9 +102,7 @@ const RoutesList: React.FC = () => {
       if (message) setImportMessage(message);
       await routesStore.loadRoutes();
     } catch (error) {
-      setImportMessage(
-        error instanceof Error ? error.message : 'Import fehlgeschlagen.'
-      );
+      setImportMessage(getErrorMessage(error, t('errors.importFailed')));
     } finally {
       setImporting(false);
     }
@@ -138,7 +137,7 @@ const RoutesList: React.FC = () => {
       navigate(buildRoadbookPath(route.id, route.name));
     }).catch(error =>
       alert(
-        `Failed to load route: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `${t('errors.routeLoadError')}: ${getErrorMessage(error, t('common.unknownError'))}`
       )
     );
 
@@ -161,7 +160,7 @@ const RoutesList: React.FC = () => {
       }
     }).catch(error =>
       alert(
-        `Failed to delete route: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `${t('errors.routeDeleteError')}: ${getErrorMessage(error, t('common.unknownError'))}`
       )
     );
 
@@ -176,14 +175,19 @@ const RoutesList: React.FC = () => {
       setSelectedRouteForExport(null);
     } catch (error) {
       alert(
-        `Export fehlgeschlagen: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`
+        `${t('errors.exportFailed')}: ${getErrorMessage(error, t('common.unknownError'))}`
       );
     } finally {
       setExportingRouteId(null);
     }
   };
 
-  const routes = filterAndSortRoutes(routesStore.routes, filter, sort);
+  const routes = filterAndSortRoutes(
+    routesStore.routes,
+    filter,
+    sort,
+    i18n.resolvedLanguage
+  );
 
   if (routesStore.isLoading && routesStore.routes.length === 0) {
     return (
@@ -198,7 +202,7 @@ const RoutesList: React.FC = () => {
     <>
       <Box p={6} bg={bgColor} height="100%" overflow="auto">
         <Button mb={4} loading={importing} onClick={handleImport}>
-          {t('routeBuilder:labels.openRn2', { defaultValue: 'Öffnen (.rn2)' })}
+          {t('routeBuilder:labels.openRn2')}
         </Button>
         {importMessage && <Text mb={4}>{importMessage}</Text>}
 
@@ -325,7 +329,7 @@ const RoutesList: React.FC = () => {
                 </Button>
               </Dialog.Footer>
               <Dialog.CloseTrigger asChild>
-                <CloseButton size="sm" />
+                <CloseButton aria-label={t('common.close')} size="sm" />
               </Dialog.CloseTrigger>
             </Dialog.Content>
           </Dialog.Positioner>
