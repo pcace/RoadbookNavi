@@ -120,9 +120,14 @@ async function open(id, mode) {
     location.hash = '/app/routes-list';
   });
   await request(`/session/${session}/refresh`, {});
+  // The root shell can appear before the router and lazy library are ready.
+  // Navigate only after the seeded projects are visible.
   await until(
-    () => document.querySelector('#root')?.children.length > 0,
-    'app startup'
+    () =>
+      location.hash === '#/app/routes-list' &&
+      document.body.innerText.includes('PDF test 1') &&
+      document.body.innerText.includes('PDF test 40'),
+    'project library startup'
   );
   await execute(
     (id, mode) => {
@@ -138,7 +143,10 @@ async function open(id, mode) {
     mode
   );
   await until(() => {
-    if (document.body.innerText.includes('PDF konnte nicht geladen werden'))
+    if (
+      document.body.innerText.includes('PDF konnte nicht geladen werden') ||
+      document.body.innerText.includes('Could not load PDF')
+    )
       throw new Error(document.body.innerText);
     const canvas = document.querySelector('.roadbookPdfViewer canvas');
     return (
@@ -284,7 +292,9 @@ try {
     await screenshot('failure').catch(() => {});
     await writeFile(
       join(output, 'failure.txt'),
-      await execute(() => document.body.innerText).catch(String)
+      await execute(
+        () => `URL: ${location.href}\n${document.body.innerText}`
+      ).catch(String)
     );
   }
   throw error;
