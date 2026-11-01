@@ -14,7 +14,11 @@ export const helpSlug = (title: string) =>
     .replace(/[^\p{L}\p{N}_\s-]/gu, '')
     .replace(/\s/g, '-');
 
-export function renderHelpMarkdown(markdown: string, assetBase: string) {
+export function renderHelpMarkdown(
+  markdown: string,
+  assetBase: string,
+  languageHref = (language: string) => `${assetBase}${language}/`
+) {
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -36,8 +40,13 @@ export function renderHelpMarkdown(markdown: string, assetBase: string) {
       token.attrSet('href', `${assetBase}${href}`);
       token.attrSet('class', 'help-screenshot');
     }
-    if (/^(de|en|es|fr)\.md$/.test(href))
-      token.attrSet('href', assetBase + href);
+    const language = /^(de|en|es|fr)\.md$/.exec(href)?.[1];
+    if (language) {
+      token.attrSet('href', languageHref(language));
+      token.attrSet('data-help-language', language);
+      token.attrSet('lang', language);
+      token.attrSet('hreflang', language);
+    }
     return self.renderToken(tokens, index, options);
   };
   const tokens = md.parse(markdown, {});
