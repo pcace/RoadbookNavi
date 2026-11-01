@@ -1,3 +1,4 @@
+import i18n from './ui/i18n';
 import type { Project, Entry } from './model';
 import type { BRouterGeoJSON, Turn } from './core/types';
 import { osm, routing } from './services';
@@ -16,7 +17,7 @@ export async function generate(
     if (signal.aborted) throw new Error('Abgebrochen');
   };
   check();
-  progress('Route lokal berechnen …');
+  progress(i18n.t('roadbook:states.calculatingRoute'));
   check();
   const track = Array.isArray(project.track?.features[0]?.properties?.messages)
     ? project.track
@@ -76,13 +77,17 @@ export async function generate(
           lon: turn.points[0].longitude,
         })
       ),
-      (current, total) => progress('Kartendaten laden …', current, total),
+      (current, total) =>
+        progress(i18n.t('roadbook:states.loadingMap'), current, total),
       signal
     );
     for (let i = 0; i < turns.length; i++) {
       check();
       progress(
-        `Kreuzungszeichnung ${i + 1} von ${turns.length}`,
+        i18n.t('roadbook:states.drawing', {
+          current: i + 1,
+          total: turns.length,
+        }),
         i + 1,
         turns.length
       );

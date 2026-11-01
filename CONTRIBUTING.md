@@ -31,7 +31,9 @@ the recurring PDF.js worker version mismatch and the required rendering checks.
 1. Create a focused branch from the current development branch.
 2. Keep platform-independent logic in `src/core`.
 3. Keep comments, identifiers, commit messages, and developer documentation in
-   English. User-visible text belongs in both locale files.
+   English. User-visible text belongs in every supported locale (`de`, `en`, `es`, and `fr`).
+   Include the website and shared app/browser guide when changing user-facing
+   copy. `pnpm test` checks locale keys, placeholders, and help media.
 4. Use a Conventional Commit title for the pull request. `feat:` adds a feature,
    `fix:` fixes user-visible behavior, and `perf:` improves performance. Write the
    rest of the title so it can appear unchanged in the release notes. Pull
@@ -64,8 +66,11 @@ See [RELEASING.md](RELEASING.md) for the stable and beta release process.
 
 ## Maintain the user guide
 
-The canonical handbooks are [German](public/help/de.md) and
-[English](public/help/en.md). Keep both task lists and limitations in sync.
+The canonical handbooks are [German](public/help/de.md),
+[English](public/help/en.md), [Spanish](public/help/es.md) and
+[French](public/help/fr.md). Keep all task lists and limitations in sync.
+Interface labels for app and static help share the locale JSON files; avoid
+inline language checks in the help renderer or website scripts.
 They are rendered in the app and by the public website build; do not maintain
 separate native and web copies. Describe differences inside the relevant task.
 The short legacy Markdown files only preserve old links.
@@ -92,7 +97,7 @@ After changing the guide or renderer, run:
     node --test scripts/help-site.test.mjs
     pnpm build:web
 
-Preview the built site on a local HTTP server. Check both languages, narrow
+Preview the built site on a local HTTP server. Check all four languages, narrow
 screens, chapter links, search, keyboard focus, Escape-to-close image previews
 and the landing page's help links. Read the generated guide with JavaScript
 disabled as well as the source Markdown. Native location and offline operation

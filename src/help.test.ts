@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { renderHelpMarkdown } from './ui/utils/helpMarkdown';
 
 describe('portable user handbook', () => {
-  for (const language of ['de', 'en']) {
+  for (const language of ['de', 'en', 'es', 'fr']) {
     it(language + ': all chapter links and local pictures resolve', () => {
       const source = readFileSync(
         new URL('../public/help/' + language + '.md', import.meta.url),
@@ -29,6 +29,16 @@ describe('portable user handbook', () => {
       expect(html).not.toContain('/help/img/small/');
       expect(html).toContain('class="help-screenshot"');
       expect(html).toContain('loading="lazy"');
+      const english = readFileSync(
+        new URL('../public/help/en.md', import.meta.url),
+        'utf8'
+      );
+      expect(pictures).toEqual(
+        [...english.matchAll(/\]\((images\/[^)]+)\)/g)].map(match => match[1])
+      );
+      expect(chapters).toHaveLength(
+        renderHelpMarkdown(english, '/app/help/').chapters.length
+      );
     });
   }
 
@@ -43,5 +53,10 @@ describe('portable user handbook', () => {
     expect(app.html).toContain('href="/app/help/en.md"');
     expect(site.html).toContain('href="../images/a.jpg"');
     expect(site.html).toContain('href="../en.md"');
+    for (const language of ['es', 'fr']) {
+      expect(
+        renderHelpMarkdown(`[Guide](${language}.md)`, '/app/help/').html
+      ).toContain(`href="/app/help/${language}.md"`);
+    }
   });
 });

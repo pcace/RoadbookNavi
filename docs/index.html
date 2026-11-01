@@ -13,9 +13,24 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <nav class="language-switch" aria-label="Language">
-      <button type="button" data-language="en">EN</button>
-      <button type="button" data-language="de">DE</button>
+    <nav
+      class="language-switch"
+      aria-label="Language"
+      data-text="languageLabel"
+      data-attribute="aria-label"
+    >
+      <button type="button" data-language="en" lang="en" aria-label="English">
+        EN
+      </button>
+      <button type="button" data-language="de" lang="de" aria-label="Deutsch">
+        DE
+      </button>
+      <button type="button" data-language="es" lang="es" aria-label="Español">
+        ES
+      </button>
+      <button type="button" data-language="fr" lang="fr" aria-label="Français">
+        FR
+      </button>
     </nav>
 
     <a
@@ -203,7 +218,11 @@
     <footer>
       <p>© 2026 RoadbookNavi. <span data-text="footerClaim"></span></p>
       <p class="footer-meta"><span data-text="footerMeta"></span></p>
-      <nav aria-label="Project links">
+      <nav
+        aria-label="Project links"
+        data-text="projectLinksLabel"
+        data-attribute="aria-label"
+      >
         <a href="help/en/" data-help-link data-text="helpButton"></a>
         <a href="https://github.com/pcace/RoadbookNavi" data-text="source"></a>
         <a
@@ -221,6 +240,8 @@
       const translations = {
         en: {
           title: 'RoadbookNavi',
+          languageLabel: 'Language',
+          projectLinksLabel: 'Project links',
           description:
             'RoadbookNavi is a route planner, roadbook generator, and GPS navigation app.',
           githubLabel: 'Open RoadbookNavi on GitHub',
@@ -278,6 +299,8 @@
         },
         de: {
           title: 'RoadbookNavi',
+          languageLabel: 'Sprache',
+          projectLinksLabel: 'Projektlinks',
           description:
             'RoadbookNavi ist ein Routenplaner, Roadbook-Generator und eine GPS-Navigations-App.',
           githubLabel: 'RoadbookNavi auf GitHub öffnen',
@@ -332,10 +355,136 @@
           issues: 'Issues',
           license: 'GNU GPL v3.0',
         },
+        fr: {
+          title: 'RoadbookNavi',
+          helpButton: 'Aide et premiers pas',
+          description:
+            'RoadbookNavi est un planificateur d’itinéraires, un générateur de roadbooks et une application de navigation GPS.',
+          githubLabel: 'Ouvrir RoadbookNavi sur GitHub',
+          heroSubtitle: 'Créez et suivez vos roadbooks partout, à tout moment',
+          benefitsTitle: 'Découvrez le plaisir de la navigation au roadbook',
+          benefitOneTitle: 'Bien plus qu’une destination',
+          benefitOneText:
+            'Relevez le défi et prenez plaisir à naviguer avec de vrais roadbooks.',
+          benefitTwoTitle: 'Votre aventure, vos règles',
+          benefitTwoText:
+            'Créez vos propres roadbooks pour n’importe quel itinéraire. Planifiez librement et restez autonome.',
+          benefitThreeTitle: 'Vos données, votre appareil',
+          benefitThreeText:
+            'Planifiez des itinéraires, générez des roadbooks et naviguez sans compte ni serveur RoadbookNavi.',
+          downloadTitle: 'Télécharger RoadbookNavi',
+          downloadText:
+            'Téléchargez directement la dernière version stable pour votre système.',
+          downloadWindows: 'Télécharger pour Windows',
+          downloadMacos: 'Télécharger pour macOS',
+          downloadLinux: 'Télécharger pour Linux',
+          downloadDeb: 'Debian / Ubuntu (.deb)',
+          downloadAndroid: 'Télécharger pour Android',
+          onlineButton: 'Démarrer en ligne',
+          onlineText:
+            'Application web utilisant le calcul d’itinéraire en ligne de BRouter. Les projets restent dans votre navigateur. Les applications installées calculent les itinéraires localement.',
+          issuesButton: 'Signaler un problème ou une idée',
+          actionTitle: 'RoadbookNavi en action',
+          routePlanningCaption:
+            'Planifier des itinéraires et créer des roadbooks',
+          navigationCaption: 'Un affichage flexible pour la navigation',
+          featuresTitle: 'Tous les outils pour votre aventure au roadbook',
+          featureOneTitle: 'Création de roadbooks',
+          featureOneA: 'Tracez un itinéraire sur la carte',
+          featureOneB: 'Générez un roadbook professionnel',
+          featureOneC: 'Exportez en PDF ou au format rouleau',
+          featureTwoTitle: 'Gestion et échange de roadbooks',
+          featureTwoA: 'Renommez, dupliquez et organisez vos roadbooks',
+          featureTwoB: 'Importez et exportez des fichiers Rally Navigator 2',
+          featureTwoC: 'Échangez des itinéraires sans compte',
+          featureThreeTitle: 'Un calcul d’itinéraire adapté à votre plateforme',
+          featureThreeA:
+            'Téléchargez les données de routage et de cartes selon vos besoins',
+          featureThreeB:
+            'Calculez localement dans l’application installée, en ligne dans le navigateur',
+          featureThreeC: 'Choisissez parmi les profils de routage fournis',
+          featureFourTitle: 'Navigation',
+          featureFourA: 'Utilisez un téléphone, une tablette ou un ordinateur',
+          featureFourB: 'Suivez le roadbook avec le GPS',
+          featureFourC: 'Commandez les cases au clavier ou depuis le guidon',
+          footerClaim: 'Créez et suivez vos roadbooks partout, à tout moment !',
+          footerMeta:
+            'Données OpenStreetMap · calcul avec BRouter · application multiplateforme',
+          source: 'Code source',
+          issues: 'Problèmes signalés',
+          license: 'GNU GPL v3.0',
+          languageLabel: 'Langue',
+          projectLinksLabel: 'Liens du projet',
+        },
+        es: {
+          title: 'RoadbookNavi',
+          helpButton: 'Ayuda y primeros pasos',
+          description:
+            'RoadbookNavi es un planificador de rutas, un generador de roadbooks y una aplicación de navegación GPS.',
+          githubLabel: 'Abrir RoadbookNavi en GitHub',
+          heroSubtitle: 'Crea y recorre roadbooks donde y cuando quieras',
+          benefitsTitle: 'Descubre la emoción de navegar con roadbook',
+          benefitOneTitle: 'Mucho más que llegar',
+          benefitOneText:
+            'Vive el reto y disfruta navegando con auténticos roadbooks.',
+          benefitTwoTitle: 'Tu aventura, tus reglas',
+          benefitTwoText:
+            'Crea tus propios roadbooks para cualquier ruta. Planifica sobre la marcha y mantén tu independencia.',
+          benefitThreeTitle: 'Tus datos, tu dispositivo',
+          benefitThreeText:
+            'Planifica rutas, genera roadbooks y navega sin cuenta ni servidor de RoadbookNavi.',
+          downloadTitle: 'Descargar RoadbookNavi',
+          downloadText:
+            'Descarga directamente la última versión estable para tu sistema.',
+          downloadWindows: 'Descargar para Windows',
+          downloadMacos: 'Descargar para macOS',
+          downloadLinux: 'Descargar para Linux',
+          downloadDeb: 'Debian / Ubuntu (.deb)',
+          downloadAndroid: 'Descargar para Android',
+          onlineButton: 'Empezar en línea',
+          onlineText:
+            'Aplicación web con cálculo de rutas en línea de BRouter. Los proyectos se guardan en tu navegador. Las aplicaciones instaladas calculan las rutas localmente.',
+          issuesButton: 'Problemas e ideas',
+          actionTitle: 'RoadbookNavi en acción',
+          routePlanningCaption: 'Planifica rutas y crea roadbooks',
+          navigationCaption: 'Una visualización flexible para navegar',
+          featuresTitle: 'Todas las herramientas para tu aventura con roadbook',
+          featureOneTitle: 'Creación de roadbooks',
+          featureOneA: 'Traza una ruta en el mapa',
+          featureOneB: 'Genera un roadbook profesional',
+          featureOneC: 'Exporta en PDF o en formato de rollo',
+          featureTwoTitle: 'Gestión e intercambio de roadbooks',
+          featureTwoA: 'Renombra, duplica y organiza tus roadbooks',
+          featureTwoB: 'Importa y exporta archivos de Rally Navigator 2',
+          featureTwoC: 'Intercambia rutas sin cuenta',
+          featureThreeTitle: 'Cálculo de rutas para tu plataforma',
+          featureThreeA: 'Descarga datos de rutas y mapas cuando los necesites',
+          featureThreeB:
+            'Calcula localmente en la aplicación instalada o en línea en el navegador',
+          featureThreeC: 'Elige entre los perfiles de ruta incluidos',
+          featureFourTitle: 'Navegación',
+          featureFourA: 'Usa móviles, tabletas y ordenadores',
+          featureFourB: 'Sigue el roadbook con GPS',
+          featureFourC:
+            'Controla las viñetas con el teclado o los mandos del manillar',
+          footerClaim: '¡Crea y recorre roadbooks donde y cuando quieras!',
+          footerMeta:
+            'Datos de OpenStreetMap · cálculo con BRouter · aplicación multiplataforma',
+          source: 'Código fuente',
+          issues: 'Problemas',
+          license: 'GNU GPL v3.0',
+          languageLabel: 'Idioma',
+          projectLinksLabel: 'Enlaces del proyecto',
+        },
       };
 
+      function normalizeLanguage(language) {
+        const base = (language || '').toLowerCase().split(/[-_]/)[0];
+        return Object.hasOwn(translations, base) ? base : 'en';
+      }
+
       function setLanguage(language) {
-        const selected = translations[language] ? language : 'en';
+        const selected = normalizeLanguage(language);
         const copy = translations[selected];
         document.documentElement.lang = selected;
         document.title = copy.title;
@@ -366,7 +515,14 @@
         document.querySelectorAll('[data-help-link]').forEach(link => {
           link.href = 'help/' + selected + '/';
         });
-        localStorage.setItem('roadbooknavi-language', selected);
+        try {
+          localStorage.setItem('roadbooknavi-language', selected);
+        } catch {}
+        const url = new URL(location.href);
+        if (url.searchParams.has('lng')) {
+          url.searchParams.set('lng', selected);
+          history.replaceState(history.state, '', url);
+        }
       }
 
       document.querySelectorAll('[data-language]').forEach(button => {
@@ -375,7 +531,22 @@
         );
       });
 
-      setLanguage(localStorage.getItem('roadbooknavi-language') || 'en');
+      let savedLanguage;
+      try {
+        savedLanguage = localStorage.getItem('roadbooknavi-language');
+      } catch {}
+      const requestedLanguage = new URLSearchParams(location.search).get('lng');
+      const browserLanguage = (
+        navigator.languages || [navigator.language]
+      ).find(language =>
+        Object.hasOwn(
+          translations,
+          (language || '').toLowerCase().split(/[-_]/)[0]
+        )
+      );
+      setLanguage(
+        requestedLanguage || savedLanguage || browserLanguage || 'en'
+      );
     </script>
   </body>
 </html>

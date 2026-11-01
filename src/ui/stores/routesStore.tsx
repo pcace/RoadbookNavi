@@ -1,3 +1,5 @@
+import i18n from '../i18n';
+import { getErrorMessage } from '../utils/errorMessage';
 import { create } from 'zustand';
 import {
   createLocalProject,
@@ -69,7 +71,7 @@ export const useRoutesStore = create<RoutesStore>()(set => ({
       });
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to load routes',
+        error: getErrorMessage(error, i18n.t('errors.routeLoadError')),
         isLoading: false,
       });
     }
@@ -87,7 +89,7 @@ export const useRoutesStore = create<RoutesStore>()(set => ({
       return normalizedRoute;
     } catch (error) {
       set({
-        error: error instanceof Error ? error.message : 'Failed to save route',
+        error: getErrorMessage(error, i18n.t('errors.routeSaveError')),
         isLoading: false,
       });
       throw error;
@@ -114,8 +116,7 @@ export const useRoutesStore = create<RoutesStore>()(set => ({
       return normalizedRoute;
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : 'Failed to update route',
+        error: getErrorMessage(error, i18n.t('errors.routeUpdateError')),
         isLoading: false,
       });
       throw error;
@@ -132,8 +133,7 @@ export const useRoutesStore = create<RoutesStore>()(set => ({
       }));
     } catch (error) {
       set({
-        error:
-          error instanceof Error ? error.message : 'Failed to delete route',
+        error: getErrorMessage(error, i18n.t('errors.routeDeleteError')),
         isLoading: false,
       });
       throw error;

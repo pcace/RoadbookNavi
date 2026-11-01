@@ -8,13 +8,22 @@
   "navigation": {
     "nextTurn": "Next Turn",
     "currentPosition": "Current Position",
-    "totalDistance": "Total Distance"
+    "totalDistance": "Total Distance",
+    "resetOdometer": "Reset",
+    "here": "Here"
   },
   "states": {
     "clickToCreate": "Create a new roadbook",
     "clickToCreateSubtext": "Click here to start roadbook planning",
     "calculating": "Calculating roadbook...",
-    "processed": "tulips processed"
+    "processed": "tulips processed",
+    "loading": "Loading roadbook…",
+    "generating": "Generating roadbook…",
+    "loadingPdf": "Loading PDF…",
+    "loadingIndex": "Loading index…",
+    "calculatingRoute": "Calculating route…",
+    "loadingMap": "Loading map data…",
+    "drawing": "Junction drawing {{current}} of {{total}}"
   },
   "actions": {
     "createRoadbook": "Create roadbook"
@@ -26,6 +35,31 @@
     "start": "START",
     "finish": "FINISH",
     "surface": "SURFACE",
-    "noSurfaceData": "No surface data"
+    "noSurfaceData": "No surface data",
+    "page": "Page {{page}}"
+  },
+  "errors": {
+    "loadFailed": "Could not load PDF",
+    "pagesFailed": "Could not load the PDF pages.",
+    "invalidPdf": "The generated PDF file is invalid.",
+    "sourceFailed": "Could not read the PDF data."
+  },
+  "instructions": {
+    "straight": "Straight ahead",
+    "right": "Right",
+    "left": "Left",
+    "sharpRight": "Sharp right",
+    "sharpLeft": "Sharp left",
+    "slightRight": "Slight right",
+    "slightLeft": "Slight left",
+    "uturn": "U-turn",
+    "start": "Start",
+    "finish": "Finish reached",
+    "track": "track",
+    "secondary": "secondary road",
+    "tertiary": "local road",
+    "residential": "residential street",
+    "withTerrain": "{{direction}} on {{terrain}}",
+    "entry": "Entry {{number}}"
   }
 }

@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { normalizeLanguage, supportedLanguages } from './languages';
 
 // Import translation files
 import commonDE from './locales/de/common.json';
@@ -12,9 +13,29 @@ import commonEN from './locales/en/common.json';
 import roadbookEN from './locales/en/roadbook.json';
 import settingsEN from './locales/en/settings.json';
 import routeBuilderEN from './locales/en/routeBuilder.json';
+import commonES from './locales/es/common.json';
+import roadbookES from './locales/es/roadbook.json';
+import settingsES from './locales/es/settings.json';
+import routeBuilderES from './locales/es/routeBuilder.json';
+import commonFR from './locales/fr/common.json';
+import roadbookFR from './locales/fr/roadbook.json';
+import settingsFR from './locales/fr/settings.json';
+import routeBuilderFR from './locales/fr/routeBuilder.json';
 
 // Define resources
 const resources = {
+  es: {
+    common: commonES,
+    roadbook: roadbookES,
+    settings: settingsES,
+    routeBuilder: routeBuilderES,
+  },
+  fr: {
+    common: commonFR,
+    roadbook: roadbookFR,
+    settings: settingsFR,
+    routeBuilder: routeBuilderFR,
+  },
   de: {
     common: commonDE,
     roadbook: roadbookDE,
@@ -33,12 +54,15 @@ i18n
   .use(LanguageDetector) // Automatically detect user language
   .use(initReactI18next) // Pass i18n instance to react-i18next
   .init({
+    // Bundled resources and detection are synchronous; settings must see the
+    // resolved language before their persisted store is initialized.
+    initAsync: false,
     resources,
 
     // Language settings - let LanguageDetector determine the language
     // lng: undefined, // Let LanguageDetector determine the language
     fallbackLng: 'en', // Fallback to English if detection fails
-    supportedLngs: ['de', 'en'],
+    supportedLngs: [...supportedLanguages],
 
     // Namespace settings
     defaultNS: 'common',
@@ -50,7 +74,7 @@ i18n
     },
 
     // Development settings
-    debug: import.meta.env.DEV,
+    debug: import.meta.env.DEV && import.meta.env.MODE !== 'test',
 
     // Language detection settings
     detection: {
@@ -71,22 +95,19 @@ i18n
       lookupFromPathIndex: 0,
       lookupFromSubdomainIndex: 0,
       // Convert browser language codes to our supported languages
-      convertDetectedLanguage: (lng: string) => {
-        // If browser language starts with 'de', use 'de'
-        if (lng?.toLowerCase().startsWith('de')) return 'de';
-        // If browser language starts with 'en', use 'en'
-        if (lng?.toLowerCase().startsWith('en')) return 'en';
-        // Default to English for all other languages (main language on fresh install)
-        return 'en';
-      },
+      convertDetectedLanguage: normalizeLanguage,
     },
   });
 
 // Keep <html lang="..."> in sync for accessibility/SEO
 i18n.on('languageChanged', lng => {
   try {
-    document.documentElement.lang = lng || 'de';
+    document.documentElement.lang = normalizeLanguage(lng);
   } catch {}
 });
+
+if (typeof document !== 'undefined') {
+  document.documentElement.lang = normalizeLanguage(i18n.resolvedLanguage);
+}
 
 export default i18n;

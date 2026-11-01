@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { renderHelpMarkdown } from '../utils/helpMarkdown';
+import { normalizeLanguage } from '../i18n/languages';
 import './HelpContent.css';
 
 export const HelpContent = () => {
-  const { i18n } = useTranslation();
-  const language = i18n.language.startsWith('de') ? 'de' : 'en';
-  const german = language === 'de';
+  const { t, i18n } = useTranslation();
+  const language = normalizeLanguage(i18n.resolvedLanguage || i18n.language);
   const [markdown, setMarkdown] = useState('');
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -97,17 +97,17 @@ export const HelpContent = () => {
           document.getElementById('help-article')?.focus();
         }}
       >
-        {german ? 'Zur Anleitung' : 'Skip to guide'}
+        {t('help.skip')}
       </a>
       <div className="help-layout">
         <details className="help-sidebar" ref={navigation} open>
-          <summary>{german ? 'Kapitel & Suche' : 'Chapters & search'}</summary>
+          <summary>{t('help.chaptersSearch')}</summary>
           <div className="help-sidebar-content">
             <button
               className="help-back"
               onClick={() => navigate(returnTo.current)}
             >
-              ← {german ? 'Zur App zurück' : 'Back to the app'}
+              ← {t('help.back')}
             </button>
             <form
               onSubmit={event => {
@@ -115,26 +115,19 @@ export const HelpContent = () => {
                 if (matches[0]) openChapter(matches[0].id);
               }}
             >
-              <label htmlFor="help-search">
-                {german ? 'Hilfe durchsuchen' : 'Search this guide'}
-              </label>
+              <label htmlFor="help-search">{t('help.searchLabel')}</label>
               <input
                 id="help-search"
                 type="search"
                 value={query}
                 onChange={event => setQuery(event.target.value)}
-                placeholder={
-                  german ? 'z. B. exportieren, GPS …' : 'e.g. export, GPS …'
-                }
+                placeholder={t('help.searchPlaceholder')}
               />
             </form>
             <p className="help-search-status" role="status">
-              {query &&
-                (german
-                  ? `${matches.length} passende Kapitel`
-                  : `${matches.length} matching chapters`)}
+              {query && t('help.matches', { count: matches.length })}
             </p>
-            <nav aria-label={german ? 'Hilfekapitel' : 'Help chapters'}>
+            <nav aria-label={t('help.chapterNavigation')}>
               {matches.map(chapter => (
                 <a
                   key={chapter.id}
@@ -150,24 +143,18 @@ export const HelpContent = () => {
               ))}
             </nav>
             <a className="help-source" href={`${base}${language}.md`}>
-              {german ? 'Anleitung als Markdown' : 'Read the Markdown file'}
+              {t('help.markdown')}
             </a>
           </div>
         </details>
         <main id="help-article" className="help-article" tabIndex={-1}>
           {loading ? (
-            <p role="status">
-              {german ? 'Anleitung wird geladen …' : 'Loading guide …'}
-            </p>
+            <p role="status">{t('help.loading')}</p>
           ) : error ? (
             <div role="alert">
-              <p>
-                {german
-                  ? 'Die Hilfe konnte nicht geladen werden.'
-                  : 'The guide could not be loaded.'}
-              </p>
+              <p>{t('help.errorLoading')}</p>
               <button onClick={() => window.location.reload()}>
-                {german ? 'Erneut versuchen' : 'Try again'}
+                {t('help.retry')}
               </button>
             </div>
           ) : (
@@ -196,16 +183,14 @@ export const HelpContent = () => {
       <dialog
         ref={dialog}
         className="help-lightbox"
-        aria-label={
-          german ? 'Screenshot in voller Größe' : 'Full-size screenshot'
-        }
+        aria-label={t('help.fullSize')}
         onClose={() => setImage(null)}
         onClick={event => {
           if (event.target === event.currentTarget) setImage(null);
         }}
       >
         <button className="help-lightbox-close" onClick={() => setImage(null)}>
-          {german ? 'Schließen' : 'Close'} ×
+          {t('buttons.close')} ×
         </button>
         {image && <img src={image.src} alt={image.alt} />}
         <p>{image?.alt}</p>

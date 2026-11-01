@@ -1,4 +1,5 @@
-const german = document.documentElement.lang === 'de';
+const copy = JSON.parse(document.getElementById('help-copy').textContent);
+const plurals = new Intl.PluralRules(document.documentElement.lang);
 const chapters = JSON.parse(
   document.getElementById('help-chapters').textContent
 );
@@ -9,9 +10,7 @@ const status = document.querySelector('.help-search-status');
 const normalize = value =>
   value.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
 search.closest('form').hidden = false;
-sidebar.querySelector('summary').textContent = german
-  ? 'Kapitel & Suche'
-  : 'Chapters & search';
+sidebar.querySelector('summary').textContent = copy.chaptersSearch;
 const mobile = () => window.matchMedia('(max-width: 899px)').matches;
 if (mobile()) sidebar.open = false;
 
@@ -23,9 +22,9 @@ search.addEventListener('input', () => {
     if (!link.hidden) matches++;
   });
   status.textContent = query
-    ? german
-      ? matches + ' passende Kapitel'
-      : matches + ' matching chapters'
+    ? (
+        copy['matches_' + plurals.select(matches)] || copy.matches_other
+      ).replace('{{count}}', String(matches))
     : '';
 });
 sidebar.querySelector('form').addEventListener('submit', event => {

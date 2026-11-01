@@ -100,7 +100,7 @@ Beim Drucken des A5-PDFs stelle die passende Papiergröße ein und prüfe die Dr
 
 ## App öffnen und installieren
 
-Du kannst [RoadbookNavi direkt im Browser öffnen](https://roadbooknavi.de/app/) oder auf der [Website die installierte App herunterladen](https://roadbooknavi.de/#download).
+Du kannst [RoadbookNavi direkt im Browser öffnen](https://roadbooknavi.de/app/?lng=de) oder auf der [Website die installierte App herunterladen](https://roadbooknavi.de/?lng=de#download).
 
 | Gerät                         | Passender Download                                   |
 | ----------------------------- | ---------------------------------------------------- |
@@ -325,7 +325,7 @@ Standard: **← / →** für den Odometer, **↑ / ↓** zum Blättern. Einzelne
 Unter **Einstellungen → Benutzeroberfläche** findest du:
 
 - **Design-Modus:** Hell, Dunkel oder System.
-- **Sprache:** Deutsch oder Englisch.
+- **Sprache:** Deutsch, Englisch, Spanisch oder Französisch.
 - **Odometer-Position:** Automatisch je nach Ausrichtung, immer links oder immer oben.
 
 [![Benutzeroberflächen-Einstellungen: Pfeile zeigen Design, Sprache und Odometer-Position.](images/appearance-small.jpg)](images/appearance.jpg)
@@ -455,6 +455,6 @@ Deine Projekte bleiben lokal. Es gibt kein RoadbookNavi-Konto und keine automati
 - **Karte und Kreuzungsdaten:** Die App lädt benötigte Inhalte von OpenFreeMap.
 - **Online-Ortssuche:** Suchtexte und Koordinaten werden an den eingestellten Suchanbieter geschickt. Du kannst die Funktion ausschalten.
 
-**Anleitung auf anderen Wegen:** [English](en.md) · [Markdown auf GitHub](https://github.com/pcace/RoadbookNavi/blob/main/public/help/de.md) · [RoadbookNavi-Website](https://roadbooknavi.de/)
+**Anleitung auf anderen Wegen:** [English](en.md) · [Español](es.md) · [Français](fr.md) · [Markdown auf GitHub](https://github.com/pcace/RoadbookNavi/blob/main/public/help/de.md) · [RoadbookNavi-Website](https://roadbooknavi.de/)
 
 _Stand: 1. November 2026. Die Abbildungen zeigen die deutsche Web-Oberfläche; die wichtigsten Bedienelemente sind in der installierten App an denselben Stellen._

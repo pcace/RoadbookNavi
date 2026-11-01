@@ -13,6 +13,25 @@ const request = {
   polygons: '',
 };
 
+it.each([
+  ['es-MX', 'es'],
+  ['fr-CA', 'fr'],
+  ['de-DE', 'de'],
+  ['it', 'en'],
+])('requests place names in %s using %s', async (language, expected) => {
+  const { invokeWeb } = await import('./web');
+  fetchMock.mockResolvedValueOnce(Response.json([]));
+  await invokeWeb('geocode', {
+    base: 'https://example.org',
+    operation: 'search',
+    query: 'Paris',
+    language,
+  });
+  expect(
+    new URL(fetchMock.mock.calls[0][0]).searchParams.get('accept-language')
+  ).toBe(expected);
+});
+
 beforeEach(() => {
   vi.resetModules();
   fetchMock.mockReset();

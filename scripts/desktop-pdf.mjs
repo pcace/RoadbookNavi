@@ -115,14 +115,19 @@ async function screenshot(name) {
   const data = await request(`/session/${session}/screenshot`);
   await writeFile(join(output, name + '.png'), Buffer.from(data, 'base64'));
 }
-async function open(id, mode) {
+async function open(id, mode, expectInvalidPdf = false) {
   await execute(() => {
     location.hash = '/app/routes-list';
   });
   await request(`/session/${session}/refresh`, {});
+  // The root shell can appear before the router and lazy library are ready.
+  // Navigate only after the seeded projects are visible.
   await until(
-    () => document.querySelector('#root')?.children.length > 0,
-    'app startup'
+    () =>
+      location.hash === '#/app/routes-list' &&
+      document.body.innerText.includes('PDF test 1') &&
+      document.body.innerText.includes('PDF test 40'),
+    'project library startup'
   );
   await execute(
     (id, mode) => {
@@ -137,8 +142,18 @@ async function open(id, mode) {
     id,
     mode
   );
+  if (expectInvalidPdf) {
+    await until(
+      () => document.body.innerText.includes('Could not load PDF'),
+      'visible invalid-PDF error'
+    );
+    return;
+  }
   await until(() => {
-    if (document.body.innerText.includes('PDF konnte nicht geladen werden'))
+    if (
+      document.body.innerText.includes('PDF konnte nicht geladen werden') ||
+      document.body.innerText.includes('Could not load PDF')
+    )
       throw new Error(document.body.innerText);
     const canvas = document.querySelector('.roadbookPdfViewer canvas');
     return (
@@ -275,6 +290,38 @@ try {
     results.push({ mode, entries: count, ...layout, cachedReopen: true });
     console.log('PASS', results.at(-1));
   }
+  // Corrupt only this run's isolated cache and require a visible viewer error.
+  const invalidId = scenarios[0].project.id;
+  const corrupted = await executeAsync(async id => {
+    const db = await new Promise((resolve, reject) => {
+      const request = indexedDB.open('RoadbookCache');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = reject;
+    });
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction('roadbooks_pdf', 'readwrite');
+      const store = transaction.objectStore('roadbooks_pdf');
+      const request = store.get(id);
+      request.onsuccess = () => {
+        const record = request.result;
+        record.pdfBytes = new TextEncoder().encode('Invalid PDF test data');
+        store.put(record);
+      };
+      transaction.oncomplete = () => {
+        db.close();
+        resolve(true);
+      };
+      transaction.onerror = () => {
+        db.close();
+        reject(transaction.error);
+      };
+    });
+  }, invalidId);
+  assert.equal(corrupted, true);
+  await open(invalidId, 'native', true);
+  await screenshot('invalid-pdf');
+  results.push({ invalidPdf: true, visibleError: true });
+  console.log('PASS', results.at(-1));
   await writeFile(
     join(output, 'results.json'),
     JSON.stringify(results, null, 2)
@@ -284,7 +331,9 @@ try {
     await screenshot('failure').catch(() => {});
     await writeFile(
       join(output, 'failure.txt'),
-      await execute(() => document.body.innerText).catch(String)
+      await execute(
+        () => `URL: ${location.href}\n${document.body.innerText}`
+      ).catch(String)
     );
   }
   throw error;

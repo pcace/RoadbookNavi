@@ -36,7 +36,8 @@ export function renderHelpMarkdown(markdown: string, assetBase: string) {
       token.attrSet('href', `${assetBase}${href}`);
       token.attrSet('class', 'help-screenshot');
     }
-    if (/^(de|en)\.md$/.test(href)) token.attrSet('href', assetBase + href);
+    if (/^(de|en|es|fr)\.md$/.test(href))
+      token.attrSet('href', assetBase + href);
     return self.renderToken(tokens, index, options);
   };
   const tokens = md.parse(markdown, {});

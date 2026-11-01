@@ -1,3 +1,8 @@
+import {
+  normalizeLanguage,
+  languageLocale,
+  type SupportedLanguage,
+} from './ui/i18n/languages';
 import { saveFile } from './files';
 import { jsPDF } from 'jspdf';
 import 'svg2pdf.js';
@@ -14,6 +19,7 @@ import {
 import i18n from './ui/i18n';
 import { onlineReverse, useGeocoding } from './geocoding';
 import { ROADBOOK_ENTRY_HEIGHT } from './pdfLayout';
+import { profileLabel } from './ui/i18n/profileLabel';
 
 type PdfSurface = {
   key: string;
@@ -73,7 +79,7 @@ const pdfLocationLabels = async (
   ] as const;
 };
 
-const pdfRouteStats = (project: Project, language: 'de' | 'en') => {
+const pdfRouteStats = (project: Project, language: SupportedLanguage) => {
   const preview = project.track ? routeSurfacePreview(project.track) : null;
   const bySurface = new Map<string, number>();
   let surfaceMeters = 0;
@@ -233,7 +239,8 @@ export async function exportGpx(project: Project) {
 }
 export async function renderPdf(
   project: Project,
-  mode: 'roll' | 'a5' | 'screen' = 'roll'
+  mode: 'roll' | 'a5' | 'screen' = 'roll',
+  pdfLanguage = normalizeLanguage(i18n.resolvedLanguage)
 ): Promise<Uint8Array> {
   if (project.rn2Original) {
     const resolver = await rn2IconResolver(project.rn2Original);
@@ -297,10 +304,8 @@ export async function renderPdf(
   });
   const firstPoint = project.waypoints[0];
   const lastPoint = project.waypoints.at(-1);
-  const pdfLanguage: 'de' | 'en' = i18n.resolvedLanguage?.startsWith('de')
-    ? 'de'
-    : 'en';
-  const pdfText = (key: string) => i18n.t(`roadbook:pdf.${key}`);
+  const pdfText = (key: string) =>
+    i18n.getFixedT(pdfLanguage, 'roadbook')(`pdf.${key}`);
   const [startLabel, finishLabel] = await pdfLocationLabels(
     firstPoint,
     lastPoint
@@ -310,14 +315,11 @@ export async function renderPdf(
     routeStats.totalMeters >= 1000
       ? `${(routeStats.totalMeters / 1000).toFixed(1)} km`
       : `${Math.round(routeStats.totalMeters)} m`;
-  const roadbookDate = new Intl.DateTimeFormat(
-    pdfLanguage === 'de' ? 'de-DE' : 'en-GB',
-    {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    }
-  ).format(new Date(project.updatedAt || Date.now()));
+  const roadbookDate = new Intl.DateTimeFormat(languageLocale(pdfLanguage), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(project.updatedAt || Date.now()));
 
   const margin = 20;
   const headerWidth = pageWidth - margin * 2;
@@ -360,14 +362,15 @@ export async function renderPdf(
   const cardHeight = 48;
   const cardGap = 5;
   const cardWidth = (headerWidth - cardGap * 2) / 3;
+  const displayedProfile = profileLabel(project.profile, pdfLanguage);
   const cards = [
     [pdfText('distance'), distanceLabel],
     [pdfText('waypoints'), String(project.waypoints.length)],
     [
       pdfText('profile'),
-      project.profile.length > 28
-        ? `${project.profile.slice(0, 27)}...`
-        : project.profile,
+      displayedProfile.length > 28
+        ? `${displayedProfile.slice(0, 27)}...`
+        : displayedProfile,
     ],
   ];
   cards.forEach(([label, value], index) => {
@@ -680,10 +683,17 @@ export async function renderPdf(
         });
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(unit(9));
-        pdf.text(`Seite ${pageNumber}`, unit(380), unit(30), {
-          align: 'right',
-          baseline: 'top',
-        });
+        pdf.text(
+          i18n.getFixedT(pdfLanguage, 'roadbook')('pdf.page', {
+            page: pageNumber,
+          }),
+          unit(380),
+          unit(30),
+          {
+            align: 'right',
+            baseline: 'top',
+          }
+        );
         pdf.line(unit(40), unit(48), unit(380), unit(48));
         y = 60;
       }

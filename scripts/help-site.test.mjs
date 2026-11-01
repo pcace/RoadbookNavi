@@ -9,24 +9,36 @@ test('public help contains the full guide without JavaScript and ships its asset
   const directory = mkdtempSync(join(tmpdir(), 'roadbook-help-test-'));
   try {
     buildHelpSite(directory);
-    for (const language of ['de', 'en']) {
+    for (const language of ['de', 'en', 'es', 'fr']) {
       const file = join(directory, language, 'index.html');
       const html = readFileSync(file, 'utf8');
       assert.ok(html.includes('<main id="help-article"'));
-      assert.ok(
-        html.includes(
-          language === 'de'
-            ? 'Von der Idee zum Roadbook'
-            : 'From an idea to a roadbook'
-        )
+      const headings = {
+        de: ['Von der Idee zum Roadbook', 'Odometer einstellen'],
+        en: ['From an idea to a roadbook', 'Set and correct the odometer'],
+        es: [
+          'De una idea a un roadbook',
+          'Ajustar y corregir el cuentakilómetros',
+        ],
+        fr: ['De l’idée au roadbook', 'Régler et corriger le compteur'],
+      };
+      for (const heading of headings[language])
+        assert.ok(html.includes(heading));
+      assert.ok(html.includes('<html lang="' + language + '">'));
+      assert.ok(html.includes('app/?lng=' + language));
+      for (const alternate of ['de', 'en', 'es', 'fr']) {
+        assert.ok(html.includes('hreflang="' + alternate + '"'));
+        assert.ok(html.includes('href="../' + alternate + '/"'));
+        assert.ok(existsSync(join(directory, alternate + '.md')));
+      }
+      const copy = JSON.parse(
+        html.match(
+          /<script id="help-copy" type="application\/json">(.*?)<\/script>/s
+        )[1]
       );
-      assert.ok(
-        html.includes(
-          language === 'de'
-            ? 'Odometer einstellen'
-            : 'Set and correct the odometer'
-        )
-      );
+      assert.ok(copy.searchLabel);
+      assert.ok(copy.matches_one.includes('{{count}}'));
+      assert.ok(copy.matches_other.includes('{{count}}'));
       assert.ok(html.includes('class="help-screenshot"'));
       const ids = new Set(
         [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1])
@@ -36,11 +48,14 @@ test('public help contains the full guide without JavaScript and ships its asset
           ids.has(decodeURIComponent(match[1])),
           'Broken chapter: ' + match[1]
         );
-      for (const match of html.matchAll(/\bsrc="([^"]+)"/g))
-        assert.ok(
-          existsSync(resolve(dirname(file), match[1])),
-          'Missing asset: ' + match[1]
-        );
+      for (const match of html.matchAll(
+        /\b(?:src|href)="((?:\.\.?\/)[^"?#]+)"/g
+      ))
+        if (!match[1].startsWith('../..'))
+          assert.ok(
+            existsSync(resolve(dirname(file), match[1])),
+            'Missing asset: ' + match[1]
+          );
     }
     assert.ok(
       readFileSync(join(directory, 'index.html'), 'utf8').includes(

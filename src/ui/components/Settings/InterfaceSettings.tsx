@@ -91,7 +91,9 @@ export const InterfaceSettings = () => {
                 <Select.HiddenSelect />
                 <Select.Control>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select color mode" />
+                    <Select.ValueText
+                      placeholder={t('settings:interface.colorMode')}
+                    />
                   </Select.Trigger>
                   <Select.IndicatorGroup>
                     <Select.Indicator />
@@ -175,7 +177,9 @@ export const InterfaceSettings = () => {
                 <Select.HiddenSelect />
                 <Select.Control>
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Select header position" />
+                    <Select.ValueText
+                      placeholder={t('settings:interface.headerPosition')}
+                    />
                   </Select.Trigger>
                   <Select.IndicatorGroup>
                     <Select.Indicator />

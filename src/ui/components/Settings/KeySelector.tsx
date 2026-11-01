@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Text, HStack } from '@chakra-ui/react';
 import { useColorModeValue } from '../ui/color-mode';
@@ -40,17 +41,19 @@ const KEY_DISPLAY_MAP: Record<string, string> = {
   F12: 'F12',
 };
 
-const getKeyDisplayName = (key: string | undefined): string => {
-  if (!key) return 'Nicht gesetzt';
-  return KEY_DISPLAY_MAP[key] || key.toUpperCase();
-};
-
 export const KeySelector: React.FC<KeySelectorProps> = ({
   value,
   onChange,
   label,
   description,
 }) => {
+  const { t } = useTranslation();
+  const getKeyDisplayName = (key: string | undefined): string => {
+    if (!key) return t('settings:keys.notSet');
+    return t(`settings:keys.${key}`, {
+      defaultValue: KEY_DISPLAY_MAP[key] || key.toUpperCase(),
+    });
+  };
   const [isListening, setIsListening] = useState(false);
   const [pressedKey, setPressedKey] = useState<string | null>(null);
 
@@ -169,7 +172,7 @@ export const KeySelector: React.FC<KeySelectorProps> = ({
           {isListening
             ? pressedKey
               ? getKeyDisplayName(pressedKey)
-              : 'Taste drücken...'
+              : t('settings:keys.pressKey')
             : getKeyDisplayName(value)}
         </Button>
       </HStack>

@@ -1,3 +1,5 @@
+import { languageLocale } from '../../i18n/languages';
+import { profileLabel } from '../../i18n/profileLabel';
 import React from 'react';
 import {
   Box,
@@ -34,7 +36,7 @@ const RouteItem: React.FC<RouteItemProps> = ({
   onExport,
   onDelete,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const textColor = useColorModeValue('gray.700', 'gray.300');
   const routeNameColor = useColorModeValue('gray.800', 'gray.100');
@@ -56,19 +58,24 @@ const RouteItem: React.FC<RouteItemProps> = ({
             color={routeNameColor}
             mb={2}
           >
-            {route.name || `Route ${route.id}`}
+            {route.name ||
+              t('routeBuilder:labels.routeFallback', { id: route.id })}
           </Text>
           {route.created_at && (
             <Text fontSize="sm" color={textColor} mb={1}>
               {t('routeBuilder:labels.created')}:{' '}
-              {new Date(route.created_at).toLocaleDateString()}
+              {new Date(route.created_at).toLocaleDateString(
+                languageLocale(i18n.resolvedLanguage)
+              )}
             </Text>
           )}
           <HStack gap={4} flexWrap="wrap" fontSize="sm" color={textColor}>
             {route.profile && (
               <Text>
                 {t('routeBuilder:labels.profile')}:{' '}
-                <strong>{route.profile}</strong>
+                <strong>
+                  {profileLabel(route.profile, i18n.resolvedLanguage)}
+                </strong>
               </Text>
             )}
             {route.waypoints?.length > 0 && (

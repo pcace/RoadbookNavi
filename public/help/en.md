@@ -100,7 +100,7 @@ For an A5 PDF, choose an appropriate paper size and check the print preview. A r
 
 ## Open or install the app
 
-[Start RoadbookNavi in your browser](https://roadbooknavi.de/app/) or [download the installed app](https://roadbooknavi.de/#download).
+[Start RoadbookNavi in your browser](https://roadbooknavi.de/app/?lng=en) or [download the installed app](https://roadbooknavi.de/?lng=en#download).
 
 | Device                            | Download                                     |
 | --------------------------------- | -------------------------------------------- |
@@ -325,7 +325,7 @@ Defaults are **← / →** for the odometer and **↑ / ↓** for scrolling. Sin
 Under **Settings → Interface**:
 
 - **Theme Mode:** Light, Dark or System.
-- **Language:** German or English.
+- **Language:** German, English, Spanish or French.
 - **Odometer Position:** Automatic based on orientation, always Left or always Top.
 
 [![Interface settings: arrows point to theme, language and odometer position.](images/appearance-small.jpg)](images/appearance.jpg)
@@ -455,6 +455,6 @@ Projects stay local. There is no RoadbookNavi account and no automatic upload of
 - **Maps and intersection data:** Required content comes from OpenFreeMap.
 - **Online place search:** Search text and coordinates go to the configured provider. You can disable lookup.
 
-**Other ways to read:** [Deutsch](de.md) · [Markdown on GitHub](https://github.com/pcace/RoadbookNavi/blob/main/public/help/en.md) · [RoadbookNavi website](https://roadbooknavi.de/)
+**Other ways to read:** [Deutsch](de.md) · [Español](es.md) · [Français](fr.md) · [Markdown on GitHub](https://github.com/pcace/RoadbookNavi/blob/main/public/help/en.md) · [RoadbookNavi website](https://roadbooknavi.de/)
 
 _Updated 1 November 2026. Screenshots show the German web interface; the main controls are in the same places in the installed app._

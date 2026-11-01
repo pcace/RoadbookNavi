@@ -23,7 +23,7 @@ export function GeocodingSettings() {
   const error = config.error ? errorTranslationKey(config.error) : null;
   const status = error
     ? t(error.key, { status: error.detail })
-    : config.error || result;
+    : config.error || (result ? t(result) : '');
   return (
     <Box
       bg={bg}
@@ -44,7 +44,7 @@ export function GeocodingSettings() {
           checked={config.enabled}
           onCheckedChange={e => config.update({ enabled: e.checked })}
         >
-          <Switch.HiddenInput />
+          <Switch.HiddenInput aria-label={t('settings:geocoding.title')} />
           <Switch.Control>
             <Switch.Thumb />
           </Switch.Control>
@@ -90,8 +90,8 @@ export function GeocodingSettings() {
             const results = await onlineSearch('Berlin');
             setResult(
               results?.length
-                ? t('settings:geocoding.testSuccess')
-                : t('settings:geocoding.noResults')
+                ? 'settings:geocoding.testSuccess'
+                : 'settings:geocoding.noResults'
             );
           } finally {
             setTesting(false);

@@ -72,7 +72,7 @@ export function computeRouteAnalysis(
     const surfaces: SurfaceItem[] = Object.entries(surfaceMeters)
       .map(([key, len]) => ({
         key,
-        display: getSurfaceLabel(key, 'de'),
+        display: getSurfaceLabel(key),
         length_m: len as number,
         color: colorFromKey(key),
       }))
