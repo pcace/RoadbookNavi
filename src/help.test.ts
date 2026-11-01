@@ -45,18 +45,37 @@ describe('portable user handbook', () => {
   it('keeps Unicode chapter fragments and picture URLs usable in app and static help', () => {
     const markdown =
       '## Roadbook löschen\n\n[Go](#roadbook-löschen)\n\n[![Remove](images/a-small.jpg)](images/a.jpg)\n\n[English](en.md)';
-    const app = renderHelpMarkdown(markdown, '/app/help/');
+    const app = renderHelpMarkdown(
+      markdown,
+      '/app/help/',
+      language => `?lng=${language}#/app/help`
+    );
     const site = renderHelpMarkdown(markdown, '../');
     expect(app.chapters[0].id).toBe('roadbook-löschen');
     expect(app.html).toContain('href="/app/help/images/a.jpg"');
     expect(app.html).toContain('src="/app/help/images/a-small.jpg"');
-    expect(app.html).toContain('href="/app/help/en.md"');
+    expect(app.html).toContain('href="?lng=en#/app/help"');
     expect(site.html).toContain('href="../images/a.jpg"');
-    expect(site.html).toContain('href="../en.md"');
-    for (const language of ['es', 'fr']) {
-      expect(
-        renderHelpMarkdown(`[Guide](${language}.md)`, '/app/help/').html
-      ).toContain(`href="/app/help/${language}.md"`);
+    expect(site.html).toContain('href="../en/"');
+  });
+
+  it('opens formatted translations while keeping source Markdown links portable', () => {
+    for (const language of ['de', 'en', 'es', 'fr']) {
+      const markdown = `[Guide](${language}.md)`;
+      for (const prefix of ['../', './']) {
+        const { html } = renderHelpMarkdown(markdown, prefix);
+        expect(html).toContain(`href="${prefix}${language}/"`);
+        expect(html).toContain(`data-help-language="${language}"`);
+        expect(html).not.toContain('.md');
+      }
+      const app = renderHelpMarkdown(
+        markdown,
+        '/app/help/',
+        language => `?lng=${language}#/app/help`
+      );
+      expect(app.html).toContain(`href="?lng=${language}#/app/help"`);
+      expect(app.html).toContain(`data-help-language="${language}"`);
+      expect(app.html).not.toContain('.md');
     }
   });
 });

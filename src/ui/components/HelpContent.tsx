@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { renderHelpMarkdown } from '../utils/helpMarkdown';
 import { normalizeLanguage } from '../i18n/languages';
+import { setLanguage } from '../utils/setLanguage';
 import './HelpContent.css';
 
 export const HelpContent = () => {
@@ -54,7 +55,12 @@ export const HelpContent = () => {
   }, [base, language]);
 
   const { html, chapters } = useMemo(
-    () => renderHelpMarkdown(markdown, base),
+    () =>
+      renderHelpMarkdown(
+        markdown,
+        base,
+        language => `?lng=${language}#/app/help`
+      ),
     [markdown, base]
   );
   const normalize = (value: string) =>
@@ -162,7 +168,20 @@ export const HelpContent = () => {
               onClick={event => {
                 const link = (event.target as HTMLElement).closest('a');
                 if (!link) return;
-                if (link.classList.contains('help-screenshot')) {
+                if (
+                  link.dataset.helpLanguage &&
+                  !event.ctrlKey &&
+                  !event.metaKey &&
+                  !event.shiftKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  setParams({}, { state: { helpFrom: returnTo.current } });
+                  void setLanguage(link.dataset.helpLanguage);
+                  const article = document.getElementById('help-article');
+                  article?.scrollIntoView({ block: 'start' });
+                  article?.focus({ preventScroll: true });
+                } else if (link.classList.contains('help-screenshot')) {
                   event.preventDefault();
                   setImage({
                     src: link.href,
