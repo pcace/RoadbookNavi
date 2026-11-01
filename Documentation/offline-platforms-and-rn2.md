@@ -1,7 +1,7 @@
 # Native platforms and RN2
 
 RoadbookNavi is one local-first Tauri application. React and TypeScript implement
-the interface and roadbook workflow, Rust stores projects and imported OSM data,
+the interface and roadbook workflow, Rust stores projects and downloaded geographic data,
 and the bundled BRouter engine calculates routes on the device. The application
 does not depend on a RoadbookNavi service or account system.
 
@@ -15,9 +15,16 @@ does not depend on a RoadbookNavi service or account system.
 | Android ARM64 | Same UI and Rust storage, BRouter through the Android Java bridge      | Signed APK       |
 | iOS           | Not implemented; the Java routing engine needs a different integration | None             |
 
-CI builds all supported desktop targets and Android when Release Please creates a
-release. Hardware tests remain necessary for GPS, file dialogs, large map-data
-imports, suspend/resume, and route calculation.
+The release workflow builds supported desktop targets and Android after the
+approved release process publishes a version. See [RELEASING.md](../RELEASING.md).
+Hardware tests remain necessary for GPS, file dialogs, suspend/resume and route
+calculation. User-facing installation and offline instructions are in the
+[handbook](../public/help/en.md).
+
+The browser version runs at https://roadbooknavi.de/app/ and uses online BRouter
+routing. It stores projects in the current browser, has no account sync, and
+does not support restarting offline. Native routing stays local; the planning
+map, new place searches and missing geographic downloads need a connection.
 
 ## Project exchange through RN2
 
@@ -28,7 +35,7 @@ unmodified drawings are retained for round trips.
 
 Imported visible entries become editable route waypoints. If the route geometry
 around an entry changes, its custom drawing is discarded and regenerated from
-local OSM data. Unchanged drawings remain intact. Editing or regenerating a route
+downloaded OpenFreeMap intersection data. Unchanged drawings remain intact. Editing or regenerating a route
 requires the relevant map and routing data to be cached.
 
 RN2 files may reference icons that are not embedded. RoadbookNavi maps known

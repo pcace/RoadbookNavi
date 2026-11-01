@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="RoadbookNavi is a local route planner, roadbook editor, and navigation app."
+      content="RoadbookNavi is a route planner, roadbook generator, and GPS navigation app."
     />
     <meta name="theme-color" content="#7c3402" />
     <title>RoadbookNavi</title>
@@ -30,6 +30,15 @@
       <div class="hero-content">
         <h1><span>ROADBOOK</span><strong>NAVI</strong></h1>
         <p data-text="heroSubtitle"></p>
+        <p class="hero-help">
+          <a
+            class="button primary"
+            href="help/en/"
+            data-help-link
+            data-text="helpButton"
+            >Help &amp; first steps</a
+          >
+        </p>
       </div>
     </header>
 
@@ -125,27 +134,25 @@
           <h2 data-text="actionTitle"></h2>
           <div class="videos">
             <figure>
-              <video
-                src="videos/route-planning.mp4"
-                autoplay
-                loop
-                muted
-                playsinline
-                controls
-                preload="metadata"
-              ></video>
+              <a href="help/images/planning.jpg"
+                ><img
+                  src="help/images/planning.jpg"
+                  alt="Route planning with waypoints and Save Roadbook"
+                  data-text="routePlanningCaption"
+                  data-attribute="alt"
+                  loading="lazy"
+              /></a>
               <figcaption data-text="routePlanningCaption"></figcaption>
             </figure>
             <figure>
-              <video
-                src="videos/flexible-display.mp4"
-                autoplay
-                loop
-                muted
-                playsinline
-                controls
-                preload="metadata"
-              ></video>
+              <a href="help/images/roadbook.jpg"
+                ><img
+                  src="help/images/roadbook.jpg"
+                  alt="A generated roadbook with distances and tulip drawings"
+                  data-text="navigationCaption"
+                  data-attribute="alt"
+                  loading="lazy"
+              /></a>
               <figcaption data-text="navigationCaption"></figcaption>
             </figure>
           </div>
@@ -197,6 +204,7 @@
       <p>© 2026 RoadbookNavi. <span data-text="footerClaim"></span></p>
       <p class="footer-meta"><span data-text="footerMeta"></span></p>
       <nav aria-label="Project links">
+        <a href="help/en/" data-help-link data-text="helpButton"></a>
         <a href="https://github.com/pcace/RoadbookNavi" data-text="source"></a>
         <a
           href="https://github.com/pcace/RoadbookNavi/issues"
@@ -214,7 +222,7 @@
         en: {
           title: 'RoadbookNavi',
           description:
-            'RoadbookNavi is a local route planner, roadbook editor, and navigation app.',
+            'RoadbookNavi is a route planner, roadbook generator, and GPS navigation app.',
           githubLabel: 'Open RoadbookNavi on GitHub',
           heroSubtitle: 'Create and ride roadbooks anywhere, anytime',
           benefitsTitle: 'Discover the fascination of real navigation',
@@ -239,6 +247,7 @@
           onlineText:
             'Web app with BRouter online routing. Projects stay in your browser. Native apps calculate routes locally.',
           issuesButton: 'Issues and ideas',
+          helpButton: 'Help & first steps',
           actionTitle: 'RoadbookNavi in action',
           routePlanningCaption: 'Plan routes and create roadbooks',
           navigationCaption: 'A flexible display for navigation',
@@ -247,21 +256,22 @@
           featureOneA: 'Draw a route on the map',
           featureOneB: 'Generate a professional roadbook',
           featureOneC: 'Export PDF and paper-roll layouts',
-          featureTwoTitle: 'Editing and exchange',
-          featureTwoA: 'Edit tulip diagrams and instructions',
+          featureTwoTitle: 'Manage and exchange roadbooks',
+          featureTwoA: 'Rename, duplicate, and organise roadbooks',
           featureTwoB: 'Import and export Rally Navigator 2 files',
           featureTwoC: 'Exchange routes without an account',
-          featureThreeTitle: 'Local routing',
+          featureThreeTitle: 'Routing for your platform',
           featureThreeA: 'Download routing and map data as needed',
-          featureThreeB: 'Calculate routes locally with BRouter',
-          featureThreeC: 'Use custom routing profiles',
+          featureThreeB:
+            'Route locally in the installed app, online in the browser',
+          featureThreeC: 'Choose from supplied routing profiles',
           featureFourTitle: 'Navigation',
           featureFourA: 'Use phones, tablets, and desktop computers',
           featureFourB: 'Follow the roadbook using GPS',
           featureFourC: 'Control entries with keyboard or handlebar controls',
           footerClaim: 'Create and ride roadbooks anywhere, anytime!',
           footerMeta:
-            'OpenStreetMap data · local BRouter routing · cross-platform application',
+            'OpenStreetMap data · BRouter routing · cross-platform application',
           source: 'Source code',
           issues: 'Issues',
           license: 'GNU GPL v3.0',
@@ -269,7 +279,7 @@
         de: {
           title: 'RoadbookNavi',
           description:
-            'RoadbookNavi ist ein lokaler Routenplaner, Roadbook-Editor und eine Navigations-App.',
+            'RoadbookNavi ist ein Routenplaner, Roadbook-Generator und eine GPS-Navigations-App.',
           githubLabel: 'RoadbookNavi auf GitHub öffnen',
           heroSubtitle: 'Erstelle und fahre Roadbooks überall, jederzeit',
           benefitsTitle: 'Entdecke die Faszination der echten Navigation',
@@ -294,6 +304,7 @@
           onlineText:
             'Web-App mit BRouter-Online-Routing. Projekte bleiben in deinem Browser. Installierte Apps berechnen Routen lokal.',
           issuesButton: 'Fehler und Ideen',
+          helpButton: 'Hilfe & Erste Schritte',
           actionTitle: 'RoadbookNavi in Aktion',
           routePlanningCaption: 'Routen planen und Roadbooks erstellen',
           navigationCaption: 'Flexible Darstellung für die Navigation',
@@ -302,21 +313,21 @@
           featureOneA: 'Zeichne eine Route auf der Karte',
           featureOneB: 'Erzeuge ein professionelles Roadbook',
           featureOneC: 'Exportiere PDF- und Papierrollen-Layouts',
-          featureTwoTitle: 'Bearbeitung und Austausch',
-          featureTwoA: 'Bearbeite Tulip-Diagramme und Hinweise',
+          featureTwoTitle: 'Roadbooks verwalten und austauschen',
+          featureTwoA: 'Benenne Roadbooks um und erstelle Routenvarianten',
           featureTwoB: 'Importiere und exportiere Rally-Navigator-2-Dateien',
           featureTwoC: 'Tausche Routen ohne Konto aus',
-          featureThreeTitle: 'Lokales Routing',
+          featureThreeTitle: 'Routing passend zur Plattform',
           featureThreeA: 'Lade Routing- und Kartendaten nach Bedarf',
-          featureThreeB: 'Berechne Routen lokal mit BRouter',
-          featureThreeC: 'Verwende eigene Routingprofile',
+          featureThreeB: 'Berechne lokal in der App oder online im Browser',
+          featureThreeC: 'Wähle aus mitgelieferten Routingprofilen',
           featureFourTitle: 'Navigation',
           featureFourA: 'Nutze Smartphones, Tablets und Desktop-Rechner',
           featureFourB: 'Folge dem Roadbook per GPS',
           featureFourC: 'Steuere Einträge per Tastatur oder Lenkersteuerung',
           footerClaim: 'Erstelle und fahre Roadbooks überall, jederzeit!',
           footerMeta:
-            'OpenStreetMap-Daten · lokales BRouter-Routing · plattformübergreifende Anwendung',
+            'OpenStreetMap-Daten · BRouter-Routing · plattformübergreifende Anwendung',
           source: 'Quellcode',
           issues: 'Issues',
           license: 'GNU GPL v3.0',
@@ -352,6 +363,9 @@
         });
         document.querySelector('a[data-online-only]').href =
           `app/?lng=${selected}`;
+        document.querySelectorAll('[data-help-link]').forEach(link => {
+          link.href = 'help/' + selected + '/';
+        });
         localStorage.setItem('roadbooknavi-language', selected);
       }
 

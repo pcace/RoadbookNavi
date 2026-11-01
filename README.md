@@ -5,7 +5,7 @@
 </h1>
 
 <p align="center">
-Route planner, roadbook editor, PDF generator, and GPS navigation app for macOS,
+Route planner, roadbook generator, PDF exporter, and GPS navigation app for macOS,
 Windows, Linux, and Android. Supports Rally Navigator 2 projects and exports
 GPX, GeoJSON, and PDF files. No account required.
 </p>
@@ -14,8 +14,16 @@ GPX, GeoJSON, and PDF files. No account required.
   <a href="https://roadbooknavi.de">Website</a> ·
   <a href="https://roadbooknavi.de/app/">Start online</a> ·
   <a href="https://github.com/pcace/RoadbookNavi/releases/latest">Downloads</a> ·
+  <a href="https://roadbooknavi.de/help/en/">Help</a> ·
   <a href="https://github.com/pcace/RoadbookNavi/issues">Issues</a>
 </p>
+
+## First steps
+
+Follow the illustrated handbook: [English](public/help/en.md) ·
+[Deutsch](public/help/de.md). It covers planning, renaming, deleting, exports,
+GPS navigation and offline preparation. The same Markdown guides are available
+in the app through **Help** and on the website.
 
 ## Development
 

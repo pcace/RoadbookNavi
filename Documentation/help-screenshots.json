@@ -1,0 +1,723 @@
+{
+  "captured": "2026-11-01",
+  "runtime": "Web app, current repository checkout, live online route calculation",
+  "example": "Eifel: Adenau – Nürburg (renamed Eifel: Sonntagsrunde)",
+  "width": 1280,
+  "height": 720,
+  "shots": [
+    {
+      "name": "planning",
+      "source": "planning",
+      "crop": [
+        0,
+        100,
+        1060,
+        550
+      ],
+      "arrows": [
+        {
+          "start": [
+            430,
+            145
+          ],
+          "end": [
+            300,
+            183
+          ]
+        },
+        {
+          "start": [
+            435,
+            280
+          ],
+          "end": [
+            315,
+            280
+          ]
+        },
+        {
+          "start": [
+            1030,
+            545
+          ],
+          "end": [
+            825,
+            615
+          ]
+        }
+      ]
+    },
+    {
+      "name": "create",
+      "source": "create",
+      "crop": [
+        380,
+        60,
+        520,
+        250
+      ],
+      "arrows": [
+        {
+          "start": [
+            735,
+            145
+          ],
+          "end": [
+            690,
+            195
+          ]
+        },
+        {
+          "start": [
+            740,
+            235
+          ],
+          "end": [
+            820,
+            267
+          ]
+        }
+      ]
+    },
+    {
+      "name": "actions",
+      "source": "actions",
+      "crop": [
+        15,
+        30,
+        530,
+        200
+      ],
+      "arrows": [
+        {
+          "start": [
+            450,
+            45
+          ],
+          "end": [
+            310,
+            77
+          ]
+        },
+        {
+          "start": [
+            505,
+            180
+          ],
+          "end": [
+            395,
+            157
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rename",
+      "source": "rename",
+      "crop": [
+        380,
+        60,
+        520,
+        220
+      ],
+      "arrows": [
+        {
+          "start": [
+            730,
+            115
+          ],
+          "end": [
+            690,
+            160
+          ]
+        },
+        {
+          "start": [
+            740,
+            195
+          ],
+          "end": [
+            818,
+            231
+          ]
+        }
+      ]
+    },
+    {
+      "name": "delete",
+      "source": "delete",
+      "crop": [
+        15,
+        15,
+        900,
+        250
+      ],
+      "arrows": [
+        {
+          "start": [
+            360,
+            45
+          ],
+          "end": [
+            255,
+            77
+          ]
+        },
+        {
+          "start": [
+            740,
+            240
+          ],
+          "end": [
+            818,
+            212
+          ]
+        }
+      ]
+    },
+    {
+      "name": "library",
+      "source": "library",
+      "crop": [
+        15,
+        175,
+        1245,
+        275
+      ],
+      "arrows": [
+        {
+          "start": [
+            140,
+            400
+          ],
+          "end": [
+            140,
+            328
+          ]
+        },
+        {
+          "start": [
+            360,
+            385
+          ],
+          "end": [
+            250,
+            329
+          ]
+        },
+        {
+          "start": [
+            1110,
+            410
+          ],
+          "end": [
+            1215,
+            329
+          ]
+        }
+      ]
+    },
+    {
+      "name": "export",
+      "source": "export",
+      "crop": [
+        380,
+        60,
+        520,
+        305
+      ],
+      "arrows": [
+        {
+          "start": [
+            760,
+            150
+          ],
+          "end": [
+            575,
+            150
+          ]
+        },
+        {
+          "start": [
+            828,
+            283
+          ],
+          "end": [
+            828,
+            314
+          ]
+        }
+      ]
+    },
+    {
+      "name": "waypoints",
+      "source": "planning",
+      "crop": [
+        10,
+        185,
+        440,
+        175
+      ],
+      "arrows": [
+        {
+          "start": [
+            95,
+            212
+          ],
+          "end": [
+            43,
+            253
+          ]
+        },
+        {
+          "start": [
+            400,
+            275
+          ],
+          "end": [
+            314,
+            254
+          ]
+        }
+      ]
+    },
+    {
+      "name": "search",
+      "source": "search",
+      "crop": [
+        0,
+        285,
+        450,
+        280
+      ],
+      "arrows": [
+        {
+          "start": [
+            400,
+            310
+          ],
+          "end": [
+            150,
+            350
+          ]
+        },
+        {
+          "start": [
+            395,
+            370
+          ],
+          "end": [
+            310,
+            351
+          ]
+        },
+        {
+          "start": [
+            400,
+            480
+          ],
+          "end": [
+            290,
+            420
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gpx",
+      "source": "planning",
+      "crop": [
+        0,
+        340,
+        450,
+        165
+      ],
+      "arrows": [
+        {
+          "start": [
+            405,
+            425
+          ],
+          "end": [
+            310,
+            425
+          ]
+        }
+      ]
+    },
+    {
+      "name": "import",
+      "source": "library",
+      "crop": [
+        15,
+        15,
+        460,
+        165
+      ],
+      "arrows": [
+        {
+          "start": [
+            240,
+            45
+          ],
+          "end": [
+            125,
+            45
+          ]
+        }
+      ]
+    },
+    {
+      "name": "roadbook",
+      "source": "roadbook",
+      "crop": [
+        0,
+        130,
+        1280,
+        445
+      ],
+      "arrows": [
+        {
+          "start": [
+            92,
+            305
+          ],
+          "end": [
+            240,
+            375
+          ]
+        },
+        {
+          "start": [
+            545,
+            165
+          ],
+          "end": [
+            640,
+            290
+          ]
+        },
+        {
+          "start": [
+            1160,
+            290
+          ],
+          "end": [
+            1070,
+            390
+          ]
+        }
+      ]
+    },
+    {
+      "name": "odometer",
+      "source": "odometer",
+      "crop": [
+        0,
+        0,
+        640,
+        140
+      ],
+      "arrows": [
+        {
+          "start": [
+            105,
+            112
+          ],
+          "end": [
+            155,
+            55
+          ]
+        },
+        {
+          "start": [
+            530,
+            112
+          ],
+          "end": [
+            485,
+            55
+          ]
+        }
+      ]
+    },
+    {
+      "name": "follow",
+      "source": "follow",
+      "crop": [
+        0,
+        565,
+        320,
+        155
+      ],
+      "arrows": [
+        {
+          "start": [
+            45,
+            586
+          ],
+          "end": [
+            36,
+            683
+          ]
+        },
+        {
+          "start": [
+            145,
+            590
+          ],
+          "end": [
+            84,
+            683
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dashboard",
+      "source": "dashboard",
+      "crop": [
+        620,
+        0,
+        660,
+        160
+      ],
+      "arrows": [
+        {
+          "start": [
+            1160,
+            130
+          ],
+          "end": [
+            1010,
+            65
+          ]
+        }
+      ]
+    },
+    {
+      "name": "appearance",
+      "source": "appearance",
+      "crop": [
+        190,
+        80,
+        900,
+        420
+      ],
+      "arrows": [
+        {
+          "start": [
+            540,
+            180
+          ],
+          "end": [
+            335,
+            185
+          ]
+        },
+        {
+          "start": [
+            520,
+            320
+          ],
+          "end": [
+            345,
+            324
+          ]
+        },
+        {
+          "start": [
+            550,
+            455
+          ],
+          "end": [
+            335,
+            458
+          ]
+        }
+      ]
+    },
+    {
+      "name": "keys",
+      "source": "keys",
+      "crop": [
+        195,
+        105,
+        880,
+        420
+      ],
+      "arrows": [
+        {
+          "start": [
+            890,
+            200
+          ],
+          "end": [
+            1000,
+            205
+          ]
+        },
+        {
+          "start": [
+            900,
+            420
+          ],
+          "end": [
+            1000,
+            423
+          ]
+        }
+      ]
+    },
+    {
+      "name": "threshold",
+      "source": "threshold",
+      "crop": [
+        190,
+        310,
+        890,
+        175
+      ],
+      "arrows": [
+        {
+          "start": [
+            520,
+            412
+          ],
+          "end": [
+            315,
+            450
+          ]
+        }
+      ]
+    },
+    {
+      "name": "storage",
+      "source": "storage",
+      "crop": [
+        190,
+        115,
+        890,
+        535
+      ],
+      "arrows": [
+        {
+          "start": [
+            800,
+            170
+          ],
+          "end": [
+            990,
+            206
+          ]
+        },
+        {
+          "start": [
+            490,
+            422
+          ],
+          "end": [
+            350,
+            425
+          ]
+        },
+        {
+          "start": [
+            620,
+            615
+          ],
+          "end": [
+            410,
+            614
+          ]
+        }
+      ]
+    },
+    {
+      "name": "search-settings",
+      "source": "search-settings",
+      "crop": [
+        190,
+        300,
+        890,
+        335
+      ],
+      "arrows": [
+        {
+          "start": [
+            890,
+            345
+          ],
+          "end": [
+            1030,
+            329
+          ]
+        },
+        {
+          "start": [
+            480,
+            580
+          ],
+          "end": [
+            340,
+            574
+          ]
+        }
+      ]
+    },
+    {
+      "name": "analysis",
+      "source": "analysis",
+      "crop": [
+        650,
+        370,
+        380,
+        285
+      ],
+      "arrows": [
+        {
+          "start": [
+            990,
+            585
+          ],
+          "end": [
+            922,
+            612
+          ]
+        },
+        {
+          "start": [
+            990,
+            430
+          ],
+          "end": [
+            900,
+            470
+          ]
+        }
+      ]
+    },
+    {
+      "name": "map",
+      "source": "map",
+      "crop": [
+        875,
+        120,
+        405,
+        350
+      ],
+      "arrows": [
+        {
+          "start": [
+            1020,
+            175
+          ],
+          "end": [
+            1195,
+            230
+          ]
+        }
+      ]
+    }
+  ]
+}
