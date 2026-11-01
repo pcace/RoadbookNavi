@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { cpSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { buildHelpSite } from './build-help.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const output = new URL('../dist-web/', import.meta.url);
@@ -19,3 +20,5 @@ execFileSync(
     stdio: 'inherit',
   }
 );
+
+buildHelpSite(fileURLToPath(new URL('help/', output)));
