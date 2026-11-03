@@ -34,7 +34,7 @@ importers:
         version: 2.12.4
       '@tauri-apps/plugin-dialog':
         specifier: ^2
-        version: 2.8.3
+        version: 2.8.4
       '@tauri-apps/plugin-fs':
         specifier: ^2
         version: 2.7.1
@@ -51,20 +51,20 @@ importers:
         specifier: ^7.3.0
         version: 7.4.0
       framer-motion:
-        specifier: 14.6.0
-        version: 14.6.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: 14.9.0
+        version: 14.9.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       i18next:
-        specifier: 26.5.7
-        version: 26.5.7(typescript@7.0.2)
+        specifier: 26.5.12
+        version: 26.5.12(typescript@7.0.2)
       i18next-browser-languagedetector:
-        specifier: 8.2.2
-        version: 8.2.2
+        specifier: 8.2.4
+        version: 8.2.4
       jspdf:
         specifier: ^4
         version: 4.2.1
       maplibre-gl:
-        specifier: ^6.15.0
-        version: 6.15.0
+        specifier: ^6.16.0
+        version: 6.16.0
       markdown-it:
         specifier: 15.0.3
         version: 15.0.3
@@ -78,8 +78,8 @@ importers:
         specifier: 5.1.2
         version: 5.1.2
       pdfjs-dist:
-        specifier: 6.3.289
-        version: 6.3.289
+        specifier: 6.4.299
+        version: 6.4.299
       proj4:
         specifier: ^2.20.0
         version: 2.22.0
@@ -90,32 +90,32 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
       react-i18next:
-        specifier: 17.1.5
-        version: 17.1.5(i18next@26.5.7(typescript@7.0.2))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2)
+        specifier: 17.1.9
+        version: 17.1.9(i18next@26.5.12(typescript@7.0.2))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2)
       react-icons:
         specifier: 5.7.0
         version: 5.7.0(react@19.3.1)
       react-map-gl:
         specifier: 8.1.3
-        version: 8.1.3(maplibre-gl@6.15.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        version: 8.1.3(maplibre-gl@6.16.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-pdf:
         specifier: ^11.0.0
         version: 11.0.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-router-dom:
-        specifier: 7.18.4
-        version: 7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: 7.18.5
+        version: 7.18.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-virtualized-auto-sizer:
         specifier: 2.0.4
         version: 2.0.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react-window:
-        specifier: 2.5.0
-        version: 2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: 2.5.2
+        version: 2.5.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       smooth-auto-scroll:
         specifier: ^0.2.2
         version: 0.2.2(react@19.3.1)
       svg2pdf.js:
-        specifier: ^2.6
-        version: 2.8.1(jspdf@4.2.1)
+        specifier: ^2.9
+        version: 2.9.0(jspdf@4.2.1)
       zustand:
         specifier: 5.0.16
         version: 5.0.16(@types/react@19.3.0)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
@@ -143,7 +143,7 @@ importers:
         version: 14.2.0
       '@types/node':
         specifier: ^26
-        version: 26.6.5
+        version: 26.6.6
       '@types/react':
         specifier: ^19
         version: 19.3.0
@@ -152,7 +152,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: ^6
-        version: 6.1.2(vite@8.3.5(@types/node@26.6.5))
+        version: 6.1.2(vite@8.3.5(@types/node@26.6.6))
       conventional-changelog-conventionalcommits:
         specifier: ^10.4.1
         version: 10.4.1
@@ -167,10 +167,10 @@ importers:
         version: 7.0.2
       vite:
         specifier: ^8
-        version: 8.3.5(@types/node@26.6.5)
+        version: 8.3.5(@types/node@26.6.6)
       vitest:
         specifier: ^5
-        version: 5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5))
+        version: 5.0.5(@types/node@26.6.6)(vite@8.3.5(@types/node@26.6.6))
 
 packages:
 
@@ -386,89 +386,89 @@ packages:
     resolution: {integrity: sha512-cOZZOVhDSulgK0meTsTkmNXb1ahVvmTmWmfx9gRBwc6hq98wS9JP35ESIoNq3xqEan+UN+gn8187Z6E4NKhLsw==}
     hasBin: true
 
-  '@maplibre/maplibre-gl-style-spec@26.4.4':
-    resolution: {integrity: sha512-hG4RZR4PBd/+6A3ODdZ3AnQRF106ZQk1y3bhwDg8bH/A4Oz2tnRUJVVWs9BZa6gXZ1d3UKe89C+Mm+olGBELvA==}
+  '@maplibre/maplibre-gl-style-spec@26.5.0':
+    resolution: {integrity: sha512-Tli0Mi9rF3117uVFkqsysXu9TPLx3AODPmWklUjbDhR4jJ849vGT5/EqWM3dBjIQgU6xxj5SZQ9ONjibqjEP+Q==}
     hasBin: true
 
   '@maplibre/mlt@1.3.0':
     resolution: {integrity: sha512-7M2O7ABM80Oi8XPkfkrjKB8mOBIxGoVgkA52Mu4RMWoBvvMdagQ522+WxVYujZsMpqIr3BpzrTbXrm4k8lCzCQ==}
 
-  '@maplibre/vt-pbf@4.3.2':
-    resolution: {integrity: sha512-j6p0AdjvAR19Z3XaCysle7A4ZSo08tYOzxD0Y9NQylwPAkwJJeYub5b2eVucdeDh7erhv69DahoLOevDRERRUw==}
+  '@maplibre/vt-pbf@4.3.3':
+    resolution: {integrity: sha512-dEe5XUd64RQbxNxy2OzIkJnwNDWjVmSXjCd0A7zLirm7QJ/WWbmtDFIkfsiM4yt1cplqzG6oSivRYeWx1SM1yg==}
 
-  '@napi-rs/canvas-android-arm64@1.0.11':
-    resolution: {integrity: sha512-dtJS4FQEfH9OwSYLtMrEnj7T8DzBbJc/97LI/OkiWOYpW/iW5t6R/gcxVrUXS8l45gCVpwMufgucRe/pe0ISqA==}
+  '@napi-rs/canvas-android-arm64@1.1.0':
+    resolution: {integrity: sha512-mKrSmRyhWK4q699Q1xthbZIZi7JBvLtsRNnOZAeFaLPOFT1yo8y82aRC2nNZbXTGJXU7fVDONgGQPr0vo3kerw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
 
-  '@napi-rs/canvas-darwin-arm64@1.0.11':
-    resolution: {integrity: sha512-J/JylWoJTG8OQqZaiqly4IODyAxNofUlZo0wtSBJtHk6AdymbdIkPynAM1JvQaZpPaG5h+msk9QuK8y4i1ooqw==}
+  '@napi-rs/canvas-darwin-arm64@1.1.0':
+    resolution: {integrity: sha512-iqwST4g0oH+x8VCpBIYh+MYokv/mVvkM+v9oJGB0d9A3P2qBh42ogJlVyWq9SpPCrAjS7tplMb1D3OIfxl+utw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@napi-rs/canvas-darwin-x64@1.0.11':
-    resolution: {integrity: sha512-nlecCk3xy06eAGC7krZtzNDm9UNTHKuHQYK8ZYegdjzgSL8anGt/eLJZm86OWaNgZkwQwvDqfSmG8Nqe6MPZNQ==}
+  '@napi-rs/canvas-darwin-x64@1.1.0':
+    resolution: {integrity: sha512-jkeA8eVTxDum03LTvc32YJ28F6KB1U0gYwnWMfOAUQZvWWEh/kvONby4iWGJx3+Tw45UqMGMXjtw2GKNVZDhVg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@napi-rs/canvas-linux-arm-gnueabihf@1.0.11':
-    resolution: {integrity: sha512-DKImmG+sTPolE0kGPsYPBxTtOjb3INALp32O2lW2CfSr0bAzSEKKuu+GrQbtilClyoPOahUErS3OrznFDraoWA==}
+  '@napi-rs/canvas-linux-arm-gnueabihf@1.1.0':
+    resolution: {integrity: sha512-Y4YkKG1ijoqkgUdTEEBNG4k+2BK5bR5jGL6S56YxCXYPwGfUd5nED8/74xyc7z+bpixPasCjSYoP3xYPOIGNxw==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@napi-rs/canvas-linux-arm64-gnu@1.0.11':
-    resolution: {integrity: sha512-55sykACGENj5j1rhj+81AO8JbR9HYgGjRZ7/H+pNr4VE1DvINKYNMTcutk8ZmWxk276jAQvUKJ3+Kdj9GXU3lQ==}
+  '@napi-rs/canvas-linux-arm64-gnu@1.1.0':
+    resolution: {integrity: sha512-dE/XthqYkiWcBVtKFlZbUXwAYfDuQGqDWixznipJNmevLGpprNnTVQZyftm1RZJudkIOn2EkzYZDMMETM08Row==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@napi-rs/canvas-linux-arm64-musl@1.0.11':
-    resolution: {integrity: sha512-6Jz6jys17yXydO+WdJgu7JhoB4K7/w9sWHByzzTmLjQghUx3TDMWvLv+UcCdnWhg4oprET67EMymnrETdeGNAg==}
+  '@napi-rs/canvas-linux-arm64-musl@1.1.0':
+    resolution: {integrity: sha512-DqZ/CMcHlhU56pPjv9AP0h3U7MFQ5LzC1HzMyRMotL+PFsJmZJA/ziApPYVyyz78DaVLhI8t3So3ztqtijbYpg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@napi-rs/canvas-linux-riscv64-gnu@1.0.11':
-    resolution: {integrity: sha512-lf2XeEebWiUYVOVEjLXxF7dfXrBBSEOBn9AqBh39VYXrPt5cDqI+1t58IFSjn8npqkg5jIOs8TQbjKABbFW1gQ==}
+  '@napi-rs/canvas-linux-riscv64-gnu@1.1.0':
+    resolution: {integrity: sha512-kJ7m5n2VffxWXM5QGa5lfq8ZN4LdOJEoz3aAJAmIqYvKiZw1gRdXqpucnRXsF6D9nLYiiIlevaAtAclR7c5ilg==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
 
-  '@napi-rs/canvas-linux-x64-gnu@1.0.11':
-    resolution: {integrity: sha512-iDapw7nFSE5tsmQxcH2+KotJhyfVPmHd6vUOQN/Em+8WNbkZJwJ/rDowlJMFnMl0SYSDSfgKCNUGi6Sn5++Smg==}
+  '@napi-rs/canvas-linux-x64-gnu@1.1.0':
+    resolution: {integrity: sha512-uQ9JuJlRhQdHyttcMWOiwLkfIqkqaB0YFUVe835LUe12THt2b51HXkTItq0fxWT1jdhUPX2ylWZ1walkJyD6GQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@napi-rs/canvas-linux-x64-musl@1.0.11':
-    resolution: {integrity: sha512-26q26AyITo3CGZX4HWFIMgBMA1lu3YN07gxzBm4tW6Hglq/OVyTP50kDrmWuKybCX6dh3m8Ly+c7YhI+sqCgCQ==}
+  '@napi-rs/canvas-linux-x64-musl@1.1.0':
+    resolution: {integrity: sha512-has4CPPAkkCac/LZ13VAw5p+MJLdaKVoyrhumN/A7uJd6960xYkJNDZgUebyxiha82AFzXx6RV+QJg5qGG079g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@napi-rs/canvas-win32-arm64-msvc@1.0.11':
-    resolution: {integrity: sha512-cUO96IdsfvIj2S+2PNcDSkTcLhjPj8pIOEWRV1Kj70MOP4wnE9zSk7N4C1EKHlFGRcgdR5AkbnBZj0dfHK9nbQ==}
+  '@napi-rs/canvas-win32-arm64-msvc@1.1.0':
+    resolution: {integrity: sha512-MJnktLKNijmXqdjTughHDZ9TDLZ9uUm2hvFXqaOqn0+w7lphXFnft6bpSgQAc9U1exc20UGIBlzGu9+kiCj9Ag==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@napi-rs/canvas-win32-x64-msvc@1.0.11':
-    resolution: {integrity: sha512-DFYp/ZQRdKunI/LPc0UkRXG1vlNjJKOJf8O8Ctb8+wm2Nt2ELg9Eamc31D2VoakkfGo8L+z0Iejz6WtFbQwyGw==}
+  '@napi-rs/canvas-win32-x64-msvc@1.1.0':
+    resolution: {integrity: sha512-08575bFk7iiadxap4h+JxgGut9xDCHAGum6wh0eInN53zEMImkmEHi5MushX2FOmNO7qRNX7BPiDC5ZYBwHeEg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@napi-rs/canvas@1.0.11':
-    resolution: {integrity: sha512-vt5tog1cr+QKadIddGe+3LrcX0EmjEd0izF717Uwf92mBmgYfq2XRmL2r4bZU40spB69exxhrBn9I91HYEr/7w==}
+  '@napi-rs/canvas@1.1.0':
+    resolution: {integrity: sha512-k+ph/D8H9GS8ZZ48okvHrKeJynkqAA1kMUZRuzRWNlQUDHXngq7oRaWMZBdmSfd9ZhVy9bwNKei/7wMboI/uMg==}
     engines: {node: '>= 10'}
 
   '@octokit/auth-token@6.0.0':
@@ -774,8 +774,8 @@ packages:
     engines: {node: '>= 10'}
     hasBin: true
 
-  '@tauri-apps/plugin-dialog@2.8.3':
-    resolution: {integrity: sha512-Hd/yBfk2R5v2MFrz/0VArSXeh8xKLLXGunqSiTtcHKn1zNZwaKujuA0VSwUvNfwC4hDoF1PveS+gBDNe3nHspw==}
+  '@tauri-apps/plugin-dialog@2.8.4':
+    resolution: {integrity: sha512-+6ZOiXenOaxXwb8qCbBPdT2jX2cFPaVVHGIskrpmJLpmWj+qKRTD6X/z9x7hTdSQn7NedcoXCkWGej4a7dC4lw==}
 
   '@tauri-apps/plugin-fs@2.7.1':
     resolution: {integrity: sha512-4TBVjpi/q8PuNzjpkAc2iBGXMTLjOrAyfTiiOL8ORaJCZJRG3tjzmQ4sqs2CMG75FvLyRkOkERfP7AyY4iBNwQ==}
@@ -1161,8 +1161,8 @@ packages:
   '@types/mdurl@2.0.0':
     resolution: {integrity: sha512-RGdgjQUZba5p6QEFAVx2OGb8rQDL/cPRG7GiedRzMcJ1tYnUANBncjbSB1NRGwbvjcPeikRABz2nshyPk1bhWg==}
 
-  '@types/node@26.6.5':
-    resolution: {integrity: sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg==}
+  '@types/node@26.6.6':
+    resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
@@ -2011,15 +2011,18 @@ packages:
   font-family-papandreou@0.2.0-patch2:
     resolution: {integrity: sha512-l/YiRdBSH/eWv6OF3sLGkwErL+n0MqCICi9mppTZBOCL5vixWGDqCYvRcuxB2h7RGCTzaTKOHT2caHvCXQPRlw==}
 
-  framer-motion@14.6.0:
-    resolution: {integrity: sha512-MzBgZxGgoHPfSLEXmo4o5XlZvb+nVRFdHtGjVhm6LMIEJKTt/8hNO023euL5mYyzc8llV/hQTfjnN68tNRHalw==}
+  framer-motion@14.9.0:
+    resolution: {integrity: sha512-g1hZu8WoTwgsoVAaqEEcefhvR03cKGtkmrKaRrWpXhnM3LGR8jl1u2qyJ1PMVlO7LKQHE8TTRQYUlMmnrY4L+g==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
+      remix: ^3.1.0
     peerDependenciesMeta:
       react:
         optional: true
       react-dom:
+        optional: true
+      remix:
         optional: true
 
   fs-extra@11.4.1:
@@ -2133,11 +2136,11 @@ packages:
     resolution: {integrity: sha512-eKCa6bwnJhvxj14kZk5NCPc6Hb6BdsU9DZcOnmQKSnO1VKrfV0zCvtttPZUsBvjmNDn8rpcJfpwSYnHBjc95MQ==}
     engines: {node: '>=18.18.0'}
 
-  i18next-browser-languagedetector@8.2.2:
-    resolution: {integrity: sha512-99PKPDVeLj7s4nDJAz+z664/6IWEb2EyssTsknyzc1MY+mmtAXpx3BP862MrKLGRtmSJnlUioPuOE22F+RR+ng==}
+  i18next-browser-languagedetector@8.2.4:
+    resolution: {integrity: sha512-n6zWTCD8plrPN6gotXNXf0qdM2cORZqZ6ypJA4aIXZkEa45Ds2BVlrZfFItD+XQWP3yAgWxV+euldyN+2utk0Q==}
 
-  i18next@26.5.7:
-    resolution: {integrity: sha512-mY9cECbKtiOqpcB8d8ijNsiPZQoTFULehBlWXZzzURpTm9aLbE2c3T2FKdGZhdEjlTvXUGd0TvCisL06YafO0Q==}
+  i18next@26.5.12:
+    resolution: {integrity: sha512-vTt8tc3y5axoU7wwTYg8vjpILLyP33a5GyGJAVI7FDRx1XueYxZVIkcVeStoftrVnAM/o28hKvK0sslucDI9aQ==}
     peerDependencies:
       typescript: ^5 || ^6 || ^7
     peerDependenciesMeta:
@@ -2406,8 +2409,8 @@ packages:
   make-event-props@2.0.0:
     resolution: {integrity: sha512-G/hncXrl4Qt7mauJEXSg3AcdYzmpkIITTNl5I+rH9sog5Yw0kK6vseJjCaPfOXqOqQuPUP89Rkhfz5kPS8ijtw==}
 
-  maplibre-gl@6.15.0:
-    resolution: {integrity: sha512-kxFetbvUHDOVaAP1CYb226Mdk2QhzIPddqM0xJTFD35wu78Mpd6NM7+H68ALjc6Oa0kAOX5EAdMKyvD2u3qfcg==}
+  maplibre-gl@6.16.0:
+    resolution: {integrity: sha512-gApO66EMtoDZuio680RUBvskR7ahFd/NNhLN4tBAs+Y7FeT4gQV8zVFgYVMRmFxQznOEzecW19w6xOd9XjZjiA==}
     engines: {node: '>=16.14.0', npm: '>=8.1.0'}
 
   markdown-it-anchor@10.0.0:
@@ -2464,11 +2467,11 @@ packages:
   minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
 
-  motion-dom@14.6.0:
-    resolution: {integrity: sha512-lIojTl9aYSPIkeOOSzBliy1nNvpdO3JtVzW2WgTXQlOP4ZMuJhtWO3fP7OD4TVFwlRucdvxlDSMkL+fEQnQ52A==}
+  motion-dom@14.9.0:
+    resolution: {integrity: sha512-wGjKbNDMHd75aLStkxLCKZ+T8/wusZHklmNLK1Ak68UrdBt2X8I4yweYR/0WonxGnBsw6oloDTIV8pN+UTvzzA==}
 
-  motion-utils@14.6.0:
-    resolution: {integrity: sha512-bZJo2AmQ2aOFkaato6VXrTbkPG0XhMzivWUWSaI59pxyllj8QMQUFZ84MYRQnPkK+7dr4KldyJwF2+RM0sdq/w==}
+  motion-utils@14.7.0:
+    resolution: {integrity: sha512-woO0/Nb7ys75f94fjvQi/6leiHGvZUYkeHUPEZ3vxsV+9OpEVhkxp01x8MlRwX0zt31EqgXsKDAoBoJLC148Tw==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -2698,6 +2701,10 @@ packages:
     resolution: {integrity: sha512-ZHjSVpDa3D6izMq8/04lvkhkATUmL9px6ChPaXc1k6nU2Mrhlg1/7F0bdUqCwUjw3NsPTfPZsMDUU6ZIcRaeQw==}
     engines: {node: '>=22.13.0 || >=24'}
 
+  pdfjs-dist@6.4.299:
+    resolution: {integrity: sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g==}
+    engines: {node: '>=22.13.0 || >=24'}
+
   perfect-freehand@1.2.3:
     resolution: {integrity: sha512-bHZSfqDHGNlPpgH2yxXgPHlQSPpEbo+qg7li0M78J9vNAi2yjwLeA4x79BEQhX44lEWpCLSFCeRZwpw0niiXPA==}
 
@@ -2811,8 +2818,8 @@ packages:
     peerDependencies:
       react: ^19.3.1
 
-  react-i18next@17.1.5:
-    resolution: {integrity: sha512-dRSwnd2pACasvcZXR+uP+60vW61CJKw9ZUM12B4ZucrY9SEIIsLBWgpo8UneOUXQcUtvjQmHMeOJ03Vursl1Ag==}
+  react-i18next@17.1.9:
+    resolution: {integrity: sha512-OgYqIH13XHPlWTaaI795Dz+k2AdKnXcOxNQVnf750T8Ij0TYWp1nYvXRpoJBulPqlyk2OAbn1PM4tFKiIj/byA==}
     peerDependencies:
       i18next: '>= 26.2.0'
       react: '>= 16.8.0'
@@ -2858,15 +2865,15 @@ packages:
       '@types/react':
         optional: true
 
-  react-router-dom@7.18.4:
-    resolution: {integrity: sha512-yrfmJHIpDG7taCpqKjT1G5B6q3O2K+RN8/fgNf0lTjCwiPbQ0ei6vXX9ZjQR+7ld8Tr7Z5xmyMnZ8YJrphWQUw==}
+  react-router-dom@7.18.5:
+    resolution: {integrity: sha512-9HcfDMU6JJ/fp6gJZYGwNE6RknVGS4kBjH1HkNw959mCJi70TVwdipQWv2FEol9uGpi+SZTFtVpJPtEQfayeOw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
       react-dom: '>=18'
 
-  react-router@7.18.4:
-    resolution: {integrity: sha512-PUPQcMhMGRAslLcvtlPz/kmzBEWPhLdgLFrL7pLNepBL6dX0lWj4WD2cUYVgYCuT3jxvghYFg81cDTj44DhetQ==}
+  react-router@7.18.5:
+    resolution: {integrity: sha512-dTgvcXDOrLPrlLHrcZAqWveiK1hMSqN+rGAJzegP8HtmNkfRxOoshGWBNX3ZJ0cZjOHkRdlUJtaIhZMLLyGyPw==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
@@ -2881,11 +2888,15 @@ packages:
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
 
-  react-window@2.5.0:
-    resolution: {integrity: sha512-2oQiMo+lT5omOYaBJnloTK19yZDXqboDPMJP6li0gER0henua4iEz6BxzENJ1H5pNb6Kb2H4Lu0+YTuvqnw7QA==}
+  react-window@2.5.2:
+    resolution: {integrity: sha512-zosAvLp2t3TYE6p2V3mlkZkWIUp2l4y5P4D57IHr2qcNx35VPsF38ukNOC8b609+7fzClxkLz6spzaXltt5Bqg==}
     peerDependencies:
+      '@types/react': ^18.2.6 || ^19.0.0
       react: ^18.0.0 || ^19.0.0
       react-dom: ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
 
   react@19.3.1:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
@@ -2979,8 +2990,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  set-cookie-parser@2.7.2:
-    resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
+  set-cookie-parser@2.7.3:
+    resolution: {integrity: sha512-irZHtTqurLna57KQG/s+fzOwv/J6XSH4cs8M/vsrY3uCaQ3S6+QJguAH0WdN47SXlk82voMZ4naWMQf8fdEoIg==}
 
   set-value@2.0.1:
     resolution: {integrity: sha512-JxHc1weCN68wRY0fhCoXpyK55m/XPHafOmK4UWD7m2CI14GMcFypt4w/0+NV5f/ZMby2F6S2wwA7fgynh9gWSw==}
@@ -3139,8 +3150,8 @@ packages:
     resolution: {integrity: sha512-qsjeeq5YjBZ5eMdFuUa4ZosMLxgr5RZ+F+Y1OrDhuOCEInRMA3x74XdBtggJcj9kOeInz0WE+LgCPDkZFlBYJw==}
     engines: {node: '>=12.0.0'}
 
-  svg2pdf.js@2.8.1:
-    resolution: {integrity: sha512-AzXfPHjHnFt9dpdRPhWWBOKipnMSWQZRKiV3FTTPdY6wwRgT3labbA4s0HIQaskNhwAhrcI2u2rDhD8j8udfNQ==}
+  svg2pdf.js@2.9.0:
+    resolution: {integrity: sha512-rjxgZ4k4JlgPqAvdBPFU+GMUVIEJm7AeSGAFysKUrmbF2FhKw2pdhgcwb8CinA3Gc8o84aQMpQsGeMNzqA1YyQ==}
     peerDependencies:
       jspdf: ^4.0.0 || ^3.0.0 || ^2.0.0
 
@@ -3215,6 +3226,9 @@ packages:
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
+
+  tslib@2.9.1:
+    resolution: {integrity: sha512-a4Ux9VKuIMHsOS7ENbEq6hK2ZGYIT27Rtl0E4eD9KqwxhKiQeMZE/9xb3IdYwWaSOyIBQLExhQgXDTYoiCxnWA==}
 
   tunnel@0.0.6:
     resolution: {integrity: sha512-1h/Lnq9yajKY2PEbBadPXj3VxsDDu844OnaAo52UVmIzIvwwtBPIuNvkjuzBlTWpfJyUbG3ez0KSBibQkj4ojg==}
@@ -3649,7 +3663,7 @@ snapshots:
   '@dnd-kit/accessibility@3.1.1(react@19.3.1)':
     dependencies:
       react: 19.3.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@dnd-kit/core@6.3.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
@@ -3816,7 +3830,7 @@ snapshots:
       rw: 1.3.3
       sort-object: 3.0.3
 
-  '@maplibre/maplibre-gl-style-spec@26.4.4':
+  '@maplibre/maplibre-gl-style-spec@26.5.0':
     dependencies:
       '@mapbox/jsonlint-lines-primitives': 2.0.3
       '@mapbox/unitbezier': 1.0.0
@@ -3829,58 +3843,58 @@ snapshots:
     dependencies:
       '@mapbox/point-geometry': 1.1.0
 
-  '@maplibre/vt-pbf@4.3.2':
+  '@maplibre/vt-pbf@4.3.3':
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@types/geojson': 7946.0.16
       pbf: 5.1.2
 
-  '@napi-rs/canvas-android-arm64@1.0.11':
+  '@napi-rs/canvas-android-arm64@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-darwin-arm64@1.0.11':
+  '@napi-rs/canvas-darwin-arm64@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-darwin-x64@1.0.11':
+  '@napi-rs/canvas-darwin-x64@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-linux-arm-gnueabihf@1.0.11':
+  '@napi-rs/canvas-linux-arm-gnueabihf@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-linux-arm64-gnu@1.0.11':
+  '@napi-rs/canvas-linux-arm64-gnu@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-linux-arm64-musl@1.0.11':
+  '@napi-rs/canvas-linux-arm64-musl@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-linux-riscv64-gnu@1.0.11':
+  '@napi-rs/canvas-linux-riscv64-gnu@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-linux-x64-gnu@1.0.11':
+  '@napi-rs/canvas-linux-x64-gnu@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-linux-x64-musl@1.0.11':
+  '@napi-rs/canvas-linux-x64-musl@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-win32-arm64-msvc@1.0.11':
+  '@napi-rs/canvas-win32-arm64-msvc@1.1.0':
     optional: true
 
-  '@napi-rs/canvas-win32-x64-msvc@1.0.11':
+  '@napi-rs/canvas-win32-x64-msvc@1.1.0':
     optional: true
 
-  '@napi-rs/canvas@1.0.11':
+  '@napi-rs/canvas@1.1.0':
     optionalDependencies:
-      '@napi-rs/canvas-android-arm64': 1.0.11
-      '@napi-rs/canvas-darwin-arm64': 1.0.11
-      '@napi-rs/canvas-darwin-x64': 1.0.11
-      '@napi-rs/canvas-linux-arm-gnueabihf': 1.0.11
-      '@napi-rs/canvas-linux-arm64-gnu': 1.0.11
-      '@napi-rs/canvas-linux-arm64-musl': 1.0.11
-      '@napi-rs/canvas-linux-riscv64-gnu': 1.0.11
-      '@napi-rs/canvas-linux-x64-gnu': 1.0.11
-      '@napi-rs/canvas-linux-x64-musl': 1.0.11
-      '@napi-rs/canvas-win32-arm64-msvc': 1.0.11
-      '@napi-rs/canvas-win32-x64-msvc': 1.0.11
+      '@napi-rs/canvas-android-arm64': 1.1.0
+      '@napi-rs/canvas-darwin-arm64': 1.1.0
+      '@napi-rs/canvas-darwin-x64': 1.1.0
+      '@napi-rs/canvas-linux-arm-gnueabihf': 1.1.0
+      '@napi-rs/canvas-linux-arm64-gnu': 1.1.0
+      '@napi-rs/canvas-linux-arm64-musl': 1.1.0
+      '@napi-rs/canvas-linux-riscv64-gnu': 1.1.0
+      '@napi-rs/canvas-linux-x64-gnu': 1.1.0
+      '@napi-rs/canvas-linux-x64-musl': 1.1.0
+      '@napi-rs/canvas-win32-arm64-msvc': 1.1.0
+      '@napi-rs/canvas-win32-x64-msvc': 1.1.0
     optional: true
 
   '@octokit/auth-token@6.0.0': {}
@@ -4103,7 +4117,7 @@ snapshots:
 
   '@swc/helpers@0.5.23':
     dependencies:
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@tauri-apps/api@2.12.4': {}
 
@@ -4154,7 +4168,7 @@ snapshots:
       '@tauri-apps/cli-win32-ia32-msvc': 2.12.4
       '@tauri-apps/cli-win32-x64-msvc': 2.12.4
 
-  '@tauri-apps/plugin-dialog@2.8.3':
+  '@tauri-apps/plugin-dialog@2.8.4':
     dependencies:
       '@tauri-apps/api': 2.12.4
 
@@ -4174,7 +4188,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/angle@7.4.0':
     dependencies:
@@ -4183,62 +4197,62 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/rhumb-bearing': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/area@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/bbox-clip@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/bbox-polygon@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/bbox@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/bearing@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/bezier-spline@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-clockwise@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-concave@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-contains@7.4.0':
     dependencies:
@@ -4249,7 +4263,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/line-split': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-crosses@7.4.0':
     dependencies:
@@ -4260,7 +4274,7 @@ snapshots:
       '@turf/line-intersect': 7.4.0
       '@turf/polygon-to-line': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-disjoint@7.4.0':
     dependencies:
@@ -4270,7 +4284,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@turf/polygon-to-line': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-equal@7.4.0':
     dependencies:
@@ -4279,13 +4293,13 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
       geojson-equality-ts: 1.0.2
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-intersects@7.4.0':
     dependencies:
       '@turf/boolean-disjoint': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-overlap@7.4.0':
     dependencies:
@@ -4296,7 +4310,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       geojson-equality-ts: 1.0.2
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-parallel@7.4.0':
     dependencies:
@@ -4305,7 +4319,7 @@ snapshots:
       '@turf/line-segment': 7.4.0
       '@turf/rhumb-bearing': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-point-in-polygon@7.4.0':
     dependencies:
@@ -4313,14 +4327,14 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
       point-in-polygon-hao: 1.2.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-point-on-line@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-touches@7.4.0':
     dependencies:
@@ -4329,7 +4343,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-valid@7.4.0':
     dependencies:
@@ -4344,13 +4358,13 @@ snapshots:
       '@turf/line-intersect': 7.4.0
       '@types/geojson': 7946.0.16
       geojson-polygon-self-intersections: 1.2.2
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/boolean-within@7.4.0':
     dependencies:
       '@turf/boolean-contains': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/buffer@7.4.0':
     dependencies:
@@ -4362,7 +4376,7 @@ snapshots:
       '@turf/projection': 7.4.0
       '@types/geojson': 7946.0.16
       d3-geo: 2.0.2
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/center-mean@7.4.0':
     dependencies:
@@ -4370,7 +4384,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/center-median@7.4.0':
     dependencies:
@@ -4380,7 +4394,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/center-of-mass@7.4.0':
     dependencies:
@@ -4390,28 +4404,28 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/center@7.4.0':
     dependencies:
       '@turf/bbox': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/centroid@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/circle@7.4.0':
     dependencies:
       '@turf/destination': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/clean-coords@7.4.0':
     dependencies:
@@ -4419,13 +4433,13 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/clone@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/clusters-dbscan@7.4.0':
     dependencies:
@@ -4435,7 +4449,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       rbush: 3.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/clusters-kmeans@7.4.0':
     dependencies:
@@ -4445,14 +4459,14 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       skmeans: 0.9.7
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/clusters@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/collect@7.4.0':
     dependencies:
@@ -4461,14 +4475,14 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
       rbush: 3.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/combine@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/concave@7.4.0':
     dependencies:
@@ -4481,7 +4495,7 @@ snapshots:
       '@types/geojson': 7946.0.16
       topojson-client: 3.1.0
       topojson-server: 3.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/convex@7.4.0':
     dependencies:
@@ -4489,14 +4503,14 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       concaveman: 1.2.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/destination@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/difference@7.4.0':
     dependencies:
@@ -4504,7 +4518,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       polyclip-ts: 0.16.8
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/directional-mean@7.4.0':
     dependencies:
@@ -4516,7 +4530,7 @@ snapshots:
       '@turf/length': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/dissolve@7.4.0':
     dependencies:
@@ -4526,7 +4540,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       polyclip-ts: 0.16.8
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/distance-weight@7.4.0':
     dependencies:
@@ -4535,7 +4549,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/distance@7.4.0':
     dependencies:
@@ -4552,7 +4566,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/transform-rotate': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/envelope@7.4.0':
     dependencies:
@@ -4560,21 +4574,21 @@ snapshots:
       '@turf/bbox-polygon': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/explode@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/flatten@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/flip@7.4.0':
     dependencies:
@@ -4582,7 +4596,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/geojson-rbush@7.4.0':
     dependencies:
@@ -4591,7 +4605,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       rbush: 3.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/great-circle@7.4.0':
     dependencies:
@@ -4599,7 +4613,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
       arc: 0.2.0
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/helpers@7.4.0':
     dependencies:
@@ -4613,7 +4627,7 @@ snapshots:
       '@turf/intersect': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/interpolate@7.4.0':
     dependencies:
@@ -4629,7 +4643,7 @@ snapshots:
       '@turf/square-grid': 7.4.0
       '@turf/triangle-grid': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/intersect@7.4.0':
     dependencies:
@@ -4637,13 +4651,13 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       polyclip-ts: 0.16.8
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/invariant@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/isobands@7.4.0':
     dependencies:
@@ -4655,7 +4669,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/isolines@7.4.0':
     dependencies:
@@ -4664,7 +4678,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/jsts@2.7.2':
     dependencies:
@@ -4674,7 +4688,7 @@ snapshots:
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/length@7.4.0':
     dependencies:
@@ -4682,7 +4696,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-arc@7.4.0':
     dependencies:
@@ -4690,7 +4704,7 @@ snapshots:
       '@turf/destination': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-chunk@7.4.0':
     dependencies:
@@ -4699,7 +4713,7 @@ snapshots:
       '@turf/line-slice-along': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-intersect@7.4.0':
     dependencies:
@@ -4707,7 +4721,7 @@ snapshots:
       '@types/geojson': 7946.0.16
       robust-predicates: 2.0.4
       tinyqueue: 2.0.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-offset@7.4.0':
     dependencies:
@@ -4715,7 +4729,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-overlap@7.4.0':
     dependencies:
@@ -4729,7 +4743,7 @@ snapshots:
       '@turf/nearest-point-on-line': 7.4.0
       '@types/geojson': 7946.0.16
       fast-deep-equal: 3.1.3
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-segment@7.4.0':
     dependencies:
@@ -4737,7 +4751,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-slice-along@7.4.0':
     dependencies:
@@ -4746,7 +4760,7 @@ snapshots:
       '@turf/distance': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-slice@7.4.0':
     dependencies:
@@ -4754,7 +4768,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/nearest-point-on-line': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-split@7.4.0':
     dependencies:
@@ -4768,7 +4782,7 @@ snapshots:
       '@turf/nearest-point-on-line': 7.4.0
       '@turf/truncate': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/line-to-polygon@7.4.0':
     dependencies:
@@ -4777,7 +4791,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/mask@7.4.0':
     dependencies:
@@ -4785,13 +4799,13 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
       polyclip-ts: 0.16.8
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/meta@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/midpoint@7.4.0':
     dependencies:
@@ -4800,7 +4814,7 @@ snapshots:
       '@turf/distance': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/moran-index@7.4.0':
     dependencies:
@@ -4808,7 +4822,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/nearest-neighbor-analysis@7.4.0':
     dependencies:
@@ -4821,7 +4835,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@turf/nearest-point': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/nearest-point-on-line@7.4.0':
     dependencies:
@@ -4830,7 +4844,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/nearest-point-to-line@7.4.0':
     dependencies:
@@ -4839,7 +4853,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@turf/point-to-line-distance': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/nearest-point@7.4.0':
     dependencies:
@@ -4848,14 +4862,14 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/planepoint@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/point-grid@7.4.0':
     dependencies:
@@ -4864,7 +4878,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/point-on-feature@7.4.0':
     dependencies:
@@ -4874,7 +4888,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/nearest-point': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/point-to-line-distance@7.4.0':
     dependencies:
@@ -4888,7 +4902,7 @@ snapshots:
       '@turf/rhumb-bearing': 7.4.0
       '@turf/rhumb-distance': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/point-to-polygon-distance@7.4.0':
     dependencies:
@@ -4899,7 +4913,7 @@ snapshots:
       '@turf/point-to-line-distance': 7.4.0
       '@turf/polygon-to-line': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/points-within-polygon@7.4.0':
     dependencies:
@@ -4907,14 +4921,14 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/polygon-smooth@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/polygon-tangents@7.4.0':
     dependencies:
@@ -4925,14 +4939,14 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/nearest-point': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/polygon-to-line@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/polygonize@7.4.0':
     dependencies:
@@ -4942,7 +4956,7 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/projection@7.4.0':
     dependencies:
@@ -4950,7 +4964,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/quadrat-analysis@7.4.0':
     dependencies:
@@ -4964,13 +4978,13 @@ snapshots:
       '@turf/random': 7.4.0
       '@turf/square-grid': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/random@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/rectangle-grid@7.4.0':
     dependencies:
@@ -4978,7 +4992,7 @@ snapshots:
       '@turf/distance': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/rewind@7.4.0':
     dependencies:
@@ -4988,34 +5002,34 @@ snapshots:
       '@turf/invariant': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/rhumb-bearing@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/rhumb-destination@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/rhumb-distance@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/sample@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/sector@7.4.0':
     dependencies:
@@ -5025,7 +5039,7 @@ snapshots:
       '@turf/line-arc': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/shortest-path@7.4.0':
     dependencies:
@@ -5039,7 +5053,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@turf/transform-scale': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/simplify@7.4.0':
     dependencies:
@@ -5048,21 +5062,21 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/square-grid@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/rectangle-grid': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/square@7.4.0':
     dependencies:
       '@turf/distance': 7.4.0
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/standard-deviational-ellipse@7.4.0':
     dependencies:
@@ -5073,7 +5087,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@turf/points-within-polygon': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/tag@7.4.0':
     dependencies:
@@ -5082,7 +5096,7 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/tesselate@7.4.0':
     dependencies:
@@ -5090,13 +5104,13 @@ snapshots:
       '@types/earcut': 2.1.4
       '@types/geojson': 7946.0.16
       earcut: 2.2.4
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/tin@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/transform-rotate@7.4.0':
     dependencies:
@@ -5109,7 +5123,7 @@ snapshots:
       '@turf/rhumb-destination': 7.4.0
       '@turf/rhumb-distance': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/transform-scale@7.4.0':
     dependencies:
@@ -5124,7 +5138,7 @@ snapshots:
       '@turf/rhumb-destination': 7.4.0
       '@turf/rhumb-distance': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/transform-translate@7.4.0':
     dependencies:
@@ -5134,7 +5148,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@turf/rhumb-destination': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/triangle-grid@7.4.0':
     dependencies:
@@ -5142,14 +5156,14 @@ snapshots:
       '@turf/helpers': 7.4.0
       '@turf/intersect': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/truncate@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/turf@7.4.0':
     dependencies:
@@ -5277,7 +5291,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       polyclip-ts: 0.16.8
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/unkink-polygon@7.4.0':
     dependencies:
@@ -5287,7 +5301,7 @@ snapshots:
       '@turf/meta': 7.4.0
       '@types/geojson': 7946.0.16
       rbush: 3.0.1
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@turf/voronoi@7.4.0':
     dependencies:
@@ -5297,7 +5311,7 @@ snapshots:
       '@types/d3-voronoi': 1.1.12
       '@types/geojson': 7946.0.16
       d3-voronoi: 1.1.2
-      tslib: 2.8.1
+      tslib: 2.9.1
 
   '@types/chai@5.2.3':
     dependencies:
@@ -5325,7 +5339,7 @@ snapshots:
 
   '@types/mdurl@2.0.0': {}
 
-  '@types/node@26.6.5':
+  '@types/node@26.6.6':
     dependencies:
       undici-types: 8.9.0
 
@@ -5414,27 +5428,27 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
-  '@vis.gl/react-maplibre@8.1.3(maplibre-gl@6.15.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+  '@vis.gl/react-maplibre@8.1.3(maplibre-gl@6.16.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@maplibre/maplibre-gl-style-spec': 19.3.3
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
     optionalDependencies:
-      maplibre-gl: 6.15.0
+      maplibre-gl: 6.16.0
 
-  '@vitejs/plugin-react@6.1.2(vite@8.3.5(@types/node@26.6.5))':
+  '@vitejs/plugin-react@6.1.2(vite@8.3.5(@types/node@26.6.6))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
-      vite: 8.3.5(@types/node@26.6.5)
+      vite: 8.3.5(@types/node@26.6.6)
 
-  '@vitest/mocker@5.0.5(vite@8.3.5(@types/node@26.6.5))':
+  '@vitest/mocker@5.0.5(vite@8.3.5(@types/node@26.6.6))':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       '@vitest/spy': 5.0.5
       estree-walker: 3.0.3
       magic-string: 1.4.3
     optionalDependencies:
-      vite: 8.3.5(@types/node@26.6.5)
+      vite: 8.3.5(@types/node@26.6.6)
 
   '@vitest/spy@5.0.5': {}
 
@@ -6407,11 +6421,11 @@ snapshots:
 
   font-family-papandreou@0.2.0-patch2: {}
 
-  framer-motion@14.6.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  framer-motion@14.9.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
-      motion-dom: 14.6.0
-      motion-utils: 14.6.0
-      tslib: 2.8.1
+      motion-dom: 14.9.0
+      motion-utils: 14.7.0
+      tslib: 2.9.1
     optionalDependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
@@ -6521,11 +6535,11 @@ snapshots:
 
   human-signals@8.0.1: {}
 
-  i18next-browser-languagedetector@8.2.2:
+  i18next-browser-languagedetector@8.2.4:
     dependencies:
       '@babel/runtime': 7.29.10
 
-  i18next@26.5.7(typescript@7.0.2):
+  i18next@26.5.12(typescript@7.0.2):
     optionalDependencies:
       typescript: 7.0.2
 
@@ -6739,16 +6753,16 @@ snapshots:
 
   make-event-props@2.0.0: {}
 
-  maplibre-gl@6.15.0:
+  maplibre-gl@6.16.0:
     dependencies:
       '@mapbox/point-geometry': 1.1.0
       '@mapbox/tiny-sdf': 2.3.0
       '@mapbox/unitbezier': 1.0.0
       '@mapbox/vector-tile': 3.0.0
       '@maplibre/geojson-vt': 6.3.0
-      '@maplibre/maplibre-gl-style-spec': 26.4.4
+      '@maplibre/maplibre-gl-style-spec': 26.5.0
       '@maplibre/mlt': 1.3.0
-      '@maplibre/vt-pbf': 4.3.2
+      '@maplibre/vt-pbf': 4.3.3
       '@types/geojson': 7946.0.16
       bidi-js: 1.1.0
       earcut: 3.2.4
@@ -6808,11 +6822,11 @@ snapshots:
 
   minimist@1.2.8: {}
 
-  motion-dom@14.6.0:
+  motion-dom@14.9.0:
     dependencies:
-      motion-utils: 14.6.0
+      motion-utils: 14.7.0
 
-  motion-utils@14.6.0: {}
+  motion-utils@14.7.0: {}
 
   ms@2.1.3: {}
 
@@ -6949,7 +6963,11 @@ snapshots:
 
   pdfjs-dist@6.3.289:
     optionalDependencies:
-      '@napi-rs/canvas': 1.0.11
+      '@napi-rs/canvas': 1.1.0
+
+  pdfjs-dist@6.4.299:
+    optionalDependencies:
+      '@napi-rs/canvas': 1.1.0
 
   perfect-freehand@1.2.3: {}
 
@@ -7046,11 +7064,11 @@ snapshots:
       react: 19.3.1
       scheduler: 0.28.0
 
-  react-i18next@17.1.5(i18next@26.5.7(typescript@7.0.2))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2):
+  react-i18next@17.1.9(i18next@26.5.12(typescript@7.0.2))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2):
     dependencies:
       '@babel/runtime': 7.29.10
       html-parse-stringify: 4.0.1
-      i18next: 26.5.7(typescript@7.0.2)
+      i18next: 26.5.12(typescript@7.0.2)
       react: 19.3.1
       use-sync-external-store: 1.7.0(react@19.3.1)
     optionalDependencies:
@@ -7063,14 +7081,14 @@ snapshots:
 
   react-is@16.13.1: {}
 
-  react-map-gl@8.1.3(maplibre-gl@6.15.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-map-gl@8.1.3(maplibre-gl@6.16.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       '@vis.gl/react-mapbox': 8.1.3(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      '@vis.gl/react-maplibre': 8.1.3(maplibre-gl@6.15.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@vis.gl/react-maplibre': 8.1.3(maplibre-gl@6.16.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
     optionalDependencies:
-      maplibre-gl: 6.15.0
+      maplibre-gl: 6.16.0
 
   react-pdf@11.0.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
@@ -7088,17 +7106,17 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.3.0
 
-  react-router-dom@7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-router-dom@7.18.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
-      react-router: 7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react-router: 7.18.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
 
-  react-router@7.18.4(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-router@7.18.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       cookie: 1.1.1
       react: 19.3.1
-      set-cookie-parser: 2.7.2
+      set-cookie-parser: 2.7.3
     optionalDependencies:
       react-dom: 19.3.1(react@19.3.1)
 
@@ -7107,10 +7125,12 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
 
-  react-window@2.5.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
+  react-window@2.5.2(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1):
     dependencies:
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
+    optionalDependencies:
+      '@types/react': 19.3.0
 
   react@19.3.1: {}
 
@@ -7251,7 +7271,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  set-cookie-parser@2.7.2: {}
+  set-cookie-parser@2.7.3: {}
 
   set-value@2.0.1:
     dependencies:
@@ -7402,7 +7422,7 @@ snapshots:
   svg-pathdata@6.0.3:
     optional: true
 
-  svg2pdf.js@2.8.1(jspdf@4.2.1):
+  svg2pdf.js@2.9.0(jspdf@4.2.1):
     dependencies:
       cssesc: 3.0.0
       font-family-papandreou: 0.2.0-patch2
@@ -7475,6 +7495,8 @@ snapshots:
   traverse@0.6.8: {}
 
   tslib@2.8.1: {}
+
+  tslib@2.9.1: {}
 
   tunnel@0.0.6: {}
 
@@ -7570,7 +7592,7 @@ snapshots:
 
   verkit@0.5.0: {}
 
-  vite@8.3.5(@types/node@26.6.5):
+  vite@8.3.5(@types/node@26.6.6):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
@@ -7578,13 +7600,13 @@ snapshots:
       rolldown: 1.2.15
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 26.6.5
+      '@types/node': 26.6.6
       fsevents: 2.3.3
 
-  vitest@5.0.5(@types/node@26.6.5)(vite@8.3.5(@types/node@26.6.5)):
+  vitest@5.0.5(@types/node@26.6.6)(vite@8.3.5(@types/node@26.6.6)):
     dependencies:
       '@types/chai': 5.2.3
-      '@vitest/mocker': 5.0.5(vite@8.3.5(@types/node@26.6.5))
+      '@vitest/mocker': 5.0.5(vite@8.3.5(@types/node@26.6.6))
       chai: 6.3.0
       es-module-lexer: 2.3.2
       expect-type: 1.4.0
@@ -7595,10 +7617,10 @@ snapshots:
       tinybench: 6.2.2
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
-      vite: 8.3.5(@types/node@26.6.5)
+      vite: 8.3.5(@types/node@26.6.6)
       why-is-node-running: 3.2.1
     optionalDependencies:
-      '@types/node': 26.6.5
+      '@types/node': 26.6.6
     transitivePeerDependencies:
       - msw
 
