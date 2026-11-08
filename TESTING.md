@@ -34,8 +34,12 @@ Open a roadbook in Safari on an iPhone, with the odometer header expanded.
 
 - Show and hide Safari's address and navigation bars. The header and all seven
   footer buttons must stay visible and tappable without scrolling the page.
+  The footer must end at the visible browser edge, without a blank strip below
+  it. With browser bars shown, only the normal button padding should remain.
 - Rotate between portrait and landscape. Check that the notch, status bar and
   Home indicator do not cover any controls.
+  In fullscreen/native views, Home-indicator clearance belongs inside the footer,
+  with its background extending to the bottom of the app.
 - Open a text field in settings, then close the keyboard and return to the
   roadbook. The footer must follow the visible area and return to its full height.
 - Pinch to zoom and back. Zoom must magnify the existing layout without
