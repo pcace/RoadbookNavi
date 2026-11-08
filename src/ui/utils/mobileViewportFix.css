@@ -19,9 +19,23 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   overflow: hidden;
-  /* viewport-fit=cover requires room for the notch and Home indicator. */
-  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
-    env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  /* Only reserve safe areas that still overlap the visible viewport. */
+  padding-top: max(
+    0px,
+    calc(env(safe-area-inset-top, 0px) - var(--viewport-offset-top, 0px))
+  );
+  padding-right: env(safe-area-inset-right, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.app-footer {
+  /* Keep Home-indicator clearance inside the bar, without counting browser UI twice. */
+  padding-bottom: max(
+    0.5rem,
+    calc(
+      env(safe-area-inset-bottom, 0px) - var(--viewport-bottom-excluded, 0px)
+    )
+  );
 }
 
 /* Make sure all elements can access the full height */

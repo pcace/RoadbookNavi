@@ -58,6 +58,7 @@ export const NewFooter: React.FC = () => {
 
   return (
     <Flex
+      className="app-footer"
       bg={bg}
       borderTop="1px solid"
       borderColor={borderColor}

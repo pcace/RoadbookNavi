@@ -7,10 +7,18 @@ export function initMobileViewportFix() {
     if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
 
     const height = viewport?.height ?? window.innerHeight;
+    const offsetTop = viewport?.offsetTop ?? 0;
+    const layoutHeight =
+      document.documentElement.clientHeight || window.innerHeight;
     document.documentElement.style.setProperty('--vh', `${height * 0.01}px`);
     document.documentElement.style.setProperty(
       '--viewport-offset-top',
-      `${viewport?.offsetTop ?? 0}px`
+      `${offsetTop}px`
+    );
+    // Browser bars and the keyboard may already exclude the bottom safe area.
+    document.documentElement.style.setProperty(
+      '--viewport-bottom-excluded',
+      `${Math.max(0, layoutHeight - offsetTop - height)}px`
     );
   };
 
