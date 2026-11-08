@@ -1,28 +1,39 @@
-/**
- * Mobile Viewport Height Fix
- *
- * This utility helps fix the issue with 100vh not working properly on mobile browsers
- * by setting a CSS variable (--vh) that represents 1% of the actual viewport height.
- */
-
 export function initMobileViewportFix() {
-  // Initial setup
+  const viewport = window.visualViewport;
+  let orientationTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  const setViewportHeight = () => {
+    // Pinch zoom should magnify the existing layout, not shrink the app itself.
+    if (viewport && Math.abs(viewport.scale - 1) > 0.01) return;
+
+    const height = viewport?.height ?? window.innerHeight;
+    document.documentElement.style.setProperty('--vh', `${height * 0.01}px`);
+    document.documentElement.style.setProperty(
+      '--viewport-offset-top',
+      `${viewport?.offsetTop ?? 0}px`
+    );
+  };
+
+  const onOrientationChange = () => {
+    setViewportHeight();
+    clearTimeout(orientationTimeout);
+    // Safari can report the old dimensions until the rotation has completed.
+    orientationTimeout = setTimeout(setViewportHeight, 100);
+  };
+
   setViewportHeight();
-
-  // Update on resize
   window.addEventListener('resize', setViewportHeight);
+  window.addEventListener('orientationchange', onOrientationChange);
+  window.addEventListener('pageshow', setViewportHeight);
+  viewport?.addEventListener('resize', setViewportHeight);
+  viewport?.addEventListener('scroll', setViewportHeight);
 
-  // Update on orientation change
-  window.addEventListener('orientationchange', () => {
-    // Small delay to ensure dimensions are updated after orientation change
-    setTimeout(setViewportHeight, 100);
-  });
-}
-
-function setViewportHeight() {
-  // Get the actual viewport height
-  const vh = window.innerHeight * 0.01;
-
-  // Set the --vh custom property to the root of the document
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
+  return () => {
+    clearTimeout(orientationTimeout);
+    window.removeEventListener('resize', setViewportHeight);
+    window.removeEventListener('orientationchange', onOrientationChange);
+    window.removeEventListener('pageshow', setViewportHeight);
+    viewport?.removeEventListener('resize', setViewportHeight);
+    viewport?.removeEventListener('scroll', setViewportHeight);
+  };
 }

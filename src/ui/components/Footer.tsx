@@ -61,15 +61,15 @@ export const NewFooter: React.FC = () => {
       bg={bg}
       borderTop="1px solid"
       borderColor={borderColor}
-      px={4}
+      px={{ base: 2, md: 4 }}
       py={2}
-      gap={4}
+      gap={{ base: 1, md: 4 }}
       justify="space-between"
       align="center"
       flexShrink={0}
     >
-      <Box flex="1" minWidth={0}>
-        <HStack gap={2}>
+      <Box flex="1" minWidth="max-content">
+        <HStack gap={{ base: 1, md: 2 }}>
           {path === 'roadbook' && (
             <>
               <IconButton
@@ -101,7 +101,7 @@ export const NewFooter: React.FC = () => {
         </HStack>
       </Box>
 
-      <HStack gap={2}>
+      <HStack gap={{ base: 1, md: 2 }}>
         {navigationButtons.map(([mode, section, Icon]) => (
           <IconButton
             key={mode}
@@ -116,7 +116,7 @@ export const NewFooter: React.FC = () => {
         ))}
       </HStack>
 
-      <Box flex="1" minWidth={0} textAlign="right">
+      <Box flex="1" minWidth="max-content" textAlign="right">
         <IconButton
           aria-label={t('buttons.help')}
           title={t('buttons.help')}
