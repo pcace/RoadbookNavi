@@ -28,6 +28,24 @@ Tests that are explicitly skipped or ignored are not evidence of a successful
 hardware or end-to-end run. Routing, OS location access, native file dialogs,
 wake-lock behaviour and suspend/resume still need testing on their target device.
 
+## iPhone browser viewport
+
+Open a roadbook in Safari on an iPhone, with the odometer header expanded.
+
+- Show and hide Safari's address and navigation bars. The header and all seven
+  footer buttons must stay visible and tappable without scrolling the page.
+- Rotate between portrait and landscape. Check that the notch, status bar and
+  Home indicator do not cover any controls.
+- Open a text field in settings, then close the keyboard and return to the
+  roadbook. The footer must follow the visible area and return to its full height.
+- Pinch to zoom and back. Zoom must magnify the existing layout without
+  compressing the roadbook into the smaller visual viewport.
+- Check the footer at 320px and 390px widths; its buttons must not overlap.
+
+The viewport unit tests cover browser-bar, keyboard and orientation events.
+Headless WebKit can check layout bounds, but does not reproduce Safari's real
+browser bars or device safe-area insets; repeat these checks on the device.
+
 ## User workflow smoke test
 
 Use an isolated local browser origin or a disposable test library. Use public
