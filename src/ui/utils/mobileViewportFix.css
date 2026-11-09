@@ -13,7 +13,8 @@ body {
   height: 100dvh;
   height: calc(var(--vh, 1dvh) * 100);
   min-height: 0;
-  position: relative;
+  position: fixed;
+  left: 0;
   top: var(--viewport-offset-top, 0px);
   display: flex;
   flex-direction: column;
