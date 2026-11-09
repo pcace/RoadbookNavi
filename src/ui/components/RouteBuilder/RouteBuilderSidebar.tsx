@@ -13,6 +13,7 @@ export const RouteBuilderSidebar: React.FC = () => {
   return (
     <>
       <Box
+        data-route-builder-sidebar
         width={{
           base: '100%',
           md: isSidebarCollapsed ? '0px' : '350px',

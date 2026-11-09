@@ -1,6 +1,8 @@
 export function initMobileViewportFix() {
   const viewport = window.visualViewport;
   let orientationTimeout: ReturnType<typeof setTimeout> | undefined;
+  let settleTimeout: ReturnType<typeof setTimeout> | undefined;
+  let restoreScrollOnSettle = false;
 
   const setViewportHeight = () => {
     // Pinch zoom should magnify the existing layout, not shrink the app itself.
@@ -22,26 +24,60 @@ export function initMobileViewportFix() {
     );
   };
 
-  const onOrientationChange = () => {
+  const onViewportChange = () => {
     setViewportHeight();
+    clearTimeout(settleTimeout);
+    // iOS can finish its keyboard animation after the last viewport event.
+    settleTimeout = setTimeout(() => {
+      const activeElement = document.activeElement as HTMLElement | null;
+      const isEditing =
+        activeElement?.matches('input, textarea, select') ||
+        activeElement?.isContentEditable;
+      if (
+        restoreScrollOnSettle &&
+        !isEditing &&
+        (!viewport || Math.abs(viewport.scale - 1) <= 0.01)
+      ) {
+        // The document is a non-scrolling shell; only its inner panels scroll.
+        window.scrollTo(0, 0);
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        restoreScrollOnSettle = false;
+      }
+      setViewportHeight();
+    }, 350);
+  };
+
+  const onFocusChange = () => {
+    restoreScrollOnSettle = true;
+    onViewportChange();
+  };
+
+  const onOrientationChange = () => {
+    onViewportChange();
     clearTimeout(orientationTimeout);
     // Safari can report the old dimensions until the rotation has completed.
-    orientationTimeout = setTimeout(setViewportHeight, 100);
+    orientationTimeout = setTimeout(onViewportChange, 100);
   };
 
   setViewportHeight();
-  window.addEventListener('resize', setViewportHeight);
+  window.addEventListener('resize', onViewportChange);
   window.addEventListener('orientationchange', onOrientationChange);
-  window.addEventListener('pageshow', setViewportHeight);
-  viewport?.addEventListener('resize', setViewportHeight);
-  viewport?.addEventListener('scroll', setViewportHeight);
+  window.addEventListener('pageshow', onViewportChange);
+  viewport?.addEventListener('resize', onViewportChange);
+  viewport?.addEventListener('scroll', onViewportChange);
+  document.addEventListener('focusin', onFocusChange);
+  document.addEventListener('focusout', onFocusChange);
 
   return () => {
     clearTimeout(orientationTimeout);
-    window.removeEventListener('resize', setViewportHeight);
+    clearTimeout(settleTimeout);
+    window.removeEventListener('resize', onViewportChange);
     window.removeEventListener('orientationchange', onOrientationChange);
-    window.removeEventListener('pageshow', setViewportHeight);
-    viewport?.removeEventListener('resize', setViewportHeight);
-    viewport?.removeEventListener('scroll', setViewportHeight);
+    window.removeEventListener('pageshow', onViewportChange);
+    viewport?.removeEventListener('resize', onViewportChange);
+    viewport?.removeEventListener('scroll', onViewportChange);
+    document.removeEventListener('focusin', onFocusChange);
+    document.removeEventListener('focusout', onFocusChange);
   };
 }

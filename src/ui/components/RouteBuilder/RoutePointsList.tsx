@@ -244,6 +244,7 @@ const RoutePointsList: React.FC = () => {
   const [isSubmittingAction, setIsSubmittingAction] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchBoxRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const searchResultsRef = useRef<HTMLDivElement>(null);
   const gpxFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -318,6 +319,7 @@ const RoutePointsList: React.FC = () => {
   };
 
   const handleSelectAddress = (result: AddressSearchResult) => {
+    searchInputRef.current?.blur();
     addPointByAddress(result.lat, result.lon, result.displayName);
     setAddressSearchQuery('');
     setSearchResults([]);
@@ -792,13 +794,14 @@ const RoutePointsList: React.FC = () => {
           <Box ref={searchBoxRef} position="relative">
             <Box position="relative">
               <Input
+                ref={searchInputRef}
                 placeholder={
                   t('routeBuilder:labels.searchAddress') || 'Adresse suchen...'
                 }
                 size="sm"
                 bg={bgSection}
                 borderColor={borderColor}
-                fontSize="sm"
+                fontSize="max(16px, 1rem)"
                 value={addressSearchQuery}
                 onChange={event => handleAddressInputChange(event.target.value)}
                 onKeyDown={event => {

@@ -159,7 +159,18 @@ export const RouteBuilder: React.FC<RouteBuilderProps> = ({
       routingProfile !== (originalRoute.profile || 'enduro') ||
       routeNameInput.trim() !== (originalRoute.name || '').trim())
   );
-  const toggleSidebar = () => setIsSidebarCollapsed(prev => !prev);
+  const toggleSidebar = () => {
+    // Blur before unmounting the input so iOS can dismiss its keyboard cleanly.
+    const activeElement = document.activeElement;
+    if (
+      !isSidebarCollapsed &&
+      activeElement instanceof HTMLElement &&
+      activeElement.closest('[data-route-builder-sidebar]')
+    ) {
+      activeElement.blur();
+    }
+    setIsSidebarCollapsed(prev => !prev);
+  };
 
   const reloadCurrentRoute = () => {
     if (!editRouteId || !originalRoute) {

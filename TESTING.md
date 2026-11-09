@@ -42,6 +42,12 @@ Open a roadbook in Safari on an iPhone, with the odometer header expanded.
   with its background extending to the bottom of the app.
 - Open a text field in settings, then close the keyboard and return to the
   roadbook. The footer must follow the visible area and return to its full height.
+- In the route planner, focus the address search, search and select a result.
+  Repeat by dismissing the keyboard alone and by collapsing the planning sidebar.
+  The app must return to its original top position and height, including when
+  iOS finishes changing the viewport after the last resize event. The search
+  input must use at least 16px text on phones to avoid focus zoom; intentional
+  pinch zoom must still work.
 - Pinch to zoom and back. Zoom must magnify the existing layout without
   compressing the roadbook into the smaller visual viewport.
 - Check the footer at 320px and 390px widths; its buttons must not overlap.
