@@ -1,3 +1,12 @@
+## [1.41.1](https://github.com/pcace/RoadbookNavi/compare/v1.41.0...v1.41.1) (2026-11-09)
+
+### Bug fixes
+
+- keep iPhone roadbook controls clear of browser bars ([e83280a](https://github.com/pcace/RoadbookNavi/commit/e83280ab0b817e0a47265637a750d05ddde88eac))
+- move help below downloads and open translated guides ([3a4c4ab](https://github.com/pcace/RoadbookNavi/commit/3a4c4ab6cf1099f7ca3eafc5217b3afbe2bd9a6b))
+- remove the empty strip below iPhone controls ([9a66390](https://github.com/pcace/RoadbookNavi/commit/9a66390dbaa0837d3e0768dd16d1eeb2413ecf5e))
+- restore the planner after the iOS keyboard closes ([37b14fd](https://github.com/pcace/RoadbookNavi/commit/37b14fdf8c42c025ca541e045f8a07ae6bda7e86))
+
 ## [1.41.0](https://github.com/pcace/RoadbookNavi/compare/v1.40.0...v1.41.0) (2026-11-01)
 
 ### New features
