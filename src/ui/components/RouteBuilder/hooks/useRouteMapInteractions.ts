@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { FeatureCollection, LineString } from 'geojson';
+import type { TFunction } from 'i18next';
 import { formatMeters } from '../utils/routeAnalysis';
 import { normalizeSurfaceKey } from '../utils/surfaces';
 import type { RoutePoint } from '../types';
@@ -16,7 +17,7 @@ interface UseRouteMapInteractionsArgs {
   removePoint: (id: string) => void;
   routeData: FeatureCollection<LineString> | null;
   routePoints: RoutePoint[];
-  t: (key: string, options?: any) => string;
+  t: TFunction;
   updatePoint: (id: string, lat: number, lng: number) => void;
 }
 

@@ -433,16 +433,7 @@ const AppPage: React.FC = () => {
   ]);
 
   return (
-    <Box
-      className="app"
-      width="100%"
-      display="flex"
-      flexDirection="column"
-      style={{
-        height: 'calc(var(--vh, 1vh) * 100)' /* Use our custom variable */,
-        overflow: 'hidden' /* Prevent scrolling */,
-      }}
-    >
+    <Box className="app" width="100%" display="flex" flexDirection="column">
       {error && (
         <Box className="error-banner" width="100%">
           {getGpsErrorMessage(error)}
@@ -459,7 +450,7 @@ const AppPage: React.FC = () => {
       )}
 
       <>
-        <Box flex="1" overflow="hidden">
+        <Box flex="1" minHeight={0} overflow="hidden">
           <Routes>
             <Route path="/" element={<Navigate to="/app/roadbook" replace />} />
             <Route
